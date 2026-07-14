@@ -21,7 +21,7 @@ let FeedbackService = class FeedbackService {
         const teacher = await this.prisma.teacher.findUnique({ where: { userId } });
         const teacherId = teacher?.id;
         if (!teacherId) {
-            throw new Error('Only teachers can post feedback');
+            throw new common_1.ForbiddenException('Only teacher accounts can post feedback. Please log in with a teacher account.');
         }
         const feedback = await this.prisma.feedback.create({
             data: {

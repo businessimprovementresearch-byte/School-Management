@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,7 +25,10 @@ export default function SessionDetailScreen() {
   const [studentAtt, setStudentAtt] = useState<Record<string, AttStatus>>({});
   const [teacherAtt, setTeacherAtt] = useState<Record<string, TAttStatus>>({});
   const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackError, setFeedbackError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [attError, setAttError] = useState('');
+  const [attSuccess, setAttSuccess] = useState('');
 
   useFocusEffect(useCallback(() => {
     if (sessionId) refetch();
@@ -53,14 +56,16 @@ export default function SessionDetailScreen() {
 
   const handleSaveAttendance = async () => {
     setSaving(true);
+    setAttError('');
+    setAttSuccess('');
     try {
       const studentAttendance = Object.entries(studentAtt).map(([studentId, status]) => ({ studentId, status }));
       const teacherAttendance = Object.entries(teacherAtt).map(([teacherId, status]) => ({ teacherId, status }));
       await bulkSave.mutateAsync({ data: { sessionId, studentAttendance, teacherAttendance } });
-      Alert.alert('Success', 'Attendance saved');
+      setAttSuccess('Attendance saved');
       refetch();
     } catch (e) {
-      Alert.alert('Error', getErrorMessage(e, 'Failed to save'));
+      setAttError(getErrorMessage(e, 'Failed to save'));
     } finally {
       setSaving(false);
     }
@@ -68,12 +73,13 @@ export default function SessionDetailScreen() {
 
   const handleAddFeedback = async () => {
     if (!feedbackText.trim()) return;
+    setFeedbackError('');
     try {
       await createFeedback.mutateAsync({ data: { classSessionId: sessionId, content: feedbackText.trim(), type: 'GENERAL' } });
       setFeedbackText('');
       refetch();
     } catch (e) {
-      Alert.alert('Error', getErrorMessage(e, 'Failed to add feedback'));
+      setFeedbackError(getErrorMessage(e, 'Failed to add feedback'));
     }
   };
 
@@ -146,6 +152,8 @@ export default function SessionDetailScreen() {
         <Pressable style={styles.saveBtn} onPress={handleSaveAttendance} disabled={saving}>
           {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveBtnText}>Save Attendance</Text>}
         </Pressable>
+        {!!attError && <Text style={styles.errorText}>{attError}</Text>}
+        {!!attSuccess && <Text style={styles.successText}>{attSuccess}</Text>}
 
         {/* Feedback */}
         <Text style={styles.sectionTitle}>Feedback</Text>
@@ -162,6 +170,7 @@ export default function SessionDetailScreen() {
             <Ionicons name="send" size={22} color={feedbackText.trim() ? Colors.primary : Colors.textSecondary} />
           </Pressable>
         </View>
+        {!!feedbackError && <Text style={styles.errorText}>{feedbackError}</Text>}
         {(data?.feedback ?? []).map((f) => (
           <View key={f?.id} style={styles.feedbackCard}>
             <Text style={styles.feedbackTeacher}>{f?.teacherName ?? ''} - {f?.type ?? ''}</Text>
@@ -188,6 +197,8 @@ const styles = StyleSheet.create({
   attBtn: { width: 32, height: 32, borderRadius: 16, borderWidth: 1.5, borderColor: Colors.border, justifyContent: 'center', alignItems: 'center' },
   saveBtn: { backgroundColor: Colors.primary, borderRadius: BorderRadius.md, padding: Spacing.lg, alignItems: 'center', marginTop: Spacing.lg },
   saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  errorText: { color: Colors.absent, fontSize: 13, marginTop: Spacing.sm, textAlign: 'center' },
+  successText: { color: Colors.present, fontSize: 13, marginTop: Spacing.sm, textAlign: 'center' },
   feedbackInput: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface, borderRadius: BorderRadius.md, padding: Spacing.md, gap: Spacing.sm, marginBottom: Spacing.md },
   feedbackTextInput: { flex: 1, fontSize: 15, color: Colors.textPrimary, maxHeight: 80 },
   feedbackCard: { backgroundColor: Colors.surface, borderRadius: BorderRadius.sm, padding: Spacing.md, marginBottom: Spacing.sm },

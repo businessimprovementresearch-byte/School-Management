@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -9,8 +9,7 @@ export class FeedbackService {
     const teacher = await this.prisma.teacher.findUnique({ where: { userId } });
     const teacherId = teacher?.id;
     if (!teacherId) {
-      // Admin posting feedback - use first available teacher or throw
-      throw new Error('Only teachers can post feedback');
+      throw new ForbiddenException('Only teacher accounts can post feedback. Please log in with a teacher account.');
     }
     const feedback = await this.prisma.feedback.create({
       data: {
