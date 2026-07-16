@@ -174,7 +174,12 @@ export class StudentsService {
         present,
         absent,
         unsure,
-        percentage: totalSessions > 0 ? Math.round(((present) / totalSessions) * 100) : 0,
+        late: 0,
+        excused: 0,
+        percentage:
+          totalSessions > 0
+            ? Math.round((present / totalSessions) * 100)
+            : 0,
         perClass: Array.from(classMap.values()).map((c) => ({
           classId: c.classId,
           className: c.className,

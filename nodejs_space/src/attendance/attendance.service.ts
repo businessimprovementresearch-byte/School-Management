@@ -109,8 +109,13 @@ export class AttendanceService {
         present: data.present,
         absent: data.absent,
         unsure: data.unsure,
+        late: 0,
+        excused: 0,
         total: data.total,
-        percentage: data.total > 0 ? Math.round((data.present / data.total) * 100) : 0,
+        percentage:
+          data.total > 0
+            ? Math.round((data.present / data.total) * 100)
+            : 0,
       })),
     };
   }
