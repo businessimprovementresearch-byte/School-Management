@@ -5,8 +5,7 @@ import { Colors, Spacing, BorderRadius } from '@/src/theme';
 const statusColors: Record<string, string> = {
   PRESENT: Colors.present,
   ABSENT: Colors.absent,
-  LATE: Colors.late,
-  EXCUSED: Colors.excused,
+  UNSURE: Colors.unsure,
   ACTIVE: Colors.success,
   COMPLETED: Colors.secondary,
   WITHDRAWN: Colors.error,
