@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AttendanceService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async bulkSave(
     sessionId: string,
@@ -78,14 +78,14 @@ export class AttendanceService {
     let totalPresent = 0;
     let totalRecords = 0;
 
-    const studentMap = new Map<string, { name: string; present: number; absent: number; late: number; excused: number; total: number }>();
+    const studentMap = new Map<string, { name: string; present: number; absent: number; unsure: number; total: number }>();
 
     for (const session of sessions) {
       for (const att of session.studentAttendance) {
         if (!studentMap.has(att.studentId)) {
           studentMap.set(att.studentId, {
             name: att.student.name,
-            present: 0, absent: 0, late: 0, excused: 0, total: 0,
+            present: 0, absent: 0, unsure: 0, total: 0,
           });
         }
         const entry = studentMap.get(att.studentId)!;
@@ -93,8 +93,7 @@ export class AttendanceService {
         totalRecords++;
         if (att.status === 'PRESENT') { entry.present++; totalPresent++; }
         else if (att.status === 'ABSENT') entry.absent++;
-        else if (att.status === 'LATE') { entry.late++; totalPresent++; }
-        else if (att.status === 'EXCUSED') entry.excused++;
+        else if (att.status === 'UNSURE') entry.unsure++;
       }
     }
 
@@ -109,10 +108,9 @@ export class AttendanceService {
         studentName: data.name,
         present: data.present,
         absent: data.absent,
-        late: data.late,
-        excused: data.excused,
+        unsure: data.unsure,
         total: data.total,
-        percentage: data.total > 0 ? Math.round(((data.present + data.late) / data.total) * 100) : 0,
+        percentage: data.total > 0 ? Math.round((data.present / data.total) * 100) : 0,
       })),
     };
   }

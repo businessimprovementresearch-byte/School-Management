@@ -8,7 +8,7 @@ export class ReportCardsService {
   constructor(
     private prisma: PrismaService,
     private uploadService: UploadService,
-  ) {}
+  ) { }
 
   async generate(userId: string, studentId: string, academicYearId: string, termId?: string | null) {
     const student = await this.prisma.student.findUnique({ where: { id: studentId } });
@@ -36,7 +36,11 @@ export class ReportCardsService {
     });
 
     const totalSessions = attendance.length;
-    const present = attendance.filter((a) => a.status === 'PRESENT' || a.status === 'LATE').length;
+    const countable = attendance.filter((a) =>
+      a.status === 'PRESENT' || a.status === 'ABSENT' || a.status === 'UNSURE'
+    ).length;
+    const present = attendance.filter((a) => a.status === 'PRESENT').length;
+    const percentage = countable > 0 ? Math.round((present / countable) * 100) : 0;
 
     // Get progress data
     const progress = await this.prisma.studentProgress.findMany({
@@ -103,9 +107,9 @@ export class ReportCardsService {
   ): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       const doc = new PDFDocument({ margin: 50 });
-      const chunks: Buffer[] = [];
-      doc.on('data', (chunk: Buffer) => chunks.push(chunk));
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      const chunks: Uint8Array[] = [];
+      doc.on('data', (chunk: Uint8Array) => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks) as Buffer));
       doc.on('error', reject);
 
       // Title

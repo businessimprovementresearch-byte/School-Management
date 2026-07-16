@@ -8,7 +8,7 @@ export class StudentsService {
   constructor(
     private prisma: PrismaService,
     private uploadService: UploadService,
-  ) {}
+  ) { }
 
   private calculateAge(dob: Date): number {
     const today = new Date();
@@ -117,8 +117,7 @@ export class StudentsService {
     const totalSessions = student.attendance.length;
     const present = student.attendance.filter((a) => a.status === 'PRESENT').length;
     const absent = student.attendance.filter((a) => a.status === 'ABSENT').length;
-    const late = student.attendance.filter((a) => a.status === 'LATE').length;
-    const excused = student.attendance.filter((a) => a.status === 'EXCUSED').length;
+    const unsure = student.attendance.filter((a) => a.status === 'UNSURE').length;
 
     // Per-class breakdown
     const classMap = new Map<string, { classId: string; className: string; present: number; total: number }>();
@@ -129,7 +128,7 @@ export class StudentsService {
       }
       const entry = classMap.get(cid)!;
       entry.total++;
-      if (a.status === 'PRESENT' || a.status === 'LATE') entry.present++;
+      if (a.status === 'PRESENT') entry.present++;
     }
 
     // Progress
@@ -174,9 +173,8 @@ export class StudentsService {
         totalSessions,
         present,
         absent,
-        late,
-        excused,
-        percentage: totalSessions > 0 ? Math.round(((present + late) / totalSessions) * 100) : 0,
+        unsure,
+        percentage: totalSessions > 0 ? Math.round(((present) / totalSessions) * 100) : 0,
         perClass: Array.from(classMap.values()).map((c) => ({
           classId: c.classId,
           className: c.className,

@@ -16,8 +16,7 @@ enum UserRole {
 enum AttendanceStatus {
   PRESENT
   ABSENT
-  LATE
-  EXCUSED
+  UNSURE
 }
 
 enum TeacherAttendanceStatus {
