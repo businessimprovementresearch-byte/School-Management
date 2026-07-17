@@ -14,6 +14,7 @@ export default function EditStudentScreen() {
   const updateMutation = useStudentsControllerUpdate();
 
   const [name, setName] = useState('');
+  const [nickname, setNickname] = useState('');
   const [parentName, setParentName] = useState('');
   const [dob, setDob] = useState('');
   const [contactNumber, setContactNumber] = useState('');
@@ -21,6 +22,7 @@ export default function EditStudentScreen() {
   useEffect(() => {
     if (data) {
       setName(data?.name ?? '');
+      setNickname(data?.nickname ?? '');
       setParentName(data?.parentName ?? '');
       setDob(data?.dob ? data.dob.split('T')[0] : '');
       setContactNumber(data?.contactNumber ?? '');
@@ -29,7 +31,7 @@ export default function EditStudentScreen() {
 
   const handleSave = async () => {
     try {
-      await updateMutation.mutateAsync({ id: studentId, data: { name, parentName, dob, contactNumber } });
+      await updateMutation.mutateAsync({ id: studentId, data: { name, nickname, parentName, dob, contactNumber } });
       router.back();
     } catch (e) {
       Alert.alert('Error', getErrorMessage(e, 'Failed to update student'));
@@ -46,6 +48,8 @@ export default function EditStudentScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.label}>Name</Text>
         <TextInput style={styles.input} value={name} onChangeText={setName} />
+        <Text style={styles.label}>Nickname</Text>
+        <TextInput style={styles.input} value={nickname} onChangeText={setNickname} placeholder="What the student prefers to be called" placeholderTextColor={Colors.textSecondary + '80'} />
         <Text style={styles.label}>Parent Name</Text>
         <TextInput style={styles.input} value={parentName} onChangeText={setParentName} />
         <Text style={styles.label}>Date of Birth (YYYY-MM-DD)</Text>

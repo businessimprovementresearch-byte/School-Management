@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { View, FlatList, StyleSheet, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, FlatList, StyleSheet, Pressable, Alert } from 'react-native';
 import { Text, TextInput, Button, ActivityIndicator, Portal, Modal, IconButton } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useAcademicYearsControllerFindAll, useAcademicYearsControllerCreate, useAcademicYearsControllerUpdate } from '@/src/api/generated/api';
+import {
+  useAcademicYearsControllerFindAll,
+  useAcademicYearsControllerCreate,
+  useAcademicYearsControllerUpdate,
+  useAcademicYearsControllerRemove,
+} from '@/src/api/generated/api';
 import type { AcademicYearListItemDto } from '@/src/api/generated/schemas';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/src/theme';
@@ -14,23 +19,83 @@ export default function AcademicYearsScreen() {
   const { data, isLoading, refetch } = useAcademicYearsControllerFindAll();
   const createMutation = useAcademicYearsControllerCreate();
   const updateMutation = useAcademicYearsControllerUpdate();
+  const removeMutation = useAcademicYearsControllerRemove();
+
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null); // null = create mode
   const [name, setName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [error, setError] = useState('');
 
-  const handleCreate = () => {
+  const isEditing = editingId !== null;
+
+  const openCreateModal = () => {
+    setEditingId(null);
+    setName('');
+    setStartDate('');
+    setEndDate('');
+    setError('');
+    setShowModal(true);
+  };
+
+  const openEditModal = (item: AcademicYearListItemDto) => {
+    setEditingId(item?.id ?? '');
+    setName(item?.name ?? '');
+    setStartDate(item?.startDate ? item.startDate.split('T')[0] : '');
+    setEndDate(item?.endDate ? item.endDate.split('T')[0] : '');
+    setError('');
+    setShowModal(true);
+  };
+
+  const handleSave = () => {
     setError('');
     if (!name?.trim() || !startDate?.trim() || !endDate?.trim()) { setError('All fields required'); return; }
-    createMutation.mutate({ data: { name: name.trim(), startDate, endDate } }, {
-      onSuccess: () => { setShowModal(false); setName(''); setStartDate(''); setEndDate(''); refetch(); },
-      onError: (e) => setError(getErrorMessage(e, 'Failed to create')),
-    });
+
+    if (isEditing && editingId) {
+      updateMutation.mutate(
+        { id: editingId, data: { name: name.trim(), startDate, endDate } },
+        {
+          onSuccess: () => { setShowModal(false); refetch(); },
+          onError: (e) => setError(getErrorMessage(e, 'Failed to update')),
+        },
+      );
+    } else {
+      createMutation.mutate(
+        { data: { name: name.trim(), startDate, endDate } },
+        {
+          onSuccess: () => { setShowModal(false); setName(''); setStartDate(''); setEndDate(''); refetch(); },
+          onError: (e) => setError(getErrorMessage(e, 'Failed to create')),
+        },
+      );
+    }
   };
 
   const toggleActive = (item: AcademicYearListItemDto) => {
     updateMutation.mutate({ id: item?.id ?? '', data: { isActive: !item?.isActive } }, { onSuccess: () => refetch() });
+  };
+
+  const handleDelete = (item: AcademicYearListItemDto) => {
+    Alert.alert(
+      'Delete Academic Year',
+      `Are you sure you want to delete "${item?.name ?? ''}"? This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            removeMutation.mutate(
+              { id: item?.id ?? '' },
+              {
+                onSuccess: () => refetch(),
+                onError: (e) => Alert.alert('Cannot Delete', getErrorMessage(e, 'Failed to delete academic year')),
+              },
+            );
+          },
+        },
+      ],
+    );
   };
 
   const renderItem = ({ item }: { item: AcademicYearListItemDto }) => (
@@ -45,6 +110,8 @@ export default function AcademicYearsScreen() {
       <Button mode="text" compact onPress={() => toggleActive(item)} textColor={item?.isActive ? theme.colors.error : theme.colors.success}>
         {item?.isActive ? 'Deactivate' : 'Activate'}
       </Button>
+      <IconButton icon="pencil-outline" size={20} iconColor={theme.colors.textSecondary} onPress={() => openEditModal(item)} />
+      <IconButton icon="delete-outline" size={20} iconColor={theme.colors.error} onPress={() => handleDelete(item)} />
     </View>
   );
 
@@ -53,7 +120,7 @@ export default function AcademicYearsScreen() {
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} hitSlop={16}><Ionicons name="arrow-back" size={24} color={theme.colors.text} /></Pressable>
         <Text style={styles.headerTitle}>Academic Years</Text>
-        <IconButton icon="plus" onPress={() => setShowModal(true)} iconColor={theme.colors.primary} />
+        <IconButton icon="plus" onPress={openCreateModal} iconColor={theme.colors.primary} />
       </View>
       {isLoading ? <ActivityIndicator style={{ marginTop: 40 }} color={theme.colors.primary} /> : (
         <FlatList data={data ?? []} renderItem={renderItem} keyExtractor={item => item?.id ?? ''} contentContainerStyle={styles.list}
@@ -61,12 +128,14 @@ export default function AcademicYearsScreen() {
       )}
       <Portal>
         <Modal visible={showModal} onDismiss={() => setShowModal(false)} contentContainerStyle={styles.modal}>
-          <Text style={styles.modalTitle}>New Academic Year</Text>
+          <Text style={styles.modalTitle}>{isEditing ? 'Edit Academic Year' : 'New Academic Year'}</Text>
           {!!error && <Text style={styles.error}>{error}</Text>}
           <TextInput label="Name (e.g. 2025-2026)" value={name} onChangeText={setName} mode="outlined" style={styles.input} outlineColor={theme.colors.border} activeOutlineColor={theme.colors.primary} />
           <TextInput label="Start Date (YYYY-MM-DD)" value={startDate} onChangeText={setStartDate} mode="outlined" style={styles.input} outlineColor={theme.colors.border} activeOutlineColor={theme.colors.primary} />
           <TextInput label="End Date (YYYY-MM-DD)" value={endDate} onChangeText={setEndDate} mode="outlined" style={styles.input} outlineColor={theme.colors.border} activeOutlineColor={theme.colors.primary} />
-          <Button mode="contained" onPress={handleCreate} loading={createMutation?.isPending} style={styles.btn} buttonColor={theme.colors.primary}>Create</Button>
+          <Button mode="contained" onPress={handleSave} loading={createMutation?.isPending || updateMutation?.isPending} style={styles.btn} buttonColor={theme.colors.primary}>
+            {isEditing ? 'Save Changes' : 'Create'}
+          </Button>
         </Modal>
       </Portal>
     </SafeAreaView>

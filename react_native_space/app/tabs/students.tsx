@@ -81,7 +81,7 @@ export default function StudentsScreen() {
               <Pressable style={styles.studentCard} onPress={() => router.push(`/student/${item?.id}`)}>
                 <Avatar uri={item?.photoUrl} name={item?.name} size={48} />
                 <View style={styles.studentInfo}>
-                  <Text style={styles.studentName}>{item?.name ?? ''}</Text>
+                  <Text style={styles.studentName}>{item?.name ?? ''}{item?.nickname ? ` (${item.nickname})` : ''}</Text>
                   <Text style={styles.studentParent}>{item?.parentName ?? ''}</Text>
                   <View style={styles.classChips}>
                     {(item?.enrolledClasses ?? []).map((c) => (

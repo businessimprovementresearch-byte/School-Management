@@ -100,6 +100,7 @@ import type {
   UpdateEventDto,
   UpdateStudentDto,
   UpdateTeacherDto,
+  UpdateTermDto,
   UploadControllerGetFileUrlParams
 } from './schemas';
 
@@ -2927,6 +2928,70 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getAcademicYearsControllerUpdateMutationOptions(options), queryClient);
     }
 
+export const getAcademicYearsControllerRemoveUrl = (id: string,) => {
+
+
+
+
+  return `/api/academic-years/${id}`
+}
+
+export const academicYearsControllerRemove = async (id: string, options?: RequestInit): Promise<SuccessResponseDto> => {
+
+  return customFetch<SuccessResponseDto>(getAcademicYearsControllerRemoveUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getAcademicYearsControllerRemoveMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof academicYearsControllerRemove>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof academicYearsControllerRemove>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['academicYearsControllerRemove'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof academicYearsControllerRemove>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  academicYearsControllerRemove(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AcademicYearsControllerRemoveMutationResult = NonNullable<Awaited<ReturnType<typeof academicYearsControllerRemove>>>
+
+    export type AcademicYearsControllerRemoveMutationError = ErrorType<unknown>
+
+    export const useAcademicYearsControllerRemove = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof academicYearsControllerRemove>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof academicYearsControllerRemove>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getAcademicYearsControllerRemoveMutationOptions(options), queryClient);
+    }
+
 export const getTermsControllerFindAllUrl = (params?: TermsControllerFindAllParams,) => {
   const normalizedParams = new URLSearchParams();
 
@@ -3091,6 +3156,71 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getTermsControllerCreateMutationOptions(options), queryClient);
+    }
+
+export const getTermsControllerUpdateUrl = (id: string,) => {
+
+
+
+
+  return `/api/terms/${id}`
+}
+
+export const termsControllerUpdate = async (id: string,
+    updateTermDto: UpdateTermDto, options?: RequestInit): Promise<TermResponseDto> => {
+
+  return customFetch<TermResponseDto>(getTermsControllerUpdateUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateTermDto)
+  }
+);}
+
+
+
+
+export const getTermsControllerUpdateMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof termsControllerUpdate>>, TError,{id: string;data: BodyType<UpdateTermDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof termsControllerUpdate>>, TError,{id: string;data: BodyType<UpdateTermDto>}, TContext> => {
+
+const mutationKey = ['termsControllerUpdate'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof termsControllerUpdate>>, {id: string;data: BodyType<UpdateTermDto>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  termsControllerUpdate(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TermsControllerUpdateMutationResult = NonNullable<Awaited<ReturnType<typeof termsControllerUpdate>>>
+    export type TermsControllerUpdateMutationBody = BodyType<UpdateTermDto>
+    export type TermsControllerUpdateMutationError = ErrorType<unknown>
+
+    export const useTermsControllerUpdate = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof termsControllerUpdate>>, TError,{id: string;data: BodyType<UpdateTermDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof termsControllerUpdate>>,
+        TError,
+        {id: string;data: BodyType<UpdateTermDto>},
+        TContext
+      > => {
+      return useMutation(getTermsControllerUpdateMutationOptions(options), queryClient);
     }
 
 export const getTermsControllerRemoveUrl = (id: string,) => {

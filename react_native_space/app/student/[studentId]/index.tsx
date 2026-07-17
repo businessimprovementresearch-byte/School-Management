@@ -49,6 +49,7 @@ export default function StudentDetailScreen() {
         <View style={styles.hero}>
           <Avatar uri={data?.photoUrl} name={data?.name} size={80} />
           <Text style={styles.name}>{data?.name ?? ''}</Text>
+          {!!data?.nickname && <Text style={styles.nickname}>"{data.nickname}"</Text>}
           <Text style={styles.info}>Age: {data?.age ?? ''} | Parent: {data?.parentName ?? ''}</Text>
           <Text style={styles.info}>{data?.contactNumber ?? ''}</Text>
         </View>
@@ -162,6 +163,7 @@ const styles = StyleSheet.create({
   content: { padding: Spacing.lg },
   hero: { alignItems: 'center', marginBottom: Spacing.xl },
   name: { fontSize: 22, fontWeight: '700', color: Colors.textPrimary, marginTop: Spacing.md },
+  nickname: { fontSize: 15, fontStyle: 'italic', color: Colors.textSecondary, marginTop: 2 },
   info: { fontSize: 14, color: Colors.textSecondary, marginTop: 2 },
   tabRow: { marginBottom: Spacing.lg, maxHeight: 40 },
   tab: { paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm, marginRight: Spacing.sm, borderRadius: BorderRadius.full, backgroundColor: Colors.surface },

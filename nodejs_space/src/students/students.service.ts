@@ -29,6 +29,7 @@ export class StudentsService {
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
+        { nickname: { contains: search, mode: 'insensitive' } },
         { parentName: { contains: search, mode: 'insensitive' } },
       ];
     }
@@ -56,6 +57,7 @@ export class StudentsService {
       items.map(async (s) => ({
         id: s.id,
         name: s.name,
+        nickname: s.nickname,
         parentName: s.parentName,
         dob: s.dob.toISOString(),
         age: this.calculateAge(s.dob),
@@ -155,6 +157,7 @@ export class StudentsService {
     return {
       id: student.id,
       name: student.name,
+      nickname: student.nickname,
       parentName: student.parentName,
       dob: student.dob.toISOString(),
       age: this.calculateAge(student.dob),
@@ -215,6 +218,7 @@ export class StudentsService {
 
   async create(data: {
     name: string;
+    nickname?: string;
     parentName: string;
     dob: string;
     contactNumber: string;
@@ -224,6 +228,7 @@ export class StudentsService {
     const student = await this.prisma.student.create({
       data: {
         name: data.name,
+        nickname: data.nickname ?? null,
         parentName: data.parentName,
         dob: new Date(data.dob),
         contactNumber: data.contactNumber,
@@ -240,6 +245,7 @@ export class StudentsService {
     id: string,
     data: {
       name?: string;
+      nickname?: string;
       parentName?: string;
       dob?: string;
       contactNumber?: string;
@@ -250,6 +256,7 @@ export class StudentsService {
       where: { id },
       data: {
         ...(data.name !== undefined ? { name: data.name } : {}),
+        ...(data.nickname !== undefined ? { nickname: data.nickname } : {}),
         ...(data.parentName !== undefined ? { parentName: data.parentName } : {}),
         ...(data.dob !== undefined ? { dob: new Date(data.dob) } : {}),
         ...(data.contactNumber !== undefined ? { contactNumber: data.contactNumber } : {}),

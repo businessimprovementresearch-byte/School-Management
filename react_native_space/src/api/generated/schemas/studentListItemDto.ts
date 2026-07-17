@@ -4,6 +4,8 @@ import type { EnrolledClassDto } from './enrolledClassDto';
 export interface StudentListItemDto {
   id: string;
   name: string;
+  /** @nullable */
+  nickname: string | null;
   parentName: string;
   dob: string;
   age: number;

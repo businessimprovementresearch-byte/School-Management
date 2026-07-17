@@ -9,6 +9,7 @@ export class EnrolledClassDto {
 export class StudentListItemDto {
   @ApiProperty() id: string;
   @ApiProperty() name: string;
+  @ApiProperty({ nullable: true, type: String }) nickname: string | null;
   @ApiProperty() parentName: string;
   @ApiProperty() dob: string;
   @ApiProperty() age: number;

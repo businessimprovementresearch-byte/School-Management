@@ -13,6 +13,7 @@ export default function AddStudentScreen() {
   const { data: classes } = useClassesControllerFindAll();
 
   const [name, setName] = useState('');
+  const [nickname, setNickname] = useState('');
   const [parentName, setParentName] = useState('');
   const [dob, setDob] = useState('');
   const [contactNumber, setContactNumber] = useState('');
@@ -31,7 +32,7 @@ export default function AddStudentScreen() {
     }
     try {
       await createMutation.mutateAsync({
-        data: { name: name.trim(), parentName: parentName.trim(), dob, contactNumber: contactNumber.trim(), classIds: selectedClasses },
+        data: { name: name.trim(), nickname: nickname.trim() || undefined, parentName: parentName.trim(), dob, contactNumber: contactNumber.trim(), classIds: selectedClasses },
       });
       router.back();
     } catch (e) {
@@ -49,6 +50,8 @@ export default function AddStudentScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.label}>Name *</Text>
         <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Student name" placeholderTextColor={Colors.textSecondary + '80'} />
+        <Text style={styles.label}>Nickname</Text>
+        <TextInput style={styles.input} value={nickname} onChangeText={setNickname} placeholder="What the student prefers to be called" placeholderTextColor={Colors.textSecondary + '80'} />
         <Text style={styles.label}>Parent Name *</Text>
         <TextInput style={styles.input} value={parentName} onChangeText={setParentName} placeholder="Parent/Guardian name" placeholderTextColor={Colors.textSecondary + '80'} />
         <Text style={styles.label}>Date of Birth * (YYYY-MM-DD)</Text>

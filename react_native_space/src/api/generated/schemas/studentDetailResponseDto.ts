@@ -9,6 +9,8 @@ import type { RecentAttendanceDto } from './recentAttendanceDto';
 export interface StudentDetailResponseDto {
   id: string;
   name: string;
+  /** @nullable */
+  nickname: string | null;
   parentName: string;
   dob: string;
   age: number;

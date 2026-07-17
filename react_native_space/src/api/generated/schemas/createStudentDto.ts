@@ -2,6 +2,7 @@
 
 export interface CreateStudentDto {
   name: string;
+  nickname?: string;
   parentName: string;
   dob: string;
   contactNumber: string;

@@ -7,6 +7,10 @@ export class UpdateStudentDto {
 
   @IsString()
   @IsOptional()
+  nickname?: string;
+
+  @IsString()
+  @IsOptional()
   parentName?: string;
 
   @IsDateString()

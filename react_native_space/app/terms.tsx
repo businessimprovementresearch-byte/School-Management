@@ -3,7 +3,13 @@ import { View, FlatList, StyleSheet, Pressable } from 'react-native';
 import { Text, TextInput, Button, ActivityIndicator, Portal, Modal, IconButton } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useTermsControllerFindAll, useTermsControllerCreate, useTermsControllerRemove, useAcademicYearsControllerFindAll } from '@/src/api/generated/api';
+import {
+  useTermsControllerFindAll,
+  useTermsControllerCreate,
+  useTermsControllerUpdate,
+  useTermsControllerRemove,
+  useAcademicYearsControllerFindAll,
+} from '@/src/api/generated/api';
 import type { TermListItemDto, AcademicYearListItemDto } from '@/src/api/generated/schemas';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/src/theme';
@@ -15,21 +21,58 @@ export default function TermsScreen() {
   const activeYear = (years ?? []).find((y: AcademicYearListItemDto) => y?.isActive);
   const { data, isLoading, refetch } = useTermsControllerFindAll({ academicYearId: activeYear?.id ?? '' }, { query: { enabled: !!activeYear?.id } });
   const createMutation = useTermsControllerCreate();
+  const updateMutation = useTermsControllerUpdate();
   const removeMutation = useTermsControllerRemove();
+
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null); // null = create mode
   const [name, setName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [error, setError] = useState('');
 
-  const handleCreate = () => {
+  const isEditing = editingId !== null;
+
+  const openCreateModal = () => {
+    setEditingId(null);
+    setName('');
+    setStartDate('');
+    setEndDate('');
+    setError('');
+    setShowModal(true);
+  };
+
+  const openEditModal = (item: TermListItemDto) => {
+    setEditingId(item?.id ?? '');
+    setName(item?.name ?? '');
+    setStartDate(item?.startDate ? item.startDate.split('T')[0] : '');
+    setEndDate(item?.endDate ? item.endDate.split('T')[0] : '');
+    setError('');
+    setShowModal(true);
+  };
+
+  const handleSave = () => {
     setError('');
     if (!name?.trim() || !startDate?.trim() || !endDate?.trim()) { setError('All fields required'); return; }
-    if (!activeYear?.id) { setError('No active academic year'); return; }
-    createMutation.mutate({ data: { name: name.trim(), startDate, endDate, academicYearId: activeYear.id } }, {
-      onSuccess: () => { setShowModal(false); setName(''); setStartDate(''); setEndDate(''); refetch(); },
-      onError: (e) => setError(getErrorMessage(e, 'Failed to create')),
-    });
+
+    if (isEditing && editingId) {
+      updateMutation.mutate(
+        { id: editingId, data: { name: name.trim(), startDate, endDate } },
+        {
+          onSuccess: () => { setShowModal(false); refetch(); },
+          onError: (e) => setError(getErrorMessage(e, 'Failed to update')),
+        },
+      );
+    } else {
+      if (!activeYear?.id) { setError('No active academic year'); return; }
+      createMutation.mutate(
+        { data: { name: name.trim(), startDate, endDate, academicYearId: activeYear.id } },
+        {
+          onSuccess: () => { setShowModal(false); setName(''); setStartDate(''); setEndDate(''); refetch(); },
+          onError: (e) => setError(getErrorMessage(e, 'Failed to create')),
+        },
+      );
+    }
   };
 
   const handleRemove = (id: string) => {
@@ -42,6 +85,7 @@ export default function TermsScreen() {
         <Text style={styles.cardTitle}>{item?.name ?? ''}</Text>
         <Text style={styles.cardSub}>{item?.startDate?.split('T')?.[0] ?? ''} → {item?.endDate?.split('T')?.[0] ?? ''}</Text>
       </View>
+      <IconButton icon="pencil-outline" onPress={() => openEditModal(item)} iconColor={theme.colors.textSecondary} size={20} />
       <IconButton icon="delete-outline" onPress={() => handleRemove(item?.id ?? '')} iconColor={theme.colors.error} size={20} />
     </View>
   );
@@ -51,7 +95,7 @@ export default function TermsScreen() {
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} hitSlop={16}><Ionicons name="arrow-back" size={24} color={theme.colors.text} /></Pressable>
         <Text style={styles.headerTitle}>Terms</Text>
-        <IconButton icon="plus" onPress={() => setShowModal(true)} iconColor={theme.colors.primary} />
+        <IconButton icon="plus" onPress={openCreateModal} iconColor={theme.colors.primary} />
       </View>
       {!activeYear ? <Text style={styles.empty}>No active academic year. Create one first.</Text> : isLoading ? <ActivityIndicator style={{ marginTop: 40 }} color={theme.colors.primary} /> : (
         <FlatList data={data ?? []} renderItem={renderItem} keyExtractor={item => item?.id ?? ''} contentContainerStyle={styles.list}
@@ -59,12 +103,14 @@ export default function TermsScreen() {
       )}
       <Portal>
         <Modal visible={showModal} onDismiss={() => setShowModal(false)} contentContainerStyle={styles.modal}>
-          <Text style={styles.modalTitle}>New Term</Text>
+          <Text style={styles.modalTitle}>{isEditing ? 'Edit Term' : 'New Term'}</Text>
           {!!error && <Text style={styles.error}>{error}</Text>}
           <TextInput label="Name (e.g. Term 1)" value={name} onChangeText={setName} mode="outlined" style={styles.input} outlineColor={theme.colors.border} activeOutlineColor={theme.colors.primary} />
           <TextInput label="Start Date (YYYY-MM-DD)" value={startDate} onChangeText={setStartDate} mode="outlined" style={styles.input} outlineColor={theme.colors.border} activeOutlineColor={theme.colors.primary} />
           <TextInput label="End Date (YYYY-MM-DD)" value={endDate} onChangeText={setEndDate} mode="outlined" style={styles.input} outlineColor={theme.colors.border} activeOutlineColor={theme.colors.primary} />
-          <Button mode="contained" onPress={handleCreate} loading={createMutation?.isPending} style={styles.btn} buttonColor={theme.colors.primary}>Create</Button>
+          <Button mode="contained" onPress={handleSave} loading={createMutation?.isPending || updateMutation?.isPending} style={styles.btn} buttonColor={theme.colors.primary}>
+            {isEditing ? 'Save Changes' : 'Create'}
+          </Button>
         </Modal>
       </Portal>
     </SafeAreaView>

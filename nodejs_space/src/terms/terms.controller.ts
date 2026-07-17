@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { TermsService } from './terms.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateTermDto } from './dto/create-term.dto';
+import { UpdateTermDto } from './dto/update-term.dto';
 import { TermResponseDto, TermListItemDto } from './dto/term-response.dto';
 import { SuccessResponseDto } from '../common/dto/success-response.dto';
 
@@ -23,6 +24,12 @@ export class TermsController {
   @Roles('ADMIN')
   async create(@Body() dto: CreateTermDto): Promise<TermResponseDto> {
     return this.service.create(dto);
+  }
+
+  @Patch(':id')
+  @Roles('ADMIN')
+  async update(@Param('id') id: string, @Body() dto: UpdateTermDto): Promise<TermResponseDto> {
+    return this.service.update(id, dto);
   }
 
   @Delete(':id')

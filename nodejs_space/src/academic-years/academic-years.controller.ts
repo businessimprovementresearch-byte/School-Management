@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AcademicYearsService } from './academic-years.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -7,6 +7,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateAcademicYearDto } from './dto/create-academic-year.dto';
 import { UpdateAcademicYearDto } from './dto/update-academic-year.dto';
 import { AcademicYearResponseDto, AcademicYearListItemDto } from './dto/academic-year-response.dto';
+import { SuccessResponseDto } from '../common/dto/success-response.dto';
 
 @ApiTags('Academic Years')
 @Controller('api/academic-years')
@@ -29,5 +30,11 @@ export class AcademicYearsController {
   @Roles('ADMIN')
   async update(@Param('id') id: string, @Body() dto: UpdateAcademicYearDto): Promise<AcademicYearResponseDto> {
     return this.service.update(id, dto);
+  }
+
+  @Delete(':id')
+  @Roles('ADMIN')
+  async remove(@Param('id') id: string): Promise<SuccessResponseDto> {
+    return this.service.remove(id);
   }
 }

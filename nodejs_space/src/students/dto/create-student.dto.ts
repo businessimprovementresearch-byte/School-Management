@@ -5,6 +5,10 @@ export class CreateStudentDto {
   name: string;
 
   @IsString()
+  @IsOptional()
+  nickname?: string;
+
+  @IsString()
   parentName: string;
 
   @IsDateString()

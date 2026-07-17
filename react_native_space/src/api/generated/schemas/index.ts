@@ -111,6 +111,7 @@ export * from './updateEnrollmentDto';
 export * from './updateEnrollmentResponseDto';
 export * from './updateEventDto';
 export * from './updateStudentDto';
+export * from './updateTermDto';
 export * from './updateTeacherDto';
 export * from './uploadControllerGetFileUrlParams';
 export * from './userInfoDto';
