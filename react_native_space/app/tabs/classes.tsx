@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,6 +22,28 @@ const getUpcomingSunday = () => {
   return d.toISOString().split('T')[0];
 };
 
+// Alert.alert() is a no-op on react-native-web, so confirm/notify need a
+// web fallback or the dialog silently never appears (button "does nothing").
+const confirmAsync = (title: string, message: string): Promise<boolean> => {
+  if (Platform.OS === 'web') {
+    return Promise.resolve(window.confirm(`${title}\n\n${message}`));
+  }
+  return new Promise((resolve) => {
+    Alert.alert(title, message, [
+      { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+      { text: 'Create', onPress: () => resolve(true) },
+    ]);
+  });
+};
+
+const notify = (title: string, message: string) => {
+  if (Platform.OS === 'web') {
+    window.alert(`${title}\n\n${message}`);
+  } else {
+    Alert.alert(title, message);
+  }
+};
+
 export default function ClassesScreen() {
   const router = useRouter();
   const { user } = useAuth();
@@ -34,32 +56,26 @@ export default function ClassesScreen() {
 
   const onRefresh = async () => { setRefreshing(true); await refetch(); setRefreshing(false); };
 
-  const handleBulkCreateSessions = () => {
+  const handleBulkCreateSessions = async () => {
     const sundayDate = getUpcomingSunday();
-    Alert.alert(
+    const confirmed = await confirmAsync(
       'Create Sessions for Sunday',
       `This will create a session for every class on ${sundayDate} (skipping any class that already has one for that date). Continue?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Create',
-          onPress: () => {
-            bulkCreateMutation.mutate(
-              { data: { date: sundayDate } },
-              {
-                onSuccess: (res) => {
-                  Alert.alert(
-                    'Sessions Created',
-                    `${sundayDate}: created ${res?.createdCount ?? 0}, skipped ${res?.skippedCount ?? 0} (already existed), out of ${res?.totalClasses ?? 0} classes.`,
-                  );
-                  refetch();
-                },
-                onError: (e) => Alert.alert('Error', getErrorMessage(e, 'Failed to create sessions')),
-              },
-            );
-          },
+    );
+    if (!confirmed) return;
+
+    bulkCreateMutation.mutate(
+      { data: { date: sundayDate } },
+      {
+        onSuccess: (res) => {
+          notify(
+            'Sessions Created',
+            `${sundayDate}: created ${res?.createdCount ?? 0}, skipped ${res?.skippedCount ?? 0} (already existed), out of ${res?.totalClasses ?? 0} classes.`,
+          );
+          refetch();
         },
-      ],
+        onError: (e) => notify('Error', getErrorMessage(e, 'Failed to create sessions')),
+      },
     );
   };
 
