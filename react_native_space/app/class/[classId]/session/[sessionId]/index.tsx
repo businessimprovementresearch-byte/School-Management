@@ -10,7 +10,7 @@ import Avatar from '@/src/components/Avatar';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { getErrorMessage } from '@/src/api/customFetch';
 
-type AttStatus = 'PRESENT' | 'ABSENT' | 'LATE' | 'EXCUSED';
+type AttStatus = 'PRESENT' | 'ABSENT' | 'UNSURE';
 type TAttStatus = 'PRESENT' | 'ABSENT';
 
 export default function SessionDetailScreen() {
@@ -88,8 +88,7 @@ export default function SessionDetailScreen() {
   const attButtons: { status: AttStatus; icon: string; color: string }[] = [
     { status: 'PRESENT', icon: 'checkmark', color: Colors.present },
     { status: 'ABSENT', icon: 'close', color: Colors.absent },
-    { status: 'LATE', icon: 'time', color: Colors.late },
-    { status: 'EXCUSED', icon: 'document', color: Colors.excused },
+    { status: 'UNSURE', icon: 'help', color: Colors.unsure },
   ];
 
   return (
