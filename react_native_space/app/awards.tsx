@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import {
   useAwardsControllerFindAll,
   useAwardsControllerCreate,
+  useAwardsControllerUpdate,
   useAwardsControllerIssue,
   useAwardsControllerFindIssuances,
   useAwardsControllerRemove,
@@ -26,13 +27,17 @@ export default function AwardsScreen() {
   const awardsQuery = useAwardsControllerFindAll();
   const issuancesQuery = useAwardsControllerFindIssuances();
   const createMutation = useAwardsControllerCreate();
+  const updateMutation = useAwardsControllerUpdate();
   const issueMutation = useAwardsControllerIssue();
   const removeMutation = useAwardsControllerRemove();
 
   const [showCreate, setShowCreate] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null); // null = create mode
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
+
+  const isEditing = editingId !== null;
 
   const [issueFor, setIssueFor] = useState<AwardListItemDto | null>(null);
   const [showPicker, setShowPicker] = useState(false);
@@ -40,13 +45,40 @@ export default function AwardsScreen() {
   const awards = awardsQuery?.data ?? [];
   const issuances = issuancesQuery?.data ?? [];
 
-  const handleCreate = () => {
+  const openCreateModal = () => {
+    setEditingId(null);
+    setName('');
+    setDescription('');
+    setError('');
+    setShowCreate(true);
+  };
+
+  const openEditModal = (a: AwardListItemDto) => {
+    setEditingId(a?.id ?? '');
+    setName(a?.name ?? '');
+    setDescription(a?.description ?? '');
+    setError('');
+    setShowCreate(true);
+  };
+
+  const handleSave = () => {
     setError('');
     if (!name?.trim()) { setError('Award name is required'); return; }
-    createMutation.mutate({ data: { name: name.trim(), description: description || undefined } }, {
-      onSuccess: () => { setShowCreate(false); setName(''); setDescription(''); awardsQuery.refetch(); },
-      onError: (e) => setError(getErrorMessage(e, 'Failed to create award')),
-    });
+
+    if (isEditing && editingId) {
+      updateMutation.mutate(
+        { id: editingId, data: { name: name.trim(), description: description || undefined } },
+        {
+          onSuccess: () => { setShowCreate(false); awardsQuery.refetch(); },
+          onError: (e) => setError(getErrorMessage(e, 'Failed to update award')),
+        },
+      );
+    } else {
+      createMutation.mutate({ data: { name: name.trim(), description: description || undefined } }, {
+        onSuccess: () => { setShowCreate(false); setName(''); setDescription(''); awardsQuery.refetch(); },
+        onError: (e) => setError(getErrorMessage(e, 'Failed to create award')),
+      });
+    }
   };
 
   const handlePick = (p: PickedPerson) => {
@@ -85,9 +117,14 @@ export default function AwardsScreen() {
         <View style={{ alignItems: 'flex-end' }}>
           <Button compact mode="contained" buttonColor={theme.colors.primary} style={styles.issueBtn}
             onPress={() => { setIssueFor(item); setShowPicker(true); }}>Issue</Button>
-          <Pressable onPress={() => confirmRemove(item)} hitSlop={8} style={{ marginTop: 6 }}>
-            <Ionicons name="trash-outline" size={18} color={theme.colors.error} />
-          </Pressable>
+          <View style={{ flexDirection: 'row', gap: 12, marginTop: 6 }}>
+            <Pressable onPress={() => openEditModal(item)} hitSlop={8}>
+              <Ionicons name="pencil-outline" size={18} color={theme.colors.textSecondary} />
+            </Pressable>
+            <Pressable onPress={() => confirmRemove(item)} hitSlop={8}>
+              <Ionicons name="trash-outline" size={18} color={theme.colors.error} />
+            </Pressable>
+          </View>
         </View>
       ) : null}
     </View>
@@ -111,7 +148,7 @@ export default function AwardsScreen() {
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} hitSlop={16}><Ionicons name="arrow-back" size={24} color={theme.colors.text} /></Pressable>
         <Text style={styles.headerTitle}>Awards</Text>
-        {isAdmin ? <IconButton icon="plus" onPress={() => setShowCreate(true)} iconColor={theme.colors.primary} /> : <View style={{ width: 40 }} />}
+        {isAdmin ? <IconButton icon="plus" onPress={openCreateModal} iconColor={theme.colors.primary} /> : <View style={{ width: 40 }} />}
       </View>
 
       <View style={styles.tabs}>
@@ -134,12 +171,14 @@ export default function AwardsScreen() {
       )}
 
       <Portal>
-        <Modal visible={showCreate} onDismiss={() => setShowCreate(false)} contentContainerStyle={styles.modal}>
-          <Text style={styles.modalTitle}>New Award</Text>
+        <Modal visible={showCreate} onDismiss={() => { setShowCreate(false); setEditingId(null); }} contentContainerStyle={styles.modal}>
+          <Text style={styles.modalTitle}>{isEditing ? 'Edit Award' : 'New Award'}</Text>
           {!!error && <Text style={styles.error}>{error}</Text>}
           <TextInput label="Award Name" value={name} onChangeText={setName} mode="outlined" style={styles.input} outlineColor={theme.colors.border} activeOutlineColor={theme.colors.primary} />
           <TextInput label="Description (optional)" value={description} onChangeText={setDescription} mode="outlined" style={styles.input} outlineColor={theme.colors.border} activeOutlineColor={theme.colors.primary} />
-          <Button mode="contained" onPress={handleCreate} loading={createMutation?.isPending} style={styles.btn} buttonColor={theme.colors.primary}>Create Award</Button>
+          <Button mode="contained" onPress={handleSave} loading={createMutation?.isPending || updateMutation?.isPending} style={styles.btn} buttonColor={theme.colors.primary}>
+            {isEditing ? 'Save Changes' : 'Create Award'}
+          </Button>
         </Modal>
       </Portal>
 

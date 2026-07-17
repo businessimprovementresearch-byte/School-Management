@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
-import { CreateAwardDto, IssueAwardDto } from './dto/award.dto';
+import { CreateAwardDto, IssueAwardDto, UpdateAwardDto } from './dto/award.dto';
 
 @Injectable()
 export class AwardsService {
@@ -35,6 +35,19 @@ export class AwardsService {
   async remove(id: string) {
     await this.prisma.award.delete({ where: { id } });
     return { success: true };
+  }
+
+  async update(id: string, dto: UpdateAwardDto) {
+    const a = await this.prisma.award.update({
+      where: { id },
+      data: {
+        ...(dto.name !== undefined ? { name: dto.name } : {}),
+        ...(dto.description !== undefined ? { description: dto.description } : {}),
+        ...(dto.icon !== undefined ? { icon: dto.icon } : {}),
+      },
+      include: { _count: { select: { issuances: true } } },
+    });
+    return { id: a.id, name: a.name, description: a.description, icon: a.icon, issuedCount: a._count.issuances };
   }
 
   async issue(dto: IssueAwardDto) {

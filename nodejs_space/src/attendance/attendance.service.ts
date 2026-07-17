@@ -119,4 +119,47 @@ export class AttendanceService {
       })),
     };
   }
+
+  async getByDate(date: string) {
+    const day = new Date(date);
+    const startOfDay = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, 0, 0);
+    const endOfDay = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 23, 59, 59, 999);
+
+    const classes = await this.prisma.class.findMany({
+      include: {
+        enrollments: { where: { status: 'ACTIVE' } },
+        sessions: {
+          where: { date: { gte: startOfDay, lte: endOfDay } },
+          include: { studentAttendance: true },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    return {
+      date: startOfDay.toISOString(),
+      classes: classes.map((c) => {
+        const session = c.sessions[0];
+        let present = 0;
+        let absent = 0;
+        let unsure = 0;
+        for (const att of session?.studentAttendance ?? []) {
+          if (att.status === 'PRESENT') present++;
+          else if (att.status === 'ABSENT') absent++;
+          else if (att.status === 'UNSURE') unsure++;
+        }
+        return {
+          classId: c.id,
+          className: c.name,
+          grade: c.grade,
+          sessionId: session?.id ?? null,
+          attendanceSubmitted: (session?.studentAttendance.length ?? 0) > 0,
+          totalStudents: c.enrollments.length,
+          present,
+          absent,
+          unsure,
+        };
+      }),
+    };
+  }
 }

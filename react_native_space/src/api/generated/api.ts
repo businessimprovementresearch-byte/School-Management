@@ -29,6 +29,8 @@ import type {
   AlbumListItemDto,
   AlertSettingDto,
   AssignTeacherDto,
+  AttendanceByDateResponseDto,
+  AttendanceControllerGetByDateParams,
   AttendanceControllerGetOverviewParams,
   AttendanceOverviewResponseDto,
   AwardIssuanceDto,
@@ -36,6 +38,8 @@ import type {
   AwardsControllerFindIssuancesParams,
   BulkAttendanceDto,
   BulkAttendanceResponseDto,
+  BulkCreateSessionsDto,
+  BulkCreateSessionsResponseDto,
   CheckAlertsResultDto,
   ClassDetailResponseDto,
   ClassHistoryResponseDto,
@@ -95,6 +99,7 @@ import type {
   UnreadCountDto,
   UpdateAcademicYearDto,
   UpdateAlertSettingDto,
+  UpdateAwardDto,
   UpdateEnrollmentDto,
   UpdateEnrollmentResponseDto,
   UpdateEventDto,
@@ -2054,6 +2059,70 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getSessionsControllerCreateMutationOptions(options), queryClient);
     }
 
+export const getSessionsControllerBulkCreateUrl = () => {
+
+
+
+
+  return `/api/sessions/bulk-create`
+}
+
+export const sessionsControllerBulkCreate = async (bulkCreateSessionsDto: BulkCreateSessionsDto, options?: RequestInit): Promise<BulkCreateSessionsResponseDto> => {
+
+  return customFetch<BulkCreateSessionsResponseDto>(getSessionsControllerBulkCreateUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(bulkCreateSessionsDto)
+  }
+);}
+
+
+
+
+export const getSessionsControllerBulkCreateMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sessionsControllerBulkCreate>>, TError,{data: BodyType<BulkCreateSessionsDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof sessionsControllerBulkCreate>>, TError,{data: BodyType<BulkCreateSessionsDto>}, TContext> => {
+
+const mutationKey = ['sessionsControllerBulkCreate'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sessionsControllerBulkCreate>>, {data: BodyType<BulkCreateSessionsDto>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  sessionsControllerBulkCreate(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SessionsControllerBulkCreateMutationResult = NonNullable<Awaited<ReturnType<typeof sessionsControllerBulkCreate>>>
+    export type SessionsControllerBulkCreateMutationBody = BodyType<BulkCreateSessionsDto>
+    export type SessionsControllerBulkCreateMutationError = ErrorType<unknown>
+
+    export const useSessionsControllerBulkCreate = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sessionsControllerBulkCreate>>, TError,{data: BodyType<BulkCreateSessionsDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof sessionsControllerBulkCreate>>,
+        TError,
+        {data: BodyType<BulkCreateSessionsDto>},
+        TContext
+      > => {
+      return useMutation(getSessionsControllerBulkCreateMutationOptions(options), queryClient);
+    }
+
 export const getSessionsControllerFindOneUrl = (id: string,) => {
 
 
@@ -2276,6 +2345,102 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getAttendanceControllerBulkSaveMutationOptions(options), queryClient);
     }
+
+export const getAttendanceControllerGetByDateUrl = (params: AttendanceControllerGetByDateParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/attendance/by-date?${stringifiedParams}` : `/api/attendance/by-date`
+}
+
+export const attendanceControllerGetByDate = async (params: AttendanceControllerGetByDateParams, options?: RequestInit): Promise<AttendanceByDateResponseDto> => {
+
+  return customFetch<AttendanceByDateResponseDto>(getAttendanceControllerGetByDateUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getAttendanceControllerGetByDateQueryKey = (params?: AttendanceControllerGetByDateParams,) => {
+    return [
+    `/api/attendance/by-date`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getAttendanceControllerGetByDateQueryOptions = <TData = Awaited<ReturnType<typeof attendanceControllerGetByDate>>, TError = ErrorType<unknown>>(params: AttendanceControllerGetByDateParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof attendanceControllerGetByDate>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAttendanceControllerGetByDateQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof attendanceControllerGetByDate>>> = ({ signal }) => attendanceControllerGetByDate(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof attendanceControllerGetByDate>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AttendanceControllerGetByDateQueryResult = NonNullable<Awaited<ReturnType<typeof attendanceControllerGetByDate>>>
+export type AttendanceControllerGetByDateQueryError = ErrorType<unknown>
+
+
+export function useAttendanceControllerGetByDate<TData = Awaited<ReturnType<typeof attendanceControllerGetByDate>>, TError = ErrorType<unknown>>(
+ params: AttendanceControllerGetByDateParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof attendanceControllerGetByDate>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof attendanceControllerGetByDate>>,
+          TError,
+          Awaited<ReturnType<typeof attendanceControllerGetByDate>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAttendanceControllerGetByDate<TData = Awaited<ReturnType<typeof attendanceControllerGetByDate>>, TError = ErrorType<unknown>>(
+ params: AttendanceControllerGetByDateParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof attendanceControllerGetByDate>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof attendanceControllerGetByDate>>,
+          TError,
+          Awaited<ReturnType<typeof attendanceControllerGetByDate>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAttendanceControllerGetByDate<TData = Awaited<ReturnType<typeof attendanceControllerGetByDate>>, TError = ErrorType<unknown>>(
+ params: AttendanceControllerGetByDateParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof attendanceControllerGetByDate>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useAttendanceControllerGetByDate<TData = Awaited<ReturnType<typeof attendanceControllerGetByDate>>, TError = ErrorType<unknown>>(
+ params: AttendanceControllerGetByDateParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof attendanceControllerGetByDate>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAttendanceControllerGetByDateQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 export const getAttendanceControllerGetOverviewUrl = (params: AttendanceControllerGetOverviewParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -4742,6 +4907,71 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getAwardsControllerRemoveMutationOptions(options), queryClient);
+    }
+
+export const getAwardsControllerUpdateUrl = (id: string,) => {
+
+
+
+
+  return `/api/awards/${id}`
+}
+
+export const awardsControllerUpdate = async (id: string,
+    updateAwardDto: UpdateAwardDto, options?: RequestInit): Promise<AwardListItemDto> => {
+
+  return customFetch<AwardListItemDto>(getAwardsControllerUpdateUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateAwardDto)
+  }
+);}
+
+
+
+
+export const getAwardsControllerUpdateMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof awardsControllerUpdate>>, TError,{id: string;data: BodyType<UpdateAwardDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof awardsControllerUpdate>>, TError,{id: string;data: BodyType<UpdateAwardDto>}, TContext> => {
+
+const mutationKey = ['awardsControllerUpdate'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof awardsControllerUpdate>>, {id: string;data: BodyType<UpdateAwardDto>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  awardsControllerUpdate(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AwardsControllerUpdateMutationResult = NonNullable<Awaited<ReturnType<typeof awardsControllerUpdate>>>
+    export type AwardsControllerUpdateMutationBody = BodyType<UpdateAwardDto>
+    export type AwardsControllerUpdateMutationError = ErrorType<unknown>
+
+    export const useAwardsControllerUpdate = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof awardsControllerUpdate>>, TError,{id: string;data: BodyType<UpdateAwardDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof awardsControllerUpdate>>,
+        TError,
+        {id: string;data: BodyType<UpdateAwardDto>},
+        TContext
+      > => {
+      return useMutation(getAwardsControllerUpdateMutationOptions(options), queryClient);
     }
 
 export const getAwardsControllerIssueUrl = () => {

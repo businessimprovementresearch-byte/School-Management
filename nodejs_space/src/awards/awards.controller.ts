@@ -1,10 +1,10 @@
-import { Controller, Get, Post, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AwardsService } from './awards.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { CreateAwardDto, IssueAwardDto, AwardListItemDto, AwardIssuanceDto } from './dto/award.dto';
+import { CreateAwardDto, IssueAwardDto, UpdateAwardDto, AwardListItemDto, AwardIssuanceDto } from './dto/award.dto';
 import { SuccessResponseDto } from '../common/dto/success-response.dto';
 
 @ApiTags('Awards')
@@ -36,6 +36,12 @@ export class AwardsController {
   @Roles('ADMIN')
   async remove(@Param('id') id: string): Promise<SuccessResponseDto> {
     return this.service.remove(id);
+  }
+
+  @Patch(':id')
+  @Roles('ADMIN')
+  async update(@Param('id') id: string, @Body() dto: UpdateAwardDto): Promise<AwardListItemDto> {
+    return this.service.update(id, dto);
   }
 
   @Post('issue')

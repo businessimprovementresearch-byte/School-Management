@@ -27,3 +27,20 @@ export class AttendanceOverviewResponseDto {
   @ApiProperty({ type: () => ClassSummaryDto }) classSummary: ClassSummaryDto;
   @ApiProperty({ type: () => [StudentBreakdownDto] }) studentBreakdown: StudentBreakdownDto[];
 }
+
+export class ClassAttendanceByDateDto {
+  @ApiProperty() classId: string;
+  @ApiProperty() className: string;
+  @ApiProperty() grade: string;
+  @ApiProperty({ nullable: true }) sessionId: string | null;
+  @ApiProperty() attendanceSubmitted: boolean;
+  @ApiProperty() totalStudents: number;
+  @ApiProperty() present: number;
+  @ApiProperty() absent: number;
+  @ApiProperty() unsure: number;
+}
+
+export class AttendanceByDateResponseDto {
+  @ApiProperty() date: string;
+  @ApiProperty({ type: () => [ClassAttendanceByDateDto] }) classes: ClassAttendanceByDateDto[];
+}

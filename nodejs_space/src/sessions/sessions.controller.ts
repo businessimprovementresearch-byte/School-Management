@@ -5,7 +5,9 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateSessionDto } from './dto/create-session.dto';
+import { BulkCreateSessionsDto } from './dto/bulk-create-sessions.dto';
 import { SessionDetailResponseDto } from './dto/session-detail-response.dto';
+import { BulkCreateSessionsResponseDto } from './dto/bulk-create-sessions-response.dto';
 import { SuccessResponseDto } from '../common/dto/success-response.dto';
 
 @ApiTags('Sessions')
@@ -17,6 +19,12 @@ export class SessionsController {
   @Post()
   async create(@Body() dto: CreateSessionDto): Promise<SessionDetailResponseDto> {
     return this.sessionsService.create(dto.classId, dto.date, dto.academicYearId, dto.termId);
+  }
+
+  @Post('bulk-create')
+  @Roles('ADMIN')
+  async bulkCreate(@Body() dto: BulkCreateSessionsDto): Promise<BulkCreateSessionsResponseDto> {
+    return this.sessionsService.bulkCreateForDate(dto.date, dto.academicYearId, dto.termId);
   }
 
   @Get(':id')

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
 
@@ -89,5 +89,57 @@ export class SessionsService {
   async remove(id: string) {
     await this.prisma.classSession.delete({ where: { id } });
     return { success: true };
+  }
+
+  async bulkCreateForDate(date: string, academicYearId?: string, termId?: string) {
+    const day = new Date(date);
+    const startOfDay = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, 0, 0);
+    const endOfDay = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 23, 59, 59, 999);
+
+    let yearId = academicYearId;
+    if (!yearId) {
+      const activeYear = await this.prisma.academicYear.findFirst({ where: { isActive: true } });
+      if (!activeYear) {
+        throw new BadRequestException('No active academic year found; specify academicYearId');
+      }
+      yearId = activeYear.id;
+    }
+
+    const classes = await this.prisma.class.findMany({
+      include: {
+        sessions: { where: { date: { gte: startOfDay, lte: endOfDay } } },
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    const createdClassNames: string[] = [];
+    const skippedClassNames: string[] = [];
+
+    for (const cls of classes) {
+      // Skip if a session already exists for this class on this date (idempotent — safe to click repeatedly)
+      if (cls.sessions.length > 0) {
+        skippedClassNames.push(cls.name);
+        continue;
+      }
+      await this.prisma.classSession.create({
+        data: {
+          classId: cls.id,
+          date: startOfDay,
+          academicYearId: yearId,
+          termId: termId ?? null,
+        },
+      });
+      createdClassNames.push(cls.name);
+    }
+
+    return {
+      success: true,
+      date: startOfDay.toISOString(),
+      totalClasses: classes.length,
+      createdCount: createdClassNames.length,
+      skippedCount: skippedClassNames.length,
+      createdClassNames,
+      skippedClassNames,
+    };
   }
 }

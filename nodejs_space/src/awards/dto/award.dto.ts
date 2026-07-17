@@ -7,6 +7,12 @@ export class CreateAwardDto {
   @IsString() @IsOptional() icon?: string;
 }
 
+export class UpdateAwardDto {
+  @IsString() @IsOptional() name?: string;
+  @IsString() @IsOptional() description?: string;
+  @IsString() @IsOptional() icon?: string;
+}
+
 export class IssueAwardDto {
   @IsString() awardId: string;
   @IsString() @IsOptional() studentId?: string;

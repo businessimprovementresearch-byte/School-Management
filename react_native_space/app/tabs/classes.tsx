@@ -1,23 +1,67 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius } from '@/src/theme';
-import { useClassesControllerFindAll } from '@/src/api/generated/api';
+import { useClassesControllerFindAll, useSessionsControllerBulkCreate } from '@/src/api/generated/api';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { useFocusEffect } from 'expo-router';
+import { useAuth } from '@/src/context/AuthContext';
+import { getErrorMessage } from '@/src/api/customFetch';
 
 const gradeOrder = ['Nursery', '1', '2', '3', '4', '5', '6', 'Special'];
 
+// Returns the date (YYYY-MM-DD) of the upcoming Sunday. If today is already
+// Sunday, returns today's date.
+const getUpcomingSunday = () => {
+  const d = new Date();
+  const day = d.getDay(); // 0 = Sunday
+  const diff = day === 0 ? 0 : 7 - day;
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().split('T')[0];
+};
+
 export default function ClassesScreen() {
   const router = useRouter();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
   const { data, isLoading, refetch } = useClassesControllerFindAll();
   const [refreshing, setRefreshing] = useState(false);
+  const bulkCreateMutation = useSessionsControllerBulkCreate();
 
   useFocusEffect(useCallback(() => { refetch(); }, []));
 
   const onRefresh = async () => { setRefreshing(true); await refetch(); setRefreshing(false); };
+
+  const handleBulkCreateSessions = () => {
+    const sundayDate = getUpcomingSunday();
+    Alert.alert(
+      'Create Sessions for Sunday',
+      `This will create a session for every class on ${sundayDate} (skipping any class that already has one for that date). Continue?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Create',
+          onPress: () => {
+            bulkCreateMutation.mutate(
+              { data: { date: sundayDate } },
+              {
+                onSuccess: (res) => {
+                  Alert.alert(
+                    'Sessions Created',
+                    `${sundayDate}: created ${res?.createdCount ?? 0}, skipped ${res?.skippedCount ?? 0} (already existed), out of ${res?.totalClasses ?? 0} classes.`,
+                  );
+                  refetch();
+                },
+                onError: (e) => Alert.alert('Error', getErrorMessage(e, 'Failed to create sessions')),
+              },
+            );
+          },
+        },
+      ],
+    );
+  };
 
   if (isLoading || !data) return <LoadingScreen />;
 
@@ -31,6 +75,12 @@ export default function ClassesScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.title}>Classes</Text>
+        {isAdmin ? (
+          <Pressable style={styles.bulkBtn} onPress={handleBulkCreateSessions} disabled={bulkCreateMutation.isPending}>
+            <Ionicons name="calendar" size={16} color={Colors.primary} />
+            <Text style={styles.bulkBtnText}>{bulkCreateMutation.isPending ? 'Creating...' : 'Create Sessions (Sun)'}</Text>
+          </Pressable>
+        ) : null}
       </View>
       <ScrollView
         contentContainerStyle={styles.content}
@@ -69,7 +119,9 @@ export default function ClassesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  header: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.md, paddingBottom: Spacing.sm },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.lg, paddingTop: Spacing.md, paddingBottom: Spacing.sm },
+  bulkBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: Colors.primary + '14', paddingHorizontal: Spacing.md, paddingVertical: 8, borderRadius: BorderRadius.full },
+  bulkBtnText: { fontSize: 12, fontWeight: '700', color: Colors.primary },
   title: { fontSize: 24, fontWeight: '700', color: Colors.textPrimary },
   content: { padding: Spacing.lg },
   section: { marginBottom: Spacing.xl },

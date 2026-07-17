@@ -4,7 +4,7 @@ import { AttendanceService } from './attendance.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { BulkAttendanceDto } from './dto/bulk-attendance.dto';
 import { BulkAttendanceResponseDto } from './dto/bulk-attendance-response.dto';
-import { AttendanceOverviewResponseDto } from './dto/attendance-overview-response.dto';
+import { AttendanceOverviewResponseDto, AttendanceByDateResponseDto } from './dto/attendance-overview-response.dto';
 
 @ApiTags('Attendance')
 @Controller('api/attendance')
@@ -15,6 +15,11 @@ export class AttendanceController {
   @Post('bulk')
   async bulkSave(@Body() dto: BulkAttendanceDto): Promise<BulkAttendanceResponseDto> {
     return this.attendanceService.bulkSave(dto.sessionId, dto.studentAttendance, dto.teacherAttendance);
+  }
+
+  @Get('by-date')
+  async getByDate(@Query('date') date: string): Promise<AttendanceByDateResponseDto> {
+    return this.attendanceService.getByDate(date);
   }
 
   @Get('overview')
