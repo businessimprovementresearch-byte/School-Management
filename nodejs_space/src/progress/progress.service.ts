@@ -74,27 +74,4 @@ export class ProgressService {
 
     return { years };
   }
-
-  const metricMap = new Map<string, any>();
-  for(const e of entries) {
-    const mid = e.progressMetricId;
-    if (!metricMap.has(mid)) {
-      metricMap.set(mid, {
-        metricId: mid,
-        metricName: e.progressMetric.name,
-        metricType: e.progressMetric.type,
-        entries: [],
-      });
-    }
-    metricMap.get(mid).entries.push({
-      id: e.id,
-      date: e.classSession.date.toISOString(),
-      sessionId: e.classSessionId,
-      value: e.value,
-      notes: e.notes,
-    });
-  }
-
-    return { metrics: Array.from(metricMap.values()) };
-  }
 }
