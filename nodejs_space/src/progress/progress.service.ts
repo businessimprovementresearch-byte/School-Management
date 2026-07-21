@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  ProgressYearGroupDto,
+  ProgressMetricListDto,
+} from './dto/progress-list-response.dto';
 
 @Injectable()
 export class ProgressService {
@@ -62,15 +66,15 @@ export class ProgressService {
       });
     }
 
-    const years = Array.from(yearMap.values())
-      .sort((a, b) => b.startDate.getTime() - a.startDate.getTime())
-      .map((y) => ({
-        academicYearId: y.academicYearId,
-        academicYearName: y.academicYearName,
-        classes: Array.from(y.classes.values() as any).map((c: any) => ({
-          classId: c.classId, className: c.className, metrics: Array.from(c.metrics.values()),
-        })),
-      }));
+    const years: ProgressYearGroupDto[] = Array.from(yearMap.values()).map((y: any) => ({
+      academicYearId: y.academicYearId,
+      academicYearName: y.academicYearName,
+      classes: Array.from(y.classes.values()).map((c: any) => ({
+        classId: c.classId,
+        className: c.className,
+        metrics: Array.from(c.metrics.values()) as ProgressMetricListDto[],
+      })),
+    }));
 
     return { years };
   }
