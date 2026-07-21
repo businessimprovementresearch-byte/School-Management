@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
+import { sortByGrade } from '../common/grade-order';
+import { requireAcademicYearId } from '../common/active-academic-year';
 
 @Injectable()
 export class ClassesService {
@@ -11,17 +13,23 @@ export class ClassesService {
 
   async findAll(teacherClassIds?: string[]) {
     const where = teacherClassIds ? { id: { in: teacherClassIds } } : {};
+    const activeYearId = await requireAcademicYearId(this.prisma).catch(() => null);
     const classes = await this.prisma.class.findMany({
       where,
       include: {
-        enrollments: { where: { status: 'ACTIVE' } },
-        assignments: { include: { teacher: true } },
+        enrollments: activeYearId
+          ? { where: { status: 'ACTIVE', academicYearId: activeYearId } }
+          : { where: { status: 'ACTIVE' } },
+        assignments: {
+          include: { teacher: true },
+          ...(activeYearId ? { where: { academicYearId: activeYearId } } : {}),
+        },
         sessions: { orderBy: { date: 'desc' }, take: 1 },
       },
       orderBy: { name: 'asc' },
     });
 
-    return Promise.all(
+    const mapped = await Promise.all(
       classes.map(async (c) => ({
         id: c.id,
         name: c.name,
@@ -39,14 +47,22 @@ export class ClassesService {
         nextSessionDate: c.sessions?.[0]?.date?.toISOString() ?? null,
       })),
     );
+    return sortByGrade(mapped);
   }
 
   async findOne(id: string) {
+    const activeYearId = await requireAcademicYearId(this.prisma).catch(() => null);
     const cls = await this.prisma.class.findUnique({
       where: { id },
       include: {
-        assignments: { include: { teacher: true } },
-        enrollments: { include: { student: true } },
+        assignments: {
+          include: { teacher: true },
+          ...(activeYearId ? { where: { academicYearId: activeYearId } } : {}),
+        },
+        enrollments: {
+          include: { student: true },
+          ...(activeYearId ? { where: { academicYearId: activeYearId } } : {}),
+        },
         sessions: {
           include: {
             studentAttendance: true,
@@ -97,15 +113,17 @@ export class ClassesService {
     };
   }
 
-  async assignTeacher(classId: string, teacherId: string) {
+  async assignTeacher(classId: string, teacherId: string, academicYearId?: string) {
+    const yearId = await requireAcademicYearId(this.prisma, academicYearId);
     const assignment = await this.prisma.teacherAssignment.create({
-      data: { classId, teacherId },
+      data: { classId, teacherId, academicYearId: yearId },
     });
-    return { id: assignment.id, classId: assignment.classId, teacherId: assignment.teacherId };
+    return { id: assignment.id, classId: assignment.classId, teacherId: assignment.teacherId, academicYearId: assignment.academicYearId };
   }
 
-  async removeTeacher(classId: string, teacherId: string) {
-    await this.prisma.teacherAssignment.deleteMany({ where: { classId, teacherId } });
+  async removeTeacher(classId: string, teacherId: string, academicYearId?: string) {
+    const yearId = await requireAcademicYearId(this.prisma, academicYearId);
+    await this.prisma.teacherAssignment.deleteMany({ where: { classId, teacherId, academicYearId: yearId } });
     return { success: true };
   }
 }

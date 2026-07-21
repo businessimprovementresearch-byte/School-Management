@@ -127,14 +127,16 @@ model ClassEnrollment {
   id             String           @id @default(uuid())
   studentId      String
   classId        String
+  academicYearId String
   enrollmentDate DateTime         @default(now())
   status         EnrollmentStatus @default(ACTIVE)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   student        Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
   class          Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
+  academicYear   AcademicYear     @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
 
-  @@unique([studentId, classId])
+  @@unique([studentId, classId, academicYearId])
   @@map("class_enrollments")
 }
 
@@ -142,11 +144,13 @@ model TeacherAssignment {
   id        String   @id @default(uuid())
   teacherId String
   classId   String
+  academicYearId String
   createdAt DateTime @default(now())
   teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
 
-  @@unique([teacherId, classId])
+  @@unique([teacherId, classId, academicYearId])
   @@map("teacher_assignments")
 }
 
@@ -162,6 +166,8 @@ model AcademicYear {
   sessions  ClassSession[]
   reportCards ReportCard[]
   history   StudentClassHistory[]
+  enrollments ClassEnrollment[]
+  teacherAssignments TeacherAssignment[]
 
   @@map("academic_years")
 }
@@ -444,3 +450,4 @@ model Notification {
   @@index([teacherId, read])
   @@map("notifications")
 }
+

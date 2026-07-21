@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class AcademicYearsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async findAll() {
     const years = await this.prisma.academicYear.findMany({ orderBy: { startDate: 'desc' } });
@@ -77,5 +77,49 @@ export class AcademicYearsService {
 
     await this.prisma.academicYear.delete({ where: { id } });
     return { success: true };
+  }
+
+  async rollover(
+    toAcademicYearId: string,
+    data: { fromAcademicYearId?: string; excludeStudentIds?: string[]; excludeTeacherIds?: string[] },
+  ) {
+    const toYear = await this.prisma.academicYear.findUnique({ where: { id: toAcademicYearId } });
+    if (!toYear) throw new NotFoundException('Target academic year not found');
+
+    const fromYearId = data.fromAcademicYearId ?? (await this.prisma.academicYear.findFirst({ where: { isActive: true } }))?.id;
+    if (!fromYearId) throw new ConflictException('No source academic year to roll over from.');
+    if (fromYearId === toAcademicYearId) throw new ConflictException('Source and target academic year must be different.');
+
+    const excludeStudents = new Set(data.excludeStudentIds ?? []);
+    const excludeTeachers = new Set(data.excludeTeacherIds ?? []);
+
+    const [enrollments, assignments] = await Promise.all([
+      this.prisma.classEnrollment.findMany({ where: { academicYearId: fromYearId, status: 'ACTIVE' } }),
+      this.prisma.teacherAssignment.findMany({ where: { academicYearId: fromYearId } }),
+    ]);
+
+    let studentsEnrolled = 0, studentsArchived = 0;
+    for (const e of enrollments) {
+      if (excludeStudents.has(e.studentId)) { studentsArchived++; continue; }
+      await this.prisma.classEnrollment.upsert({
+        where: { studentId_classId_academicYearId: { studentId: e.studentId, classId: e.classId, academicYearId: toAcademicYearId } },
+        create: { studentId: e.studentId, classId: e.classId, academicYearId: toAcademicYearId },
+        update: {},
+      });
+      studentsEnrolled++;
+    }
+
+    let teachersAssigned = 0, teachersArchived = 0;
+    for (const a of assignments) {
+      if (excludeTeachers.has(a.teacherId)) { teachersArchived++; continue; }
+      await this.prisma.teacherAssignment.upsert({
+        where: { teacherId_classId_academicYearId: { teacherId: a.teacherId, classId: a.classId, academicYearId: toAcademicYearId } },
+        create: { teacherId: a.teacherId, classId: a.classId, academicYearId: toAcademicYearId },
+        update: {},
+      });
+      teachersAssigned++;
+    }
+
+    return { fromAcademicYearId: fromYearId, toAcademicYearId, studentsEnrolled, studentsArchived, teachersAssigned, teachersArchived };
   }
 }

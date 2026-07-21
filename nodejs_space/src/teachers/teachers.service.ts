@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
 import * as bcrypt from 'bcryptjs';
 import { UserRole } from '@prisma/client';
+import { requireAcademicYearId } from '../common/active-academic-year';
 
 @Injectable()
 export class TeachersService {
@@ -51,7 +52,7 @@ export class TeachersService {
       where: { id },
       include: {
         user: true,
-        assignments: { include: { class: true } },
+        assignments: { include: { class: true, academicYear: true } },
         attendance: { include: { classSession: true } },
       },
     });
@@ -60,6 +61,17 @@ export class TeachersService {
     const totalSessions = teacher.attendance.length;
     const present = teacher.attendance.filter((a) => a.status === 'PRESENT').length;
     const absent = teacher.attendance.filter((a) => a.status === 'ABSENT').length;
+    const yearMap = new Map<string, { academicYearId: string; academicYearName: string; startDate: Date; classes: any[] }>();
+    for (const a of teacher.assignments) {
+      const yearId = a.academicYearId;
+      if (!yearMap.has(yearId)) {
+        yearMap.set(yearId, { academicYearId: yearId, academicYearName: a.academicYear.name, startDate: a.academicYear.startDate, classes: [] });
+      }
+      yearMap.get(yearId)!.classes.push({ id: a.class.id, name: a.class.name, grade: a.class.grade });
+    }
+    const teachingHistory = Array.from(yearMap.values())
+      .sort((a, b) => b.startDate.getTime() - a.startDate.getTime())
+      .map((y) => ({ academicYearId: y.academicYearId, academicYearName: y.academicYearName, classes: y.classes }));
 
     return {
       id: teacher.id,
@@ -75,6 +87,7 @@ export class TeachersService {
         name: a.class.name,
         grade: a.class.grade,
       })),
+      teachingHistory,
       attendanceSummary: {
         totalSessions,
         present,
@@ -103,6 +116,7 @@ export class TeachersService {
         role: UserRole.TEACHER,
       },
     });
+    const academicYearId = data.classIds?.length ? await requireAcademicYearId(this.prisma) : undefined;
     const teacher = await this.prisma.teacher.create({
       data: {
         userId: user.id,
@@ -111,7 +125,7 @@ export class TeachersService {
         contactNumber: data.contactNumber,
         photoFileId: data.photoFileId ?? null,
         assignments: data.classIds?.length
-          ? { create: data.classIds.map((cid) => ({ classId: cid })) }
+          ? { create: data.classIds.map((cid) => ({ classId: cid, academicYearId: academicYearId! })) }
           : undefined,
       },
     });

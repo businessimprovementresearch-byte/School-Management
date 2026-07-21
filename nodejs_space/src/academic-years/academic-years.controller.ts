@@ -8,6 +8,7 @@ import { CreateAcademicYearDto } from './dto/create-academic-year.dto';
 import { UpdateAcademicYearDto } from './dto/update-academic-year.dto';
 import { AcademicYearResponseDto, AcademicYearListItemDto } from './dto/academic-year-response.dto';
 import { SuccessResponseDto } from '../common/dto/success-response.dto';
+import { RolloverAcademicYearDto } from './dto/rollover-academic-year.dto';
 
 @ApiTags('Academic Years')
 @Controller('api/academic-years')
@@ -36,5 +37,11 @@ export class AcademicYearsController {
   @Roles('ADMIN')
   async remove(@Param('id') id: string): Promise<SuccessResponseDto> {
     return this.service.remove(id);
+  }
+
+  @Post(':id/rollover')
+  @Roles('ADMIN')
+  async rollover(@Param('id') id: string, @Body() dto: RolloverAcademicYearDto) {
+    return this.service.rollover(id, dto);
   }
 }

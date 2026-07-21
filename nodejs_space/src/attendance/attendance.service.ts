@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { gradeRank } from '../common/grade-order';
 
 @Injectable()
 export class AttendanceService {
@@ -138,7 +139,8 @@ export class AttendanceService {
 
     return {
       date: startOfDay.toISOString(),
-      classes: classes.map((c) => {
+      classes: classes
+        .map((c) => {
         const session = c.sessions[0];
         let present = 0;
         let absent = 0;
@@ -159,7 +161,8 @@ export class AttendanceService {
           absent,
           unsure,
         };
-      }),
+      })
+      .sort((a, b) => gradeRank(a.grade) - gradeRank(b.grade) || a.className.localeCompare(b.className)),
     };
   }
 }

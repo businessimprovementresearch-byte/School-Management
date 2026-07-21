@@ -46,7 +46,7 @@ export class ClassesController {
     @Param('classId') classId: string,
     @Body() dto: AssignTeacherDto,
   ): Promise<TeacherAssignmentResponseDto> {
-    return this.classesService.assignTeacher(classId, dto.teacherId);
+    return this.classesService.assignTeacher(classId, dto.teacherId, dto.academicYearId);
   }
 
   @Delete(':classId/teachers/:teacherId')

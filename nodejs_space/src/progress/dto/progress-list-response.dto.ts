@@ -15,6 +15,18 @@ export class ProgressMetricListDto {
   @ApiProperty({ type: () => [ProgressEntryItemDto] }) entries: ProgressEntryItemDto[];
 }
 
-export class ProgressListResponseDto {
+export class ProgressClassGroupDto {
+  @ApiProperty() classId: string;
+  @ApiProperty() className: string;
   @ApiProperty({ type: () => [ProgressMetricListDto] }) metrics: ProgressMetricListDto[];
+}
+
+export class ProgressYearGroupDto {
+  @ApiProperty() academicYearId: string;
+  @ApiProperty() academicYearName: string;
+  @ApiProperty({ type: () => [ProgressClassGroupDto] }) classes: ProgressClassGroupDto[];
+}
+
+export class ProgressListResponseDto {
+  @ApiProperty({ type: () => [ProgressYearGroupDto] }) years: ProgressYearGroupDto[];
 }

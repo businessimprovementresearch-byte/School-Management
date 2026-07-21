@@ -18,10 +18,7 @@ export class ProgressController {
   }
 
   @Get()
-  async findByStudent(
-    @Query('studentId') studentId: string,
-    @Query('classId') classId?: string,
-  ): Promise<ProgressListResponseDto> {
-    return this.progressService.findByStudentAndClass(studentId, classId);
+  async findByStudent(@Query('studentId') studentId: string): Promise<ProgressListResponseDto> {
+    return this.progressService.findByStudent(studentId);
   }
 }

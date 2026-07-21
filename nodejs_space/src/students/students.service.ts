@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
 import { Prisma } from '@prisma/client';
+import { requireAcademicYearId } from '../common/active-academic-year';
 
 @Injectable()
 export class StudentsService {
@@ -84,7 +85,7 @@ export class StudentsService {
     const student = await this.prisma.student.findUnique({
       where: { id },
       include: {
-        enrollments: { include: { class: true } },
+        enrollments: { include: { class: true, academicYear: true }, orderBy: { academicYear: { startDate: 'desc' } } },
         attendance: {
           include: { classSession: { include: { class: true } } },
           orderBy: { classSession: { date: 'desc' } },
@@ -169,6 +170,8 @@ export class StudentsService {
         classId: e.classId,
         className: e.class.name,
         classGrade: e.class.grade,
+        academicYearId: e.academicYearId,
+        academicYearName: e.academicYear.name,
         enrollmentDate: e.enrollmentDate.toISOString(),
         status: e.status,
       })),
@@ -225,6 +228,9 @@ export class StudentsService {
     photoFileId?: string | null;
     classIds?: string[];
   }) {
+    const academicYearId = data.classIds?.length
+      ? await requireAcademicYearId(this.prisma)
+      : undefined;
     const student = await this.prisma.student.create({
       data: {
         name: data.name,
@@ -234,7 +240,7 @@ export class StudentsService {
         contactNumber: data.contactNumber,
         photoFileId: data.photoFileId ?? null,
         enrollments: data.classIds?.length
-          ? { create: data.classIds.map((cid) => ({ classId: cid })) }
+          ? { create: data.classIds.map((cid) => ({ classId: cid, academicYearId: academicYearId! })) }
           : undefined,
       },
     });
@@ -272,14 +278,16 @@ export class StudentsService {
   }
 
   // Enrollments
-  async addEnrollment(studentId: string, classId: string) {
+  async addEnrollment(studentId: string, classId: string, academicYearId?: string) {
+    const yearId = await requireAcademicYearId(this.prisma, academicYearId);
     const enrollment = await this.prisma.classEnrollment.create({
-      data: { studentId, classId },
+      data: { studentId, classId, academicYearId: yearId },
     });
     return {
       id: enrollment.id,
       studentId: enrollment.studentId,
       classId: enrollment.classId,
+      academicYearId: enrollment.academicYearId,
       enrollmentDate: enrollment.enrollmentDate.toISOString(),
       status: enrollment.status,
     };

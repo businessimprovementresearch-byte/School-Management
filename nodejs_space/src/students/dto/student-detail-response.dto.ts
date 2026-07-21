@@ -5,6 +5,8 @@ export class EnrollmentInfoDto {
   @ApiProperty() classId: string;
   @ApiProperty() className: string;
   @ApiProperty() classGrade: string;
+  @ApiProperty() academicYearId: string;
+  @ApiProperty() academicYearName: string;
   @ApiProperty() enrollmentDate: string;
   @ApiProperty() status: string;
 }

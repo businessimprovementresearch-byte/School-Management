@@ -8,6 +8,12 @@ export class TeacherAttendanceSummaryDto {
   @ApiProperty() percentage: number;
 }
 
+export class TeachingHistoryYearDto {
+    @ApiProperty() academicYearId: string;
+    @ApiProperty() academicYearName: string;
+    @ApiProperty({ type: () => [TeacherClassDto] }) classes: TeacherClassDto[];
+  }
+
 export class TeacherDetailResponseDto {
   @ApiProperty() id: string;
   @ApiProperty() userId: string;
@@ -18,6 +24,7 @@ export class TeacherDetailResponseDto {
   @ApiProperty({ nullable: true, type: String }) photoFileId: string | null;
   @ApiProperty({ nullable: true, type: String }) photoUrl: string | null;
   @ApiProperty({ type: () => [TeacherClassDto] }) assignedClasses: TeacherClassDto[];
+  @ApiProperty({ type: () => [TeachingHistoryYearDto] }) teachingHistory: TeachingHistoryYearDto[];
   @ApiProperty({ type: () => TeacherAttendanceSummaryDto }) attendanceSummary: TeacherAttendanceSummaryDto;
   @ApiProperty() createdAt: string;
 }

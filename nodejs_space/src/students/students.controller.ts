@@ -82,7 +82,7 @@ export class StudentsController {
     @Param('studentId') studentId: string,
     @Body() dto: AddEnrollmentDto,
   ): Promise<EnrollmentResponseDto> {
-    return this.studentsService.addEnrollment(studentId, dto.classId);
+    return this.studentsService.addEnrollment(studentId, dto.classId, dto.academicYearId);
   }
 
   @Patch('enrollments/:id')
