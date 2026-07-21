@@ -293,12 +293,23 @@ export class StudentsService {
     };
   }
 
-  async updateEnrollment(enrollmentId: string, status: string) {
+  async updateEnrollment(enrollmentId: string, data: { status?: string; classId?: string }) {
     const enrollment = await this.prisma.classEnrollment.update({
       where: { id: enrollmentId },
-      data: { status: status as any },
+      data: {
+        ...(data.status ? { status: data.status as any } : {}),
+        ...(data.classId ? { classId: data.classId } : {}),
+      },
+      include: { class: true, academicYear: true },
     });
-    return { id: enrollment.id, status: enrollment.status };
+    return {
+      id: enrollment.id,
+      status: enrollment.status,
+      classId: enrollment.classId,
+      className: enrollment.class.name,
+      academicYearId: enrollment.academicYearId,
+      academicYearName: enrollment.academicYear.name,
+    };
   }
 
   async deleteEnrollment(enrollmentId: string) {

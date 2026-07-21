@@ -91,7 +91,7 @@ export class StudentsController {
     @Param('id') id: string,
     @Body() dto: UpdateEnrollmentDto,
   ): Promise<UpdateEnrollmentResponseDto> {
-    return this.studentsService.updateEnrollment(id, dto.status);
+    return this.studentsService.updateEnrollment(id, dto);
   }
 
   @Delete('enrollments/:id')

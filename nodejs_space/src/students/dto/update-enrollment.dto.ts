@@ -1,6 +1,11 @@
-import { IsEnum } from 'class-validator';
+import { IsEnum, IsOptional, IsUUID } from 'class-validator';
 
 export class UpdateEnrollmentDto {
   @IsEnum(['ACTIVE', 'COMPLETED', 'WITHDRAWN'])
-  status: string;
+  @IsOptional()
+  status?: string;
+
+  @IsUUID()
+  @IsOptional()
+  classId?: string;
 }

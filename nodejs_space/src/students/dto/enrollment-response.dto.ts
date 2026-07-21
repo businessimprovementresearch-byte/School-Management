@@ -12,4 +12,8 @@ export class EnrollmentResponseDto {
 export class UpdateEnrollmentResponseDto {
   @ApiProperty() id: string;
   @ApiProperty() status: string;
+  @ApiProperty() classId: string;
+  @ApiProperty() className: string;
+  @ApiProperty() academicYearId: string;
+  @ApiProperty() academicYearName: string;
 }

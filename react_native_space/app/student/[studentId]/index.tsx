@@ -1,10 +1,18 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl, Alert, Platform, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius } from '@/src/theme';
-import { useStudentsControllerFindOne } from '@/src/api/generated/api';
+import {
+  useStudentsControllerFindOne,
+  useStudentsControllerRemove,
+  useAcademicYearsControllerFindAll,
+  useStudentsControllerAddEnrollment,
+  useStudentsControllerUpdateEnrollment,
+  useStudentsControllerDeleteEnrollment,
+  useClassesControllerFindAll,
+} from '@/src/api/generated/api';
 import { useAuth } from '@/src/context/AuthContext';
 import Avatar from '@/src/components/Avatar';
 import StatusChip from '@/src/components/StatusChip';
@@ -16,12 +24,65 @@ export default function StudentDetailScreen() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
   const { data, isLoading, refetch } = useStudentsControllerFindOne(studentId, { query: { enabled: !!studentId } });
+  const addEnrollmentMutation = useStudentsControllerAddEnrollment();
+  const updateEnrollmentMutation = useStudentsControllerUpdateEnrollment();
+  const deleteEnrollmentMutation = useStudentsControllerDeleteEnrollment();
+
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('classes');
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [editingEnrollmentId, setEditingEnrollmentId] = useState<string | null>(null);
+  const [pickerYearId, setPickerYearId] = useState<string | undefined>(undefined);
+  const { data: allClasses } = useClassesControllerFindAll({ query: { enabled: pickerOpen } });
+  const { data: academicYears } = useAcademicYearsControllerFindAll();
 
   useFocusEffect(useCallback(() => { if (studentId) refetch(); }, [studentId]));
 
   const onRefresh = async () => { setRefreshing(true); await refetch(); setRefreshing(false); };
+
+  const openMoveClassPicker = (enrollmentId: string) => {
+    setEditingEnrollmentId(enrollmentId);
+    setPickerYearId(undefined);
+    setPickerOpen(true);
+  };
+
+  const openAddYearPicker = (academicYearId: string) => {
+    setEditingEnrollmentId(null);
+    setPickerYearId(academicYearId);
+    setPickerOpen(true);
+  };
+
+  const handlePickClass = (classId: string) => {
+    if (editingEnrollmentId) {
+      updateEnrollmentMutation.mutate(
+        { id: editingEnrollmentId, data: { classId } },
+        {
+          onSuccess: () => { setPickerOpen(false); refetch(); },
+          onError: (e) => notify('Error', getErrorMessage(e, 'Failed to move class')),
+        },
+      );
+    } else if (pickerYearId) {
+      addEnrollmentMutation.mutate(
+        { studentId, data: { classId, academicYearId: pickerYearId } },
+        {
+          onSuccess: () => { setPickerOpen(false); refetch(); },
+          onError: (e) => notify('Error', getErrorMessage(e, 'Failed to add class history')),
+        },
+      );
+    }
+  };
+
+  const handleDeleteEnrollment = async (enrollmentId: string, label: string) => {
+    const confirmed = await confirmAsync('Remove Enrollment', `Remove "${label}" from this student's history? This cannot be undone.`);
+    if (!confirmed) return;
+    deleteEnrollmentMutation.mutate(
+      { id: enrollmentId },
+      { onSuccess: () => refetch(), onError: (e) => notify('Error', getErrorMessage(e, 'Failed to remove enrollment')) },
+    );
+  };
+
+  const enrolledYearIds = new Set((data?.enrollments ?? []).map((e) => e?.academicYearId));
+  const missingYears = (academicYears ?? []).filter((y) => y?.id && !enrolledYearIds.has(y.id));
 
   if (isLoading || !data) return <LoadingScreen />;
 
@@ -68,17 +129,66 @@ export default function StudentDetailScreen() {
         {activeTab === 'classes' && (
           <View>
             {(data?.enrollments ?? []).map((e) => (
-              <Pressable key={e?.id} style={styles.card} onPress={() => router.push(`/class/${e?.classId}`)}>
-                <View style={{ flex: 1 }}>
+              <View key={e?.id} style={styles.card}>
+                <Pressable style={{ flex: 1 }} onPress={() => router.push(`/class/${e?.classId}`)}>
                   <Text style={styles.cardTitle}>{e?.className ?? ''}</Text>
-                  <Text style={styles.cardSub}>Grade {e?.classGrade ?? ''} | Enrolled {e?.enrollmentDate ? new Date(e.enrollmentDate).toLocaleDateString() : ''}</Text>
-                </View>
+                  <Text style={styles.cardSub}>{e?.academicYearName ?? ''} | Grade {e?.classGrade ?? ''} | Enrolled {e?.enrollmentDate ? new Date(e.enrollmentDate).toLocaleDateString() : ''}</Text>
+                </Pressable>
                 <StatusChip status={e?.status ?? 'ACTIVE'} small />
-              </Pressable>
+                {isAdmin && (
+                  <>
+                    <Pressable style={styles.cardIconBtn} onPress={() => e?.id && openMoveClassPicker(e.id)}>
+                      <Ionicons name="swap-horizontal" size={18} color={Colors.secondary} />
+                    </Pressable>
+                    <Pressable style={styles.cardIconBtn} onPress={() => e?.id && handleDeleteEnrollment(e.id, `${e?.className ?? ''} (${e?.academicYearName ?? ''})`)}>
+                      <Ionicons name="trash-outline" size={18} color={Colors.error} />
+                    </Pressable>
+                  </>
+                )}
+              </View>
             ))}
             {(data?.enrollments?.length ?? 0) === 0 && <Text style={styles.emptyText}>No enrollments</Text>}
+
+            {isAdmin && missingYears.length > 0 && (
+              <View style={styles.addYearSection}>
+                <Text style={styles.addYearLabel}>Backfill a class for a past/missing year:</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  {missingYears.map((y) => (
+                    <Pressable key={y?.id} style={styles.addYearChip} onPress={() => y?.id && openAddYearPicker(y.id)}>
+                      <Ionicons name="add" size={14} color={Colors.primary} />
+                      <Text style={styles.addYearChipText}>{y?.name ?? ''}</Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
           </View>
         )}
+
+        <Modal visible={pickerOpen} transparent animationType="slide" onRequestClose={() => setPickerOpen(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalCard}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>{editingEnrollmentId ? 'Move to Class' : 'Add Class for Year'}</Text>
+                <Pressable onPress={() => setPickerOpen(false)}><Ionicons name="close" size={24} color={Colors.textPrimary} /></Pressable>
+              </View>
+              <ScrollView style={{ maxHeight: 400 }}>
+                {(allClasses ?? []).map((c) => (
+                  <Pressable
+                    key={c?.id}
+                    style={styles.pickerRow}
+                    onPress={() => c?.id && handlePickClass(c.id)}
+                    disabled={updateEnrollmentMutation.isPending || addEnrollmentMutation.isPending}
+                  >
+                    <Text style={styles.pickerName}>{c?.name ?? ''}</Text>
+                    <Text style={styles.pickerSub}>Grade {c?.grade ?? ''}</Text>
+                  </Pressable>
+                ))}
+                {(allClasses?.length ?? 0) === 0 && <Text style={[styles.emptyText, { paddingVertical: Spacing.lg }]}>No classes found</Text>}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
 
         {activeTab === 'attendance' && (
           <View>
@@ -189,4 +299,16 @@ const styles = StyleSheet.create({
     padding: Spacing.lg, marginTop: Spacing.xl, gap: Spacing.sm,
   },
   reportButtonText: { fontSize: 16, fontWeight: '600', color: Colors.secondary },
+  cardIconBtn: { padding: 6, marginLeft: 4 },
+  addYearSection: { marginTop: Spacing.md, backgroundColor: Colors.surface, borderRadius: BorderRadius.md, padding: Spacing.md },
+  addYearLabel: { fontSize: 13, color: Colors.textSecondary, marginBottom: Spacing.sm },
+  addYearChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: Colors.primary + '14', borderRadius: BorderRadius.full, paddingHorizontal: Spacing.md, paddingVertical: 6, marginRight: Spacing.sm },
+  addYearChipText: { fontSize: 13, fontWeight: '600', color: Colors.primary },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  modalCard: { backgroundColor: Colors.background, borderTopLeftRadius: BorderRadius.lg, borderTopRightRadius: BorderRadius.lg, padding: Spacing.lg, maxHeight: '70%' },
+  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: Spacing.md },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
+  pickerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: Spacing.md, borderBottomWidth: 1, borderBottomColor: Colors.divider },
+  pickerName: { fontSize: 15, color: Colors.textPrimary, fontWeight: '600' },
+  pickerSub: { fontSize: 13, color: Colors.textSecondary },
 });
