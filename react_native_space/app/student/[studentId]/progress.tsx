@@ -81,10 +81,6 @@ export default function StudentProgressScreen() {
           ))}
           {(data?.metrics?.length ?? 0) === 0 && (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>
-                No progress data for {selectedEnrollment?.className ?? 'this class'}
-                {selectedEnrollment?.academicYearName ? ` (${selectedEnrollment.academicYearName})` : ''} yet.
-              </Text>
               {matchingReportCard ? (
                 <Pressable style={styles.emptyShortcutBtn} onPress={() => handleDownloadReportCard(matchingReportCard.id)}>
                   <Ionicons name="document-text" size={16} color={Colors.secondary} />
