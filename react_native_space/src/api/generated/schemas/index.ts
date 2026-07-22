@@ -87,6 +87,7 @@ export * from './recentAttendanceDto';
 export * from './reportCardResponseDto';
 export * from './reportCardsControllerFindAllParams';
 export * from './sessionDetailResponseDto';
+export * from './setSessionHolidayDto';
 export * from './sessionFeedbackDto';
 export * from './sessionStudentDto';
 export * from './sessionSummaryDto';

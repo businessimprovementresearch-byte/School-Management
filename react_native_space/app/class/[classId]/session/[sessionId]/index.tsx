@@ -1,10 +1,10 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius } from '@/src/theme';
-import { useSessionsControllerFindOne, useAttendanceControllerBulkSave, useFeedbackControllerCreate } from '@/src/api/generated/api';
+import { useSessionsControllerFindOne, useSessionsControllerSetHoliday, useAttendanceControllerBulkSave, useFeedbackControllerCreate } from '@/src/api/generated/api';
 import { useAuth } from '@/src/context/AuthContext';
 import Avatar from '@/src/components/Avatar';
 import LoadingScreen from '@/src/components/LoadingScreen';
@@ -21,6 +21,7 @@ export default function SessionDetailScreen() {
   const { data, isLoading, refetch } = useSessionsControllerFindOne(sessionId, { query: { enabled: !!sessionId } });
   const bulkSave = useAttendanceControllerBulkSave();
   const createFeedback = useFeedbackControllerCreate();
+  const setHoliday = useSessionsControllerSetHoliday();
 
   const [studentAtt, setStudentAtt] = useState<Record<string, AttStatus>>({});
   const [teacherAtt, setTeacherAtt] = useState<Record<string, TAttStatus>>({});
@@ -71,6 +72,15 @@ export default function SessionDetailScreen() {
     }
   };
 
+  const handleToggleHoliday = async () => {
+    try {
+      await setHoliday.mutateAsync({ id: sessionId, data: { isHoliday: !data?.isHoliday } });
+      refetch();
+    } catch (e) {
+      Alert.alert('Error', getErrorMessage(e, 'Failed to update holiday status'));
+    }
+  };
+
   const handleAddFeedback = async () => {
     if (!feedbackText.trim()) return;
     setFeedbackError('');
@@ -101,7 +111,35 @@ export default function SessionDetailScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.dateText}>{data?.date ? new Date(data.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : ''}</Text>
 
+        {isAdmin ? (
+          <Pressable
+            style={[styles.holidayBtn, data?.isHoliday && styles.holidayBtnActive]}
+            onPress={handleToggleHoliday}
+            disabled={setHoliday.isPending}
+          >
+            {setHoliday.isPending ? (
+              <ActivityIndicator color={data?.isHoliday ? '#fff' : Colors.primary} />
+            ) : (
+              <>
+                <Ionicons name="sunny" size={18} color={data?.isHoliday ? '#fff' : Colors.primary} />
+                <Text style={[styles.holidayBtnText, data?.isHoliday && styles.holidayBtnTextActive]}>
+                  {data?.isHoliday ? 'Unmark as Holiday' : 'Mark as Holiday'}
+                </Text>
+              </>
+            )}
+          </Pressable>
+        ) : null}
+
+        {data?.isHoliday ? (
+          <View style={styles.holidayBanner}>
+            <Ionicons name="sunny" size={16} color={Colors.primary} />
+            <Text style={styles.holidayBannerText}>This session is marked as a holiday. No attendance needed.</Text>
+          </View>
+        ) : null}
+
         {/* Student Attendance */}
+        {!data?.isHoliday ? (
+        <>
         <Text style={styles.sectionTitle}>Student Attendance</Text>
         {(data?.students ?? []).map((s) => (
           <View key={s?.id} style={styles.attRow}>
@@ -153,6 +191,8 @@ export default function SessionDetailScreen() {
         </Pressable>
         {!!attError && <Text style={styles.errorText}>{attError}</Text>}
         {!!attSuccess && <Text style={styles.successText}>{attSuccess}</Text>}
+        </>
+        ) : null}
 
         {/* Feedback */}
         <Text style={styles.sectionTitle}>Feedback</Text>
@@ -189,6 +229,12 @@ const styles = StyleSheet.create({
   topTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
   content: { padding: Spacing.lg },
   dateText: { fontSize: 16, color: Colors.textSecondary, marginBottom: Spacing.lg },
+  holidayBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1.5, borderColor: Colors.primary, borderRadius: BorderRadius.md, paddingVertical: Spacing.sm, marginBottom: Spacing.md },
+  holidayBtnActive: { backgroundColor: Colors.primary },
+  holidayBtnText: { fontSize: 14, fontWeight: '700', color: Colors.primary },
+  holidayBtnTextActive: { color: '#fff' },
+  holidayBanner: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, backgroundColor: Colors.surface, borderRadius: BorderRadius.sm, padding: Spacing.md, marginBottom: Spacing.lg },
+  holidayBannerText: { flex: 1, fontSize: 13, color: Colors.textPrimary },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary, marginTop: Spacing.lg, marginBottom: Spacing.sm },
   attRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface, borderRadius: BorderRadius.sm, padding: Spacing.md, marginBottom: 4, gap: Spacing.sm },
   attName: { flex: 1, fontSize: 14, fontWeight: '600', color: Colors.textPrimary },

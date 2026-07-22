@@ -35,6 +35,7 @@ export class SessionDetailResponseDto {
   @ApiProperty({ nullable: true, type: String }) termId: string | null;
   @ApiProperty({ nullable: true, type: String }) termName: string | null;
   @ApiProperty() attendanceSubmitted: boolean;
+  @ApiProperty() isHoliday: boolean;
   @ApiProperty({ type: () => [SessionStudentDto] }) students: SessionStudentDto[];
   @ApiProperty({ type: () => [SessionTeacherAttendanceDto] }) teacherAttendance: SessionTeacherAttendanceDto[];
   @ApiProperty({ type: () => [SessionFeedbackDto] }) feedback: SessionFeedbackDto[];

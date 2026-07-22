@@ -60,6 +60,7 @@ export class SessionsService {
       termId: session.termId,
       termName: session.term?.name ?? null,
       attendanceSubmitted: session.studentAttendance.length > 0,
+      isHoliday: session.isHoliday,
       students: await Promise.all(
         session.class.enrollments.map(async (e) => ({
           id: e.student.id,
@@ -89,6 +90,17 @@ export class SessionsService {
   async remove(id: string) {
     await this.prisma.classSession.delete({ where: { id } });
     return { success: true };
+  }
+
+  async setHoliday(id: string, isHoliday: boolean) {
+    const session = await this.prisma.classSession.findUnique({ where: { id } });
+    if (!session) throw new NotFoundException('Session not found');
+
+    await this.prisma.classSession.update({
+      where: { id },
+      data: { isHoliday },
+    });
+    return this.findOne(id);
   }
 
   async bulkCreateForDate(date: string, academicYearId?: string, termId?: string) {

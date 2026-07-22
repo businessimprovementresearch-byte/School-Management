@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { SessionsService } from './sessions.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -6,6 +6,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { BulkCreateSessionsDto } from './dto/bulk-create-sessions.dto';
+import { SetSessionHolidayDto } from './dto/set-session-holiday.dto';
 import { SessionDetailResponseDto } from './dto/session-detail-response.dto';
 import { BulkCreateSessionsResponseDto } from './dto/bulk-create-sessions-response.dto';
 import { SuccessResponseDto } from '../common/dto/success-response.dto';
@@ -36,5 +37,14 @@ export class SessionsController {
   @Roles('ADMIN')
   async remove(@Param('id') id: string): Promise<SuccessResponseDto> {
     return this.sessionsService.remove(id);
+  }
+
+  @Patch(':id/holiday')
+  @Roles('ADMIN')
+  async setHoliday(
+    @Param('id') id: string,
+    @Body() dto: SetSessionHolidayDto,
+  ): Promise<SessionDetailResponseDto> {
+    return this.sessionsService.setHoliday(id, dto.isHoliday);
   }
 }

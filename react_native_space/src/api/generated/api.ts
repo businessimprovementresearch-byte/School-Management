@@ -84,6 +84,7 @@ import type {
   ReportCardResponseDto,
   ReportCardsControllerFindAllParams,
   SessionDetailResponseDto,
+  SetSessionHolidayDto,
   SignupDto,
   SignupResponseDto,
   StudentDetailResponseDto,
@@ -2280,6 +2281,68 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getSessionsControllerRemoveMutationOptions(options), queryClient);
+    }
+
+export const getSessionsControllerSetHolidayUrl = (id: string,) => {
+
+
+
+
+  return `/api/sessions/${id}/holiday`
+}
+
+export const sessionsControllerSetHoliday = async (id: string, setSessionHolidayDto: BodyType<SetSessionHolidayDto>, options?: RequestInit): Promise<SessionDetailResponseDto> => {
+
+  return customFetch<SessionDetailResponseDto>(getSessionsControllerSetHolidayUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(setSessionHolidayDto)
+  }
+);}
+
+
+
+
+export const getSessionsControllerSetHolidayMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sessionsControllerSetHoliday>>, TError,{id: string;data: BodyType<SetSessionHolidayDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof sessionsControllerSetHoliday>>, TError,{id: string;data: BodyType<SetSessionHolidayDto>}, TContext> => {
+
+const mutationKey = ['sessionsControllerSetHoliday'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sessionsControllerSetHoliday>>, {id: string;data: BodyType<SetSessionHolidayDto>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  sessionsControllerSetHoliday(id,data,requestOptions)
+        }
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SessionsControllerSetHolidayMutationResult = NonNullable<Awaited<ReturnType<typeof sessionsControllerSetHoliday>>>
+    export type SessionsControllerSetHolidayMutationBody = BodyType<SetSessionHolidayDto>
+    export type SessionsControllerSetHolidayMutationError = ErrorType<unknown>
+
+    export const useSessionsControllerSetHoliday = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sessionsControllerSetHoliday>>, TError,{id: string;data: BodyType<SetSessionHolidayDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof sessionsControllerSetHoliday>>,
+        TError,
+        {id: string;data: BodyType<SetSessionHolidayDto>},
+        TContext
+      > => {
+      return useMutation(getSessionsControllerSetHolidayMutationOptions(options), queryClient);
     }
 
 export const getAttendanceControllerBulkSaveUrl = () => {

@@ -50,7 +50,7 @@ export class DashboardService {
     });
 
     const pendingAttendanceSessions = todaySessions
-      .filter((s) => s.studentAttendance.length === 0)
+      .filter((s) => s.studentAttendance.length === 0 && !s.isHoliday)
       .map((s) => ({
         id: s.id,
         classId: s.classId,

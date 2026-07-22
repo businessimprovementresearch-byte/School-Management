@@ -16,6 +16,7 @@ export interface SessionDetailResponseDto {
   /** @nullable */
   termName: string | null;
   attendanceSubmitted: boolean;
+  isHoliday: boolean;
   students: SessionStudentDto[];
   teacherAttendance: SessionTeacherAttendanceDto[];
   feedback: SessionFeedbackDto[];
