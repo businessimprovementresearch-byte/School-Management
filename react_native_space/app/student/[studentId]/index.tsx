@@ -74,6 +74,19 @@ export default function StudentDetailScreen() {
   const isEnrolledThisYear = !activeYear || (data?.enrollments ?? []).some((e) => e?.academicYearId === activeYear.id);
   const mostRecentClassId = data?.enrollments?.[0]?.classId;
 
+  // Backend stamps every enrollment row "ACTIVE" the moment it's created and
+  // never flips it when a new academic year starts — so a 2025-2026 row still
+  // reads "ACTIVE" even after 2026-2027 has begun. Only trust the raw status
+  // when it's something other than ACTIVE (WITHDRAWN/GRADUATED/etc. are real
+  // signals); otherwise derive it from whether the enrollment belongs to the
+  // currently-active academic year.
+  const getEnrollmentDisplayStatus = (e?: { status?: string; academicYearId?: string }) => {
+    if (!e) return 'ACTIVE';
+    if (e.status && e.status !== 'ACTIVE') return e.status;
+    if (!activeYear) return e.status ?? 'ACTIVE';
+    return e.academicYearId === activeYear.id ? 'ACTIVE' : 'COMPLETED';
+  };
+
   const handleReEnroll = () => {
     if (!activeYear || !mostRecentClassId) return;
     addEnrollmentMutation.mutate(
@@ -211,7 +224,7 @@ export default function StudentDetailScreen() {
                   <Text style={styles.cardTitle}>{e?.className ?? ''}</Text>
                   <Text style={styles.cardSub}>{e?.academicYearName ?? ''} | Grade {e?.classGrade ?? ''} | Enrolled {e?.enrollmentDate ? new Date(e.enrollmentDate).toLocaleDateString() : ''}</Text>
                 </Pressable>
-                <StatusChip status={e?.status ?? 'ACTIVE'} small />
+                <StatusChip status={getEnrollmentDisplayStatus(e)} small />
                 {isAdmin && (
                   <>
                     <Pressable style={styles.cardIconBtn} onPress={() => e?.id && openMoveClassPicker(e.id)}>

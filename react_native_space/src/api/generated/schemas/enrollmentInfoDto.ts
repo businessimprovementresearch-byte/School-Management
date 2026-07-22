@@ -5,6 +5,8 @@ export interface EnrollmentInfoDto {
   classId: string;
   className: string;
   classGrade: string;
+  academicYearId: string;
+  academicYearName: string;
   enrollmentDate: string;
   status: string;
 }

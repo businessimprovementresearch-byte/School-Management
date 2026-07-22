@@ -1,13 +1,36 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl, Modal, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius } from '@/src/theme';
-import { useClassesControllerFindOne } from '@/src/api/generated/api';
+import {
+  useClassesControllerFindOne,
+  useClassesControllerAssignTeacher,
+  useClassesControllerRemoveTeacher,
+  useTeachersControllerFindAll,
+} from '@/src/api/generated/api';
 import { useAuth } from '@/src/context/AuthContext';
+import { getErrorMessage } from '@/src/api/customFetch';
 import Avatar from '@/src/components/Avatar';
 import LoadingScreen from '@/src/components/LoadingScreen';
+
+// Alert.alert() is a no-op on react-native-web; window.confirm/alert are
+// the fallback so confirmations/errors actually show up on web (same
+// pattern used on the student detail screen).
+const confirmAsync = (title: string, message: string): Promise<boolean> => {
+  if (Platform.OS === 'web') return Promise.resolve(window.confirm(`${title}\n\n${message}`));
+  return new Promise((resolve) => {
+    Alert.alert(title, message, [
+      { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+      { text: 'Confirm', style: 'destructive', onPress: () => resolve(true) },
+    ]);
+  });
+};
+const notify = (title: string, message: string) => {
+  if (Platform.OS === 'web') window.alert(`${title}\n\n${message}`);
+  else Alert.alert(title, message);
+};
 
 export default function ClassDetailScreen() {
   const { classId = '' } = useLocalSearchParams<{ classId: string }>();
@@ -16,6 +39,35 @@ export default function ClassDetailScreen() {
   const isAdmin = user?.role === 'ADMIN';
   const { data, isLoading, refetch } = useClassesControllerFindOne(classId, { query: { enabled: !!classId } });
   const [refreshing, setRefreshing] = useState(false);
+
+  // Assign-teacher picker: fetch the full teacher list only while the
+  // modal is open, and only offer teachers not already on this class.
+  const [teacherPickerOpen, setTeacherPickerOpen] = useState(false);
+  const { data: allTeachers } = useTeachersControllerFindAll({ query: { enabled: teacherPickerOpen } });
+  const assignedTeacherIds = new Set((data?.teachers ?? []).map((t) => t?.id));
+  const availableTeachers = (allTeachers ?? []).filter((t) => t?.id && !assignedTeacherIds.has(t.id));
+
+  const assignTeacherMutation = useClassesControllerAssignTeacher();
+  const removeTeacherMutation = useClassesControllerRemoveTeacher();
+
+  const handleAssignTeacher = (teacherId: string) => {
+    assignTeacherMutation.mutate(
+      { classId, data: { teacherId } },
+      {
+        onSuccess: () => { setTeacherPickerOpen(false); refetch(); },
+        onError: (e) => notify('Error', getErrorMessage(e, 'Failed to assign teacher')),
+      },
+    );
+  };
+
+  const handleRemoveTeacher = async (teacherId: string, name: string) => {
+    const confirmed = await confirmAsync('Remove Teacher', `Remove ${name} from this class?`);
+    if (!confirmed) return;
+    removeTeacherMutation.mutate(
+      { classId, teacherId },
+      { onSuccess: () => refetch(), onError: (e) => notify('Error', getErrorMessage(e, 'Failed to remove teacher')) },
+    );
+  };
 
   useFocusEffect(useCallback(() => { if (classId) refetch(); }, [classId]));
 
@@ -45,12 +97,59 @@ export default function ClassDetailScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.teacherRow}>
           {(data?.teachers ?? []).map((t) => (
             <View key={t?.id} style={styles.teacherItem}>
-              <Avatar uri={t?.photoUrl} name={t?.name} size={48} borderColor={Colors.secondary} />
+              <View>
+                <Avatar uri={t?.photoUrl} name={t?.name} size={48} borderColor={Colors.secondary} />
+                {isAdmin && (
+                  <Pressable
+                    style={styles.removeTeacherBtn}
+                    onPress={() => t?.id && handleRemoveTeacher(t.id, t?.name ?? 'this teacher')}
+                  >
+                    <Ionicons name="close-circle" size={18} color={Colors.error} />
+                  </Pressable>
+                )}
+              </View>
               <Text style={styles.teacherName} numberOfLines={1}>{t?.name ?? ''}</Text>
             </View>
           ))}
           {(data?.teachers?.length ?? 0) === 0 && <Text style={styles.emptySmall}>No teachers assigned</Text>}
+          {isAdmin && (
+            <Pressable style={styles.teacherItem} onPress={() => setTeacherPickerOpen(true)}>
+              <View style={styles.addTeacherCircle}>
+                <Ionicons name="add" size={22} color={Colors.primary} />
+              </View>
+              <Text style={styles.teacherName}>Add</Text>
+            </Pressable>
+          )}
         </ScrollView>
+
+        <Modal visible={teacherPickerOpen} transparent animationType="slide" onRequestClose={() => setTeacherPickerOpen(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalCard}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Assign Teacher</Text>
+                <Pressable onPress={() => setTeacherPickerOpen(false)}><Ionicons name="close" size={24} color={Colors.textPrimary} /></Pressable>
+              </View>
+              <ScrollView style={{ maxHeight: 400 }}>
+                {availableTeachers.map((t) => (
+                  <Pressable
+                    key={t?.id}
+                    style={styles.pickerRow}
+                    onPress={() => t?.id && handleAssignTeacher(t.id)}
+                    disabled={assignTeacherMutation.isPending}
+                  >
+                    <Avatar uri={t?.photoUrl} name={t?.name} size={36} />
+                    <Text style={styles.pickerName}>{t?.name ?? ''}</Text>
+                  </Pressable>
+                ))}
+                {availableTeachers.length === 0 && (
+                  <Text style={[styles.emptySmall, { paddingVertical: Spacing.lg, textAlign: 'center' }]}>
+                    No available teachers to assign
+                  </Text>
+                )}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
 
         {/* Students */}
         <Text style={styles.sectionTitle}>Students ({data?.students?.length ?? 0})</Text>
@@ -111,6 +210,17 @@ const styles = StyleSheet.create({
   teacherItem: { alignItems: 'center', marginRight: Spacing.lg, width: 70 },
   teacherName: { fontSize: 12, color: Colors.textSecondary, marginTop: 4, textAlign: 'center' },
   emptySmall: { color: Colors.textSecondary, fontSize: 13 },
+  removeTeacherBtn: { position: 'absolute', top: -4, right: -4, backgroundColor: Colors.background, borderRadius: 10 },
+  addTeacherCircle: {
+    width: 48, height: 48, borderRadius: 24, backgroundColor: Colors.primary + '14',
+    alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.primary, borderStyle: 'dashed',
+  },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  modalCard: { backgroundColor: Colors.background, borderTopLeftRadius: BorderRadius.lg, borderTopRightRadius: BorderRadius.lg, padding: Spacing.lg, maxHeight: '70%' },
+  modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: Spacing.md },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
+  pickerRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, paddingVertical: Spacing.md, borderBottomWidth: 1, borderBottomColor: Colors.divider },
+  pickerName: { fontSize: 15, color: Colors.textPrimary, fontWeight: '600' },
   studentRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface, borderRadius: BorderRadius.sm, padding: Spacing.md, marginBottom: 4, gap: Spacing.md },
   studentName: { flex: 1, fontSize: 15, fontWeight: '600', color: Colors.textPrimary },
   sessionRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface, borderRadius: BorderRadius.sm, padding: Spacing.md, marginBottom: 4, gap: Spacing.md },
