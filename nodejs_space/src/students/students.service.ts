@@ -27,6 +27,7 @@ export class StudentsService {
     teacherClassIds?: string[],
   ) {
     const where: Prisma.StudentWhereInput = {};
+    const activeYearId = await requireAcademicYearId(this.prisma).catch(() => null);
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -35,17 +36,20 @@ export class StudentsService {
       ];
     }
     if (classId) {
-      where.enrollments = { some: { classId, status: 'ACTIVE' } };
+      where.enrollments = { some: { classId, status: 'ACTIVE', ...(activeYearId ? { academicYearId: activeYearId } : {}) } };
     }
     if (teacherClassIds) {
-      where.enrollments = { some: { classId: { in: teacherClassIds }, status: 'ACTIVE' } };
+      where.enrollments = { some: { classId: { in: teacherClassIds }, status: 'ACTIVE', ...(activeYearId ? { academicYearId: activeYearId } : {}) } };
     }
 
     const [items, total] = await Promise.all([
       this.prisma.student.findMany({
         where,
         include: {
-          enrollments: { include: { class: true }, where: { status: 'ACTIVE' } },
+          enrollments: {
+            include: { class: true },
+            where: activeYearId ? { status: 'ACTIVE', academicYearId: activeYearId } : { status: 'ACTIVE' },
+          },
         },
         skip: (page - 1) * limit,
         take: limit,
@@ -280,7 +284,12 @@ export class StudentsService {
   // Enrollments
   async addEnrollment(studentId: string, classId: string, academicYearId?: string) {
     const yearId = await requireAcademicYearId(this.prisma, academicYearId);
-    const enrollment = await this.prisma.classEnrollment.create({
+    const existing = await this.prisma.classEnrollment.findUnique({
+      where: {
+        studentId_classId_academicYearId: { studentId, classId, academicYearId: yearId },
+      },
+    });
+    const enrollment = existing ?? await this.prisma.classEnrollment.create({
       data: { studentId, classId, academicYearId: yearId },
     });
     return {

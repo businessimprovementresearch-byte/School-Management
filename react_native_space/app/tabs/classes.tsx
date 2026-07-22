@@ -81,11 +81,9 @@ export default function ClassesScreen() {
 
   if (isLoading || !data) return <LoadingScreen />;
 
-  const grouped = gradeOrder.reduce<Record<string, typeof data>>((acc, grade) => {
-    const items = (data ?? []).filter((c) => c?.grade === grade);
-    if (items.length > 0) acc[grade] = items;
-    return acc;
-  }, {});
+  const grouped = gradeOrder
+     .map((grade) => [grade, (data ?? []).filter((c) => c?.grade === grade)] as const)
+     .filter(([, items]) => items.length > 0);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -102,7 +100,7 @@ export default function ClassesScreen() {
         contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
       >
-        {Object.entries(grouped).map(([grade, classes]) => (
+        {grouped.map(([grade, classes]) => (
           <View key={grade} style={styles.section}>
             <Text style={styles.sectionTitle}>
               {grade === 'Special' ? 'Special Classes' : grade === 'Nursery' ? 'Nursery' : `Grade ${grade}`}

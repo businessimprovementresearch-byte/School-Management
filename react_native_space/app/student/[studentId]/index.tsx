@@ -293,7 +293,6 @@ export default function StudentDetailScreen() {
             picking needed there anymore. */}
         {activeTab === 'progress' && (
           <View>
-            <Text style={styles.emptyText}>See the full progress breakdown by academic year and class.</Text>
             <Pressable style={styles.reportButton} onPress={() => router.push(`/student/${studentId}/progress`)}>
               <Ionicons name="trending-up" size={20} color={Colors.secondary} />
               <Text style={styles.reportButtonText}>View Progress</Text>
