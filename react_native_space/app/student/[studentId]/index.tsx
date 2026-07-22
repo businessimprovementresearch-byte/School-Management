@@ -17,6 +17,25 @@ import { useAuth } from '@/src/context/AuthContext';
 import Avatar from '@/src/components/Avatar';
 import StatusChip from '@/src/components/StatusChip';
 import LoadingScreen from '@/src/components/LoadingScreen';
+import { getErrorMessage } from '@/src/api/customFetch';
+
+// Alert.alert() is a no-op on react-native-web; window.confirm/alert are
+// the fallback so confirmations/errors actually show up on web.
+// THIS WAS MISSING before — calls to confirmAsync/notify had nothing to
+// call, which is what broke the class-move / delete flows.
+const confirmAsync = (title: string, message: string): Promise<boolean> => {
+  if (Platform.OS === 'web') return Promise.resolve(window.confirm(`${title}\n\n${message}`));
+  return new Promise((resolve) => {
+    Alert.alert(title, message, [
+      { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+      { text: 'Confirm', style: 'destructive', onPress: () => resolve(true) },
+    ]);
+  });
+};
+const notify = (title: string, message: string) => {
+  if (Platform.OS === 'web') window.alert(`${title}\n\n${message}`);
+  else Alert.alert(title, message);
+};
 
 export default function StudentDetailScreen() {
   const { studentId = '' } = useLocalSearchParams<{ studentId: string }>();
@@ -24,21 +43,47 @@ export default function StudentDetailScreen() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
   const { data, isLoading, refetch } = useStudentsControllerFindOne(studentId, { query: { enabled: !!studentId } });
+  const { data: academicYears } = useAcademicYearsControllerFindAll();
+  const activeYear = academicYears?.find((y) => y?.isActive);
+
   const addEnrollmentMutation = useStudentsControllerAddEnrollment();
   const updateEnrollmentMutation = useStudentsControllerUpdateEnrollment();
   const deleteEnrollmentMutation = useStudentsControllerDeleteEnrollment();
+  const deleteMutation = useStudentsControllerRemove();
 
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('classes');
+
+  // Class picker modal: either moving an existing enrollment to a
+  // different class (editingEnrollmentId set), or adding a brand new
+  // enrollment for a chosen academic year (editingEnrollmentId null,
+  // pickerYearId set) — e.g. backfilling last year's class.
   const [pickerOpen, setPickerOpen] = useState(false);
   const [editingEnrollmentId, setEditingEnrollmentId] = useState<string | null>(null);
   const [pickerYearId, setPickerYearId] = useState<string | undefined>(undefined);
   const { data: allClasses } = useClassesControllerFindAll({ query: { enabled: pickerOpen } });
-  const { data: academicYears } = useAcademicYearsControllerFindAll();
 
   useFocusEffect(useCallback(() => { if (studentId) refetch(); }, [studentId]));
 
   const onRefresh = async () => { setRefreshing(true); await refetch(); setRefreshing(false); };
+
+  // "Archived" for the active year = no enrollment row exists yet for that
+  // year. Re-enrolling just means adding one, into whichever class they
+  // were last in (admin can move them to a different class afterwards via
+  // the swap icon on that enrollment).
+  const isEnrolledThisYear = !activeYear || (data?.enrollments ?? []).some((e) => e?.academicYearId === activeYear.id);
+  const mostRecentClassId = data?.enrollments?.[0]?.classId;
+
+  const handleReEnroll = () => {
+    if (!activeYear || !mostRecentClassId) return;
+    addEnrollmentMutation.mutate(
+      { studentId, data: { classId: mostRecentClassId, academicYearId: activeYear.id } },
+      {
+        onSuccess: () => { notify('Enrolled', `${data?.name} is now enrolled for ${activeYear.name}.`); refetch(); },
+        onError: (e) => notify('Error', getErrorMessage(e, 'Failed to enroll')),
+      },
+    );
+  };
 
   const openMoveClassPicker = (enrollmentId: string) => {
     setEditingEnrollmentId(enrollmentId);
@@ -81,12 +126,33 @@ export default function StudentDetailScreen() {
     );
   };
 
+  // Years the student doesn't have any enrollment record for yet — offered
+  // in "Backfill" so admins can fill in history for years that were never
+  // entered.
   const enrolledYearIds = new Set((data?.enrollments ?? []).map((e) => e?.academicYearId));
   const missingYears = (academicYears ?? []).filter((y) => y?.id && !enrolledYearIds.has(y.id));
 
+  const handleDelete = async () => {
+    const confirmed = await confirmAsync(
+      'Delete Student',
+      `Remove ${data?.name ?? 'this student'} permanently? This cannot be undone.`,
+    );
+    if (!confirmed) return;
+    deleteMutation.mutate(
+      { id: studentId },
+      {
+        onSuccess: () => router.back(),
+        onError: (e) => notify('Error', getErrorMessage(e, 'Failed to delete student')),
+      },
+    );
+  };
+
   if (isLoading || !data) return <LoadingScreen />;
 
-  const tabs = ['classes', 'attendance', 'progress', 'feedback', 'history'];
+  // "history" tab removed — the enrollment list in "Classes" already
+  // shows academic year + class per row, so a separate history tab
+  // was redundant.
+  const tabs = ['classes', 'attendance', 'progress', 'feedback'];
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -113,6 +179,17 @@ export default function StudentDetailScreen() {
           {!!data?.nickname && <Text style={styles.nickname}>"{data.nickname}"</Text>}
           <Text style={styles.info}>Age: {data?.age ?? ''} | Parent: {data?.parentName ?? ''}</Text>
           <Text style={styles.info}>{data?.contactNumber ?? ''}</Text>
+          {!isEnrolledThisYear && (
+            <View style={styles.archiveBanner}>
+              <Ionicons name="archive-outline" size={16} color={Colors.warning} />
+              <Text style={styles.archiveBannerText}>Not enrolled for {activeYear?.name} (on leave/archived)</Text>
+              {isAdmin && (
+                <Pressable style={styles.reEnrollBtn} onPress={handleReEnroll} disabled={addEnrollmentMutation.isPending || !mostRecentClassId}>
+                  <Text style={styles.reEnrollBtnText}>{addEnrollmentMutation.isPending ? 'Enrolling...' : `Enroll to ${activeYear?.name}`}</Text>
+                </Pressable>
+              )}
+            </View>
+          )}
         </View>
 
         {/* Tabs */}
@@ -211,18 +288,16 @@ export default function StudentDetailScreen() {
           </View>
         )}
 
+        {/* Progress: full year-by-year / class-by-class breakdown lives on
+            its own screen (auto-grouped server-side) — no manual class
+            picking needed there anymore. */}
         {activeTab === 'progress' && (
           <View>
-            {(data?.progress ?? []).map((p) => (
-              <View key={p?.metricId} style={styles.card}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.cardTitle}>{p?.metricName ?? ''}</Text>
-                  <Text style={styles.cardSub}>{p?.className ?? ''} | {p?.metricType ?? ''}</Text>
-                  <Text style={styles.cardSub}>{p?.entries?.length ?? 0} entries</Text>
-                </View>
-              </View>
-            ))}
-            {(data?.progress?.length ?? 0) === 0 && <Text style={styles.emptyText}>No progress data</Text>}
+            <Text style={styles.emptyText}>See the full progress breakdown by academic year and class.</Text>
+            <Pressable style={styles.reportButton} onPress={() => router.push(`/student/${studentId}/progress`)}>
+              <Ionicons name="trending-up" size={20} color={Colors.secondary} />
+              <Text style={styles.reportButtonText}>View Progress</Text>
+            </Pressable>
           </View>
         )}
 
@@ -241,26 +316,18 @@ export default function StudentDetailScreen() {
           </View>
         )}
 
-        {activeTab === 'history' && (
-          <View>
-            {(data?.classHistory ?? []).map((h) => (
-              <View key={h?.id} style={styles.card}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.cardTitle}>{h?.className ?? ''}</Text>
-                  <Text style={styles.cardSub}>{h?.academicYearName ?? ''} | {h?.date ? new Date(h.date).toLocaleDateString() : ''}</Text>
-                </View>
-                <StatusChip status={h?.action ?? ''} small />
-              </View>
-            ))}
-            {(data?.classHistory?.length ?? 0) === 0 && <Text style={styles.emptyText}>No history</Text>}
-          </View>
-        )}
-
         {/* Report cards button */}
         <Pressable style={styles.reportButton} onPress={() => router.push(`/student/${studentId}/report-cards`)}>
           <Ionicons name="document-text" size={20} color={Colors.secondary} />
           <Text style={styles.reportButtonText}>View Report Cards</Text>
         </Pressable>
+
+        {isAdmin && (
+          <Pressable style={styles.deleteButton} onPress={handleDelete} disabled={deleteMutation.isPending}>
+            <Ionicons name="trash-outline" size={18} color={Colors.error} />
+            <Text style={styles.deleteButtonText}>{deleteMutation.isPending ? 'Deleting...' : 'Delete Student'}</Text>
+          </Pressable>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -299,6 +366,12 @@ const styles = StyleSheet.create({
     padding: Spacing.lg, marginTop: Spacing.xl, gap: Spacing.sm,
   },
   reportButtonText: { fontSize: 16, fontWeight: '600', color: Colors.secondary },
+  archiveBanner: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: Colors.warning + '14', borderRadius: BorderRadius.md, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, marginTop: Spacing.md, flexWrap: 'wrap', justifyContent: 'center' },
+  archiveBannerText: { fontSize: 12, color: Colors.warning, fontWeight: '600' },
+  reEnrollBtn: { backgroundColor: Colors.warning, borderRadius: BorderRadius.full, paddingHorizontal: Spacing.md, paddingVertical: 4, marginLeft: 4 },
+  reEnrollBtnText: { fontSize: 12, fontWeight: '700', color: '#fff' },
+  deleteButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.error, borderRadius: BorderRadius.md, padding: Spacing.lg, marginTop: Spacing.md, gap: Spacing.sm },
+  deleteButtonText: { fontSize: 16, fontWeight: '600', color: Colors.error },
   cardIconBtn: { padding: 6, marginLeft: 4 },
   addYearSection: { marginTop: Spacing.md, backgroundColor: Colors.surface, borderRadius: BorderRadius.md, padding: Spacing.md },
   addYearLabel: { fontSize: 13, color: Colors.textSecondary, marginBottom: Spacing.sm },
