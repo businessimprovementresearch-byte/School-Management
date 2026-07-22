@@ -165,8 +165,17 @@ export default function ClassDetailScreen() {
         <Text style={styles.sectionTitle}>Sessions</Text>
         {(data?.sessions ?? []).slice(0, 20).map((s) => (
           <Pressable key={s?.id} style={styles.sessionRow} onPress={() => router.push(`/class/${classId}/session/${s?.id}`)}>
-            <View style={[styles.statusDot, { backgroundColor: s?.attendanceSubmitted ? Colors.success : Colors.error }]} />
+            {s?.isHoliday ? (
+              <Ionicons name="sunny" size={16} color={Colors.primary} />
+            ) : (
+              <View style={[styles.statusDot, { backgroundColor: s?.attendanceSubmitted ? Colors.success : Colors.error }]} />
+            )}
             <Text style={styles.sessionDate}>{s?.date ? new Date(s.date).toLocaleDateString() : ''}</Text>
+            {s?.isHoliday ? (
+              <View style={styles.holidayBadge}>
+                <Text style={styles.holidayBadgeText}>Holiday</Text>
+              </View>
+            ) : null}
             <Text style={styles.sessionTerm}>{s?.termName ?? ''}</Text>
           </Pressable>
         ))}
@@ -232,4 +241,7 @@ const styles = StyleSheet.create({
   metricRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface, borderRadius: BorderRadius.sm, padding: Spacing.md, marginBottom: 4, gap: Spacing.sm },
   metricName: { flex: 1, fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
   metricType: { fontSize: 12, color: Colors.textSecondary },
+  sessionTerm: { fontSize: 12, color: Colors.textSecondary },
+  holidayBadge: { backgroundColor: Colors.primary + '20', borderRadius: BorderRadius.full, paddingHorizontal: 8, paddingVertical: 2 },
+  holidayBadgeText: { fontSize: 11, fontWeight: '700', color: Colors.primary },
 });

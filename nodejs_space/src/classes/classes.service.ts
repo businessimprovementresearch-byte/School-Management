@@ -102,6 +102,7 @@ export class ClassesService {
         id: s.id,
         date: s.date.toISOString(),
         attendanceSubmitted: s.studentAttendance.length > 0,
+        isHoliday: s.isHoliday,
         termName: s.term?.name ?? null,
       })),
       metrics: cls.metrics.map((m) => ({

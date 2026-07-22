@@ -13,6 +13,7 @@ export class ClassSessionInfoDto {
   @ApiProperty() id: string;
   @ApiProperty() date: string;
   @ApiProperty() attendanceSubmitted: boolean;
+  @ApiProperty() isHoliday: boolean;
   @ApiProperty({ nullable: true, type: String }) termName: string | null;
 }
 
