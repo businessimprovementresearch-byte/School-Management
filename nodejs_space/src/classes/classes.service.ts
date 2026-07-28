@@ -9,11 +9,41 @@ export class ClassesService {
   constructor(
     private prisma: PrismaService,
     private uploadService: UploadService,
-  ) {}
+  ) { }
 
-  async findAll(teacherClassIds?: string[]) {
-    const where = teacherClassIds ? { id: { in: teacherClassIds } } : {};
-    const activeYearId = await requireAcademicYearId(this.prisma).catch(() => null);
+  async findAll(
+    teacherClassIds?: string[],
+    academicYearId?: string,
+  ) {
+    const activeYearId =
+      academicYearId ??
+      (await requireAcademicYearId(this.prisma).catch(() => null));
+
+    const inactiveIds = activeYearId
+      ? (
+          await this.prisma.classYearStatus.findMany({
+            where: {
+              academicYearId: activeYearId,
+              isActive: false,
+            },
+            select: {
+              classId: true,
+            },
+          })
+        ).map((r) => r.classId)
+      : [];
+
+    const where = {
+      ...(teacherClassIds ? { id: { in: teacherClassIds } } : {}),
+      ...(inactiveIds.length
+        ? {
+            id: {
+              ...(teacherClassIds ? { in: teacherClassIds } : {}),
+              notIn: inactiveIds,
+            },
+          }
+        : {}),
+    };
     const classes = await this.prisma.class.findMany({
       where,
       include: {
@@ -126,5 +156,32 @@ export class ClassesService {
     const yearId = await requireAcademicYearId(this.prisma, academicYearId);
     await this.prisma.teacherAssignment.deleteMany({ where: { classId, teacherId, academicYearId: yearId } });
     return { success: true };
+  }
+
+  async setYearStatus(
+    classId: string,
+    academicYearId: string,
+    isActive: boolean,
+  ) {
+    return this.prisma.classYearStatus.upsert({
+      where: {
+        classId_academicYearId: {
+          classId,
+          academicYearId,
+        },
+      },
+      create: {
+        classId,
+        academicYearId,
+        isActive,
+      },
+      update: {
+        isActive,
+      },
+    });
+  }
+  async create(data: { name: string; grade: string; description?: string }) {
+    const cls = await this.prisma.class.create({ data });
+    return this.findOne(cls.id);
   }
 }

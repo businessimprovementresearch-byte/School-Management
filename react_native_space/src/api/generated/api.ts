@@ -49,6 +49,7 @@ import type {
   CreateAcademicYearDto,
   CreateAlbumDto,
   CreateAwardDto,
+  CreateClassDto,
   CreateEventDto,
   CreateEventGroupDto,
   CreateFeedbackDto,
@@ -1476,17 +1477,7 @@ export function useClassesControllerFindOne<TData = Awaited<ReturnType<typeof cl
   return { ...query, queryKey: queryOptions.queryKey };
 }
 
-
-
-
-
-
-
 export const getClassesControllerAssignTeacherUrl = (classId: string,) => {
-
-
-
-
   return `/api/classes/${classId}/teachers`
 }
 
@@ -1502,9 +1493,6 @@ export const classesControllerAssignTeacher = async (classId: string,
   }
 );}
 
-
-
-
 export const getClassesControllerAssignTeacherMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerAssignTeacher>>, TError,{classId: string;data: BodyType<AssignTeacherDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof classesControllerAssignTeacher>>, TError,{classId: string;data: BodyType<AssignTeacherDto>}, TContext> => {
@@ -1515,26 +1503,62 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof classesControllerAssignTeacher>>, {classId: string;data: BodyType<AssignTeacherDto>}> = (props) => {
           const {classId,data} = props ?? {};
-
           return  classesControllerAssignTeacher(classId,data,requestOptions)
         }
-
-
-
-
-
-
   return  { mutationFn, ...mutationOptions }}
 
     export type ClassesControllerAssignTeacherMutationResult = NonNullable<Awaited<ReturnType<typeof classesControllerAssignTeacher>>>
     export type ClassesControllerAssignTeacherMutationBody = BodyType<AssignTeacherDto>
     export type ClassesControllerAssignTeacherMutationError = ErrorType<unknown>
+
+    export const getClassesControllerCreateUrl = () => {
+  return `/api/classes`
+}
+
+export const classesControllerCreate = async (createClassDto: CreateClassDto, options?: RequestInit): Promise<ClassDetailResponseDto> => {
+  return customFetch<ClassDetailResponseDto>(getClassesControllerCreateUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createClassDto)
+  }
+);}
+
+export const getClassesControllerCreateMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerCreate>>, TError,{data: BodyType<CreateClassDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof classesControllerCreate>>, TError,{data: BodyType<CreateClassDto>}, TContext> => {
+
+const mutationKey = ['classesControllerCreate'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof classesControllerCreate>>, {data: BodyType<CreateClassDto>}> = (props) => {
+          const {data} = props ?? {};
+          return  classesControllerCreate(data,requestOptions)
+        }
+
+  return  { mutationFn, ...mutationOptions }}
+
+export type ClassesControllerCreateMutationResult = NonNullable<Awaited<ReturnType<typeof classesControllerCreate>>>
+export type ClassesControllerCreateMutationBody = BodyType<CreateClassDto>
+export type ClassesControllerCreateMutationError = ErrorType<unknown>
+
+export const useClassesControllerCreate = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerCreate>>, TError,{data: BodyType<CreateClassDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof classesControllerCreate>>,
+        TError,
+        {data: BodyType<CreateClassDto>},
+        TContext
+      > => {
+      return useMutation(getClassesControllerCreateMutationOptions(options), queryClient);
+    }
 
     export const useClassesControllerAssignTeacher = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerAssignTeacher>>, TError,{classId: string;data: BodyType<AssignTeacherDto>}, TContext>, request?: SecondParameter<typeof customFetch>}

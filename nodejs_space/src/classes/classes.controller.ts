@@ -7,6 +7,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { ClassListItemDto } from './dto/class-list-response.dto';
 import { ClassDetailResponseDto } from './dto/class-detail-response.dto';
 import { AssignTeacherDto } from './dto/assign-teacher.dto';
+import { CreateClassDto } from './dto/create-class.dto';
 import { TeacherAssignmentResponseDto } from './dto/teacher-assignment-response.dto';
 import { SuccessResponseDto } from '../common/dto/success-response.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -19,7 +20,7 @@ export class ClassesController {
   constructor(
     private classesService: ClassesService,
     private prisma: PrismaService,
-  ) {}
+  ) { }
 
   @Get()
   async findAll(@Req() req: Request): Promise<ClassListItemDto[]> {
@@ -56,5 +57,25 @@ export class ClassesController {
     @Param('teacherId') teacherId: string,
   ): Promise<SuccessResponseDto> {
     return this.classesService.removeTeacher(classId, teacherId);
+  }
+
+  @Patch(':classId/year-status/:academicYearId')
+  @Roles('ADMIN')
+  async setYearStatus(
+    @Param('classId') classId: string,
+    @Param('academicYearId') academicYearId: string,
+    @Body() dto: { isActive: boolean },
+  ) {
+    return this.classesService.setYearStatus(
+      classId,
+      academicYearId,
+      dto.isActive,
+    );
+  }
+
+  @Post()
+  @Roles('ADMIN')
+  async create(@Body() dto: CreateClassDto): Promise<ClassDetailResponseDto> {
+    return this.classesService.create(dto);
   }
 }

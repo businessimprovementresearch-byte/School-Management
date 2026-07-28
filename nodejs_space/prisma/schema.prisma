@@ -1,11 +1,11 @@
 generator client {
-    provider = "prisma-client-js"
-    binaryTargets = ["native"]
+  provider      = "prisma-client-js"
+  binaryTargets = ["native"]
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum UserRole {
@@ -62,63 +62,64 @@ model User {
 }
 
 model Teacher {
-  id            String              @id @default(uuid())
-  userId        String              @unique
-  name          String
-  dob           DateTime
-  contactNumber String
-  photoFileId   String?
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
-  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  photoFile     File?               @relation(fields: [photoFileId], references: [id], onDelete: SetNull)
-  assignments   TeacherAssignment[]
-  attendance    TeacherAttendance[]
-  feedback      Feedback[]
+  id                  String               @id @default(uuid())
+  userId              String               @unique
+  name                String
+  dob                 DateTime
+  contactNumber       String
+  photoFileId         String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photoFile           File?                @relation(fields: [photoFileId], references: [id], onDelete: SetNull)
+  assignments         TeacherAssignment[]
+  attendance          TeacherAttendance[]
+  feedback            Feedback[]
   eventParticipations EventParticipant[]
-  awards        AwardIssuance[]
-  alertSetting  TeacherAlertSetting?
-  notifications Notification[]
+  awards              AwardIssuance[]
+  alertSetting        TeacherAlertSetting?
+  notifications       Notification[]
 
   @@map("teachers")
 }
 
 model Student {
-  id            String               @id @default(uuid())
-  name          String
-  nickname      String?
-  parentName    String
-  dob           DateTime
-  contactNumber String
-  photoFileId   String?
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
-  photoFile     File?                @relation(fields: [photoFileId], references: [id], onDelete: SetNull)
-  enrollments   ClassEnrollment[]
-  attendance    StudentAttendance[]
-  progress      StudentProgress[]
-  feedback      Feedback[]
-  reportCards   ReportCard[]
-  classHistory  StudentClassHistory[]
+  id                  String                @id @default(uuid())
+  name                String
+  nickname            String?
+  parentName          String
+  dob                 DateTime
+  contactNumber       String
+  photoFileId         String?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  photoFile           File?                 @relation(fields: [photoFileId], references: [id], onDelete: SetNull)
+  enrollments         ClassEnrollment[]
+  attendance          StudentAttendance[]
+  progress            StudentProgress[]
+  feedback            Feedback[]
+  reportCards         ReportCard[]
+  classHistory        StudentClassHistory[]
   eventParticipations EventParticipant[]
-  awards        AwardIssuance[]
+  awards              AwardIssuance[]
 
   @@map("students")
 }
 
 model Class {
-  id          String              @id @default(uuid())
-  name        String              @unique
-  grade       String
-  description String?
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-  enrollments ClassEnrollment[]
-  assignments TeacherAssignment[]
-  sessions    ClassSession[]
-  metrics     ProgressMetric[]
-  history     StudentClassHistory[]
-  albums      GalleryAlbum[]
+  id           String                @id @default(uuid())
+  name         String                @unique
+  grade        String
+  description  String?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  enrollments  ClassEnrollment[]
+  assignments  TeacherAssignment[]
+  sessions     ClassSession[]
+  metrics      ProgressMetric[]
+  history      StudentClassHistory[]
+  albums       GalleryAlbum[]
+  yearStatuses ClassYearStatus[]
 
   @@map("classes")
 }
@@ -141,13 +142,13 @@ model ClassEnrollment {
 }
 
 model TeacherAssignment {
-  id        String   @id @default(uuid())
-  teacherId String
-  classId   String
+  id             String       @id @default(uuid())
+  teacherId      String
+  classId        String
   academicYearId String
-  createdAt DateTime @default(now())
-  teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  teacher        Teacher      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  class          Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
   academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
 
   @@unique([teacherId, classId, academicYearId])
@@ -155,32 +156,33 @@ model TeacherAssignment {
 }
 
 model AcademicYear {
-  id        String         @id @default(uuid())
-  name      String
-  startDate DateTime
-  endDate   DateTime
-  isActive  Boolean        @default(false)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  terms     Term[]
-  sessions  ClassSession[]
-  reportCards ReportCard[]
-  history   StudentClassHistory[]
-  enrollments ClassEnrollment[]
+  id                 String                @id @default(uuid())
+  name               String
+  startDate          DateTime
+  endDate            DateTime
+  isActive           Boolean               @default(false)
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  terms              Term[]
+  sessions           ClassSession[]
+  reportCards        ReportCard[]
+  history            StudentClassHistory[]
+  enrollments        ClassEnrollment[]
   teacherAssignments TeacherAssignment[]
+  classYearStatuses  ClassYearStatus[]
 
   @@map("academic_years")
 }
 
 model Term {
-  id             String       @id @default(uuid())
+  id             String         @id @default(uuid())
   name           String
   startDate      DateTime
   endDate        DateTime
   academicYearId String
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  academicYear   AcademicYear   @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
   sessions       ClassSession[]
   reportCards    ReportCard[]
 
@@ -188,20 +190,20 @@ model Term {
 }
 
 model ClassSession {
-  id             String              @id @default(uuid())
-  classId        String
-  date           DateTime
-  academicYearId String
-  termId         String?
-  isHoliday      Boolean             @default(false)
-  createdAt      DateTime            @default(now())
-  class          Class               @relation(fields: [classId], references: [id], onDelete: Cascade)
-  academicYear   AcademicYear        @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
-  term           Term?               @relation(fields: [termId], references: [id], onDelete: SetNull)
+  id                String              @id @default(uuid())
+  classId           String
+  date              DateTime
+  academicYearId    String
+  termId            String?
+  isHoliday         Boolean             @default(false)
+  createdAt         DateTime            @default(now())
+  class             Class               @relation(fields: [classId], references: [id], onDelete: Cascade)
+  academicYear      AcademicYear        @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  term              Term?               @relation(fields: [termId], references: [id], onDelete: SetNull)
   studentAttendance StudentAttendance[]
   teacherAttendance TeacherAttendance[]
-  feedback       Feedback[]
-  progress       StudentProgress[]
+  feedback          Feedback[]
+  progress          StudentProgress[]
 
   @@index([classId, date])
   @@map("class_sessions")
@@ -314,15 +316,15 @@ model StudentClassHistory {
 }
 
 model File {
-  id                 String       @id @default(uuid())
+  id                 String         @id @default(uuid())
   userId             String
   fileName           String
-  cloud_storage_path String       @unique
-  isPublic           Boolean      @default(false)
+  cloud_storage_path String         @unique
+  isPublic           Boolean        @default(false)
   contentType        String
   fileSize           Int?
-  createdAt          DateTime     @default(now())
-  user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt          DateTime       @default(now())
+  user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   teacherPhotos      Teacher[]
   studentPhotos      Student[]
   reportCards        ReportCard[]
@@ -452,3 +454,14 @@ model Notification {
   @@map("notifications")
 }
 
+model ClassYearStatus {
+  id             String       @id @default(uuid())
+  classId        String
+  academicYearId String
+  isActive       Boolean      @default(true)
+  class          Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, academicYearId])
+  @@map("class_year_status")
+}

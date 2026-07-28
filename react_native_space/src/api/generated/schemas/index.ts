@@ -122,3 +122,4 @@ export * from './updateTermDto';
 export * from './updateTeacherDto';
 export * from './uploadControllerGetFileUrlParams';
 export * from './userInfoDto';
+export * from './createClassDto';

@@ -82,18 +82,24 @@ export default function ClassesScreen() {
   if (isLoading || !data) return <LoadingScreen />;
 
   const grouped = gradeOrder
-     .map((grade) => [grade, (data ?? []).filter((c) => c?.grade === grade)] as const)
-     .filter(([, items]) => items.length > 0);
+    .map((grade) => [grade, (data ?? []).filter((c) => c?.grade === grade)] as const)
+    .filter(([, items]) => items.length > 0);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.title}>Classes</Text>
         {isAdmin ? (
-          <Pressable style={styles.bulkBtn} onPress={handleBulkCreateSessions} disabled={bulkCreateMutation.isPending}>
-            <Ionicons name="calendar" size={16} color={Colors.primary} />
-            <Text style={styles.bulkBtnText}>{bulkCreateMutation.isPending ? 'Creating...' : 'Create Sessions (Sun)'}</Text>
-          </Pressable>
+          <View style={styles.headerActions}>
+            <Pressable style={styles.addBtn} onPress={() => router.push('/add-class')}>
+              <Ionicons name="add" size={18} color="#fff" />
+              <Text style={styles.addBtnText}>Add Class</Text>
+            </Pressable>
+            <Pressable style={styles.bulkBtn} onPress={handleBulkCreateSessions} disabled={bulkCreateMutation.isPending}>
+              <Ionicons name="calendar" size={16} color={Colors.primary} />
+              <Text style={styles.bulkBtnText}>{bulkCreateMutation.isPending ? 'Creating...' : 'Create Sessions (Sun)'}</Text>
+            </Pressable>
+          </View>
         ) : null}
       </View>
       <ScrollView
@@ -133,7 +139,10 @@ export default function ClassesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.lg, paddingTop: Spacing.md, paddingBottom: Spacing.sm },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.lg, paddingTop: Spacing.md, paddingBottom: Spacing.sm, flexWrap: 'wrap', gap: Spacing.sm },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, flexWrap: 'wrap' },
+  addBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: Colors.primary, paddingHorizontal: Spacing.md, paddingVertical: 8, borderRadius: BorderRadius.full },
+  addBtnText: { fontSize: 12, fontWeight: '700', color: '#fff' },
   bulkBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: Colors.primary + '14', paddingHorizontal: Spacing.md, paddingVertical: 8, borderRadius: BorderRadius.full },
   bulkBtnText: { fontSize: 12, fontWeight: '700', color: Colors.primary },
   title: { fontSize: 24, fontWeight: '700', color: Colors.textPrimary },
