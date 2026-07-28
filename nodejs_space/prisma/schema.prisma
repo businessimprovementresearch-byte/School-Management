@@ -102,6 +102,7 @@ model Student {
   classHistory        StudentClassHistory[]
   eventParticipations EventParticipant[]
   awards              AwardIssuance[]
+  isActive            Boolean               @default(true)
 
   @@map("students")
 }

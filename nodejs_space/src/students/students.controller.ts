@@ -46,6 +46,7 @@ export class StudentsController {
     @Req() req: Request,
     @Query('search') search?: string,
     @Query('classId') classId?: string,
+    @Query('includeInactive') includeInactive?: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit?: number,
   ): Promise<StudentListResponseDto> {
@@ -68,6 +69,15 @@ export class StudentsController {
   @Roles('ADMIN')
   async update(@Param('id') id: string, @Body() dto: UpdateStudentDto): Promise<StudentDetailResponseDto> {
     return this.studentsService.update(id, dto);
+  }
+
+  @Patch('students/:id/active')
+  @Roles('ADMIN')
+  async setActive(
+    @Param('id') id: string,
+    @Body() dto: { isActive: boolean },
+  ): Promise<StudentDetailResponseDto> {
+    return this.studentsService.setActive(id, dto.isActive);
   }
 
   @Delete('students/:id')

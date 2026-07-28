@@ -25,6 +25,7 @@ export class StudentsService {
     page = 1,
     limit = 20,
     teacherClassIds?: string[],
+    includeInactive = false
   ) {
     const where: Prisma.StudentWhereInput = {};
     const activeYearId = await requireAcademicYearId(this.prisma).catch(() => null);
@@ -342,5 +343,16 @@ export class StudentsService {
       action: entry.action,
       date: entry.date.toISOString(),
     };
+  }
+
+  async setActive(id: string, isActive: boolean) {
+    await this.prisma.student.update({
+      where: { id },
+      data: {
+        isActive,
+      },
+    });
+
+    return this.findOne(id);
   }
 }
