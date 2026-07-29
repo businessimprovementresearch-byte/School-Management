@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl, Modal, Alert, Platform } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl, Modal, Alert, Platform, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import {
   useClassesControllerFindOne,
   useClassesControllerAssignTeacher,
   useClassesControllerRemoveTeacher,
+  useClassesControllerSetYearStatus,
   useTeachersControllerFindAll,
 } from '@/src/api/generated/api';
 import { useAuth } from '@/src/context/AuthContext';
@@ -49,6 +50,18 @@ export default function ClassDetailScreen() {
 
   const assignTeacherMutation = useClassesControllerAssignTeacher();
   const removeTeacherMutation = useClassesControllerRemoveTeacher();
+  const setYearStatusMutation = useClassesControllerSetYearStatus();
+
+  const handleToggleYearStatus = (value: boolean) => {
+    if (!data?.activeAcademicYearId) return;
+    setYearStatusMutation.mutate(
+      { classId, academicYearId: data.activeAcademicYearId, data: { isActive: value } },
+      {
+        onSuccess: () => refetch(),
+        onError: (e) => notify('Error', getErrorMessage(e, 'Failed to update class status')),
+      },
+    );
+  };
 
   const handleAssignTeacher = (teacherId: string) => {
     assignTeacherMutation.mutate(
@@ -90,6 +103,17 @@ export default function ClassDetailScreen() {
           <Text style={styles.className}>{data?.name ?? ''}</Text>
           <Text style={styles.classGrade}>Grade: {data?.grade ?? ''}</Text>
           {data?.description ? <Text style={styles.classDesc}>{data.description}</Text> : null}
+          {isAdmin && data?.activeAcademicYearId ? (
+            <View style={styles.yearStatusRow}>
+              <Text style={styles.yearStatusLabel}>Active this academic year</Text>
+              <Switch
+                value={data?.isActiveThisYear ?? true}
+                onValueChange={handleToggleYearStatus}
+                disabled={setYearStatusMutation.isPending}
+                trackColor={{ false: Colors.border, true: Colors.primary }}
+              />
+            </View>
+          ) : null}
         </View>
 
         {/* Teachers */}
@@ -214,6 +238,8 @@ const styles = StyleSheet.create({
   className: { fontSize: 22, fontWeight: '700', color: Colors.textPrimary },
   classGrade: { fontSize: 14, color: Colors.textSecondary, marginTop: 2 },
   classDesc: { fontSize: 14, color: Colors.textSecondary, marginTop: Spacing.sm },
+  yearStatusRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: Spacing.md, paddingTop: Spacing.md, borderTopWidth: 1, borderTopColor: Colors.divider },
+  yearStatusLabel: { fontSize: 13, fontWeight: '600', color: Colors.textPrimary },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary, marginTop: Spacing.lg, marginBottom: Spacing.sm },
   teacherRow: { marginBottom: Spacing.sm, maxHeight: 80 },
   teacherItem: { alignItems: 'center', marginRight: Spacing.lg, width: 70 },
@@ -241,7 +267,6 @@ const styles = StyleSheet.create({
   metricRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface, borderRadius: BorderRadius.sm, padding: Spacing.md, marginBottom: 4, gap: Spacing.sm },
   metricName: { flex: 1, fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
   metricType: { fontSize: 12, color: Colors.textSecondary },
-  sessionTerm: { fontSize: 12, color: Colors.textSecondary },
   holidayBadge: { backgroundColor: Colors.primary + '20', borderRadius: BorderRadius.full, paddingHorizontal: 8, paddingVertical: 2 },
   holidayBadgeText: { fontSize: 11, fontWeight: '700', color: Colors.primary },
 });

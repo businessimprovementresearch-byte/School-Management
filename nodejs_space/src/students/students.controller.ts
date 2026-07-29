@@ -51,7 +51,14 @@ export class StudentsController {
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit?: number,
   ): Promise<StudentListResponseDto> {
     const teacherClassIds = await this.getTeacherClassIds(req);
-    return this.studentsService.findAll(search, classId, page, limit, teacherClassIds);
+    return this.studentsService.findAll(
+      search,
+      classId,
+      page,
+      limit,
+      teacherClassIds,
+      includeInactive === 'true',
+    );
   }
 
   @Get('students/:id')

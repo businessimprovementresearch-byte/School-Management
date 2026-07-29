@@ -14,5 +14,6 @@ export interface StudentListItemDto {
   photoFileId: string | null;
   /** @nullable */
   photoUrl: string | null;
+  isActive: boolean;
   enrolledClasses: EnrolledClassDto[];
 }

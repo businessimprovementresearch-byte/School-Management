@@ -29,6 +29,9 @@ export class StudentsService {
   ) {
     const where: Prisma.StudentWhereInput = {};
     const activeYearId = await requireAcademicYearId(this.prisma).catch(() => null);
+    if (!includeInactive) {
+      where.isActive = true;
+    }
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -70,6 +73,7 @@ export class StudentsService {
         contactNumber: s.contactNumber,
         photoFileId: s.photoFileId,
         photoUrl: await this.uploadService.getFileUrlByFileId(s.photoFileId),
+        isActive: s.isActive,
         enrolledClasses: s.enrollments.map((e) => ({
           id: e.class.id,
           name: e.class.name,
@@ -170,6 +174,7 @@ export class StudentsService {
       contactNumber: student.contactNumber,
       photoFileId: student.photoFileId,
       photoUrl,
+      isActive: student.isActive,
       enrollments: student.enrollments.map((e) => ({
         id: e.id,
         classId: e.classId,

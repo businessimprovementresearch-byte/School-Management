@@ -77,6 +77,7 @@ export class StudentDetailResponseDto {
   @ApiProperty() contactNumber: string;
   @ApiProperty({ nullable: true, type: String }) photoFileId: string | null;
   @ApiProperty({ nullable: true, type: String }) photoUrl: string | null;
+  @ApiProperty() isActive: boolean;
   @ApiProperty({ type: () => [EnrollmentInfoDto] }) enrollments: EnrollmentInfoDto[];
   @ApiProperty({ type: () => AttendanceSummaryDto }) attendanceSummary: AttendanceSummaryDto;
   @ApiProperty({ type: () => [RecentAttendanceDto] }) recentAttendance: RecentAttendanceDto[];

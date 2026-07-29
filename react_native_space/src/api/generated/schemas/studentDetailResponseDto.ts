@@ -19,6 +19,7 @@ export interface StudentDetailResponseDto {
   photoFileId: string | null;
   /** @nullable */
   photoUrl: string | null;
+  isActive: boolean;
   enrollments: EnrollmentInfoDto[];
   attendanceSummary: AttendanceSummaryDto;
   recentAttendance: RecentAttendanceDto[];

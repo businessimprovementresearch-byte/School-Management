@@ -46,7 +46,14 @@ let StudentsController = class StudentsController {
     }
     async findAll(req, search, classId, page, limit) {
         const teacherClassIds = await this.getTeacherClassIds(req);
-        return this.studentsService.findAll(search, classId, page, limit, teacherClassIds);
+        return this.studentsService.findAll(
+        search,
+        classId,
+        page,
+        limit,
+        teacherClassIds,
+        includeInactive === 'true',
+        );
     }
     async findOne(id) {
         return this.studentsService.findOne(id);

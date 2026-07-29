@@ -16,11 +16,12 @@ export default function StudentsScreen() {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [selectedClass, setSelectedClass] = useState<string | undefined>(undefined);
+  const [showInactive, setShowInactive] = useState(false);
   const isAdmin = user?.role === 'ADMIN';
 
   const { data: classesData } = useClassesControllerFindAll();
   const { data, isLoading, refetch } = useStudentsControllerFindAll(
-    { search: search || undefined, classId: selectedClass, page: 1, limit: 100 },
+    { search: search || undefined, classId: selectedClass, page: 1, limit: 100, includeInactive: showInactive },
   );
   const [refreshing, setRefreshing] = useState(false);
 
@@ -72,6 +73,18 @@ export default function StudentsScreen() {
         ))}
       </View>
 
+      {isAdmin && (
+        <View style={styles.inactiveToggleRow}>
+          <Pressable
+            style={[styles.filterChip, showInactive && styles.filterChipActive]}
+            onPress={() => setShowInactive((v) => !v)}
+          >
+            <Ionicons name="eye-outline" size={12} color={showInactive ? '#fff' : Colors.textSecondary} />
+            <Text style={[styles.filterChipText, showInactive && styles.filterChipTextActive]}>Show inactive</Text>
+          </Pressable>
+        </View>
+      )}
+
       {isLoading ? <LoadingScreen /> : (
         <View style={{ flex: 1 }}>
           <FlashList
@@ -81,7 +94,14 @@ export default function StudentsScreen() {
               <Pressable style={styles.studentCard} onPress={() => router.push(`/student/${item?.id}`)}>
                 <Avatar uri={item?.photoUrl} name={item?.name} size={48} />
                 <View style={styles.studentInfo}>
-                  <Text style={styles.studentName}>{item?.name ?? ''}{item?.nickname ? ` (${item.nickname})` : ''}</Text>
+                  <View style={styles.studentNameRow}>
+                    <Text style={styles.studentName}>{item?.name ?? ''}{item?.nickname ? ` (${item.nickname})` : ''}</Text>
+                    {item && !item.isActive && (
+                      <View style={styles.inactivePill}>
+                        <Text style={styles.inactivePillText}>Inactive</Text>
+                      </View>
+                    )}
+                  </View>
                   <Text style={styles.studentParent}>{item?.parentName ?? ''}</Text>
                   <View style={styles.classChips}>
                     {(item?.enrolledClasses ?? []).map((c) => (
@@ -120,10 +140,14 @@ const styles = StyleSheet.create({
   },
   searchInput: { flex: 1, marginLeft: Spacing.sm, fontSize: 16, color: Colors.textPrimary },
   filterRow: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: Spacing.lg, gap: Spacing.sm, marginBottom: Spacing.sm },
-  filterChip: { backgroundColor: Colors.surface, paddingHorizontal: Spacing.md, paddingVertical: Spacing.xs, borderRadius: BorderRadius.full, borderWidth: 1, borderColor: Colors.border },
+  filterChip: { backgroundColor: Colors.surface, paddingHorizontal: Spacing.md, paddingVertical: Spacing.xs, borderRadius: BorderRadius.full, borderWidth: 1, borderColor: Colors.border, flexDirection: 'row', alignItems: 'center', gap: 4 },
   filterChipActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
   filterChipText: { fontSize: 12, color: Colors.textSecondary, fontWeight: '600' },
   filterChipTextActive: { color: '#fff' },
+  inactiveToggleRow: { paddingHorizontal: Spacing.lg, marginBottom: Spacing.sm },
+  studentNameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  inactivePill: { backgroundColor: Colors.textSecondary + '18', paddingHorizontal: 6, paddingVertical: 1, borderRadius: BorderRadius.full },
+  inactivePillText: { fontSize: 10, fontWeight: '700', color: Colors.textSecondary },
   studentCard: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface,
     marginHorizontal: Spacing.lg, marginBottom: Spacing.sm, padding: Spacing.lg,
