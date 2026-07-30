@@ -74,6 +74,13 @@ export default function StudentDetailScreen() {
   const isEnrolledThisYear = !activeYear || (data?.enrollments ?? []).some((e) => e?.academicYearId === activeYear.id);
   const mostRecentClassId = data?.enrollments?.[0]?.classId;
 
+  // Classes tab should only show what the student is enrolled in *right now*
+  // (the active academic year). Past years/classes are history, not
+  // "current classes" — that full history lives in the Progress timeline.
+  const currentYearEnrollments = (data?.enrollments ?? []).filter(
+    (e) => !activeYear || e?.academicYearId === activeYear.id,
+  );
+
   // Backend stamps every enrollment row "ACTIVE" the moment it's created and
   // never flips it when a new academic year starts — so a 2025-2026 row still
   // reads "ACTIVE" even after 2026-2027 has begun. Only trust the raw status
@@ -229,7 +236,7 @@ export default function StudentDetailScreen() {
 
         {activeTab === 'classes' && (
           <View>
-            {(data?.enrollments ?? []).map((e) => (
+            {currentYearEnrollments.map((e) => (
               <View key={e?.id} style={styles.card}>
                 <Pressable style={{ flex: 1 }} onPress={() => router.push(`/class/${e?.classId}`)}>
                   <Text style={styles.cardTitle}>{e?.className ?? ''}</Text>
@@ -248,7 +255,7 @@ export default function StudentDetailScreen() {
                 )}
               </View>
             ))}
-            {(data?.enrollments?.length ?? 0) === 0 && <Text style={styles.emptyText}>No enrollments</Text>}
+            {currentYearEnrollments.length === 0 && <Text style={styles.emptyText}>No enrollments</Text>}
 
             {isAdmin && missingYears.length > 0 && (
               <View style={styles.addYearSection}>
