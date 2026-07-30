@@ -20,6 +20,8 @@ export interface StudentDetailResponseDto {
   /** @nullable */
   contactNumber: string | null;
   /** @nullable */
+  remarks: string | null;
+  /** @nullable */
   photoFileId: string | null;
   /** @nullable */
   photoUrl: string | null;

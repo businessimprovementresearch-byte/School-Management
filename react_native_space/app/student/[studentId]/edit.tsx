@@ -18,6 +18,7 @@ export default function EditStudentScreen() {
   const [parentName, setParentName] = useState('');
   const [dob, setDob] = useState('');
   const [contactNumber, setContactNumber] = useState('');
+  const [remarks, setRemarks] = useState('');
 
   useEffect(() => {
     if (data) {
@@ -26,12 +27,13 @@ export default function EditStudentScreen() {
       setParentName(data?.parentName ?? '');
       setDob(data?.dob ? data.dob.split('T')[0] : '');
       setContactNumber(data?.contactNumber ?? '');
+      setRemarks(data?.remarks ?? '');
     }
   }, [data]);
 
   const handleSave = async () => {
     try {
-      await updateMutation.mutateAsync({ id: studentId, data: { name, nickname, parentName, dob, contactNumber } });
+      await updateMutation.mutateAsync({ id: studentId, data: { name, nickname, parentName, dob, contactNumber, remarks } });
       router.back();
     } catch (e) {
       Alert.alert('Error', getErrorMessage(e, 'Failed to update student'));
@@ -56,6 +58,17 @@ export default function EditStudentScreen() {
         <TextInput style={styles.input} value={dob} onChangeText={setDob} />
         <Text style={styles.label}>Contact Number</Text>
         <TextInput style={styles.input} value={contactNumber} onChangeText={setContactNumber} keyboardType="phone-pad" />
+        <Text style={styles.label}>Remarks</Text>
+        <TextInput
+          style={[styles.input, styles.textArea]}
+          value={remarks}
+          onChangeText={setRemarks}
+          placeholder="Special notes or comments about this student"
+          placeholderTextColor={Colors.textSecondary + '80'}
+          multiline
+          numberOfLines={4}
+          textAlignVertical="top"
+        />
 
         <Pressable style={styles.saveButton} onPress={handleSave} disabled={updateMutation.isPending}>
           {updateMutation.isPending ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>Save Changes</Text>}
@@ -72,6 +85,7 @@ const styles = StyleSheet.create({
   content: { padding: Spacing.lg },
   label: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary, marginBottom: Spacing.xs, marginTop: Spacing.md },
   input: { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: BorderRadius.md, padding: Spacing.md, fontSize: 16, color: Colors.textPrimary },
+  textArea: { minHeight: 100, paddingTop: Spacing.md },
   saveButton: { backgroundColor: Colors.primary, borderRadius: BorderRadius.md, padding: Spacing.lg, alignItems: 'center', marginTop: Spacing.xxl },
   saveText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });

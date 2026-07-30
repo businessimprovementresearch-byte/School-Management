@@ -75,6 +75,7 @@ export class StudentDetailResponseDto {
   @ApiProperty({ nullable: true, type: String }) dob: string | null;
   @ApiProperty({ nullable: true, type: Number }) age: number | null;
   @ApiProperty({ nullable: true, type: String }) contactNumber: string | null;
+  @ApiProperty({ nullable: true, type: String }) remarks: string | null;
   @ApiProperty({ nullable: true, type: String }) photoFileId: string | null;
   @ApiProperty({ nullable: true, type: String }) photoUrl: string | null;
   @ApiProperty({ type: () => [EnrollmentInfoDto] }) enrollments: EnrollmentInfoDto[];

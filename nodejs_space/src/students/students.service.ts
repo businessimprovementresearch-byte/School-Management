@@ -169,6 +169,7 @@ export class StudentsService {
       dob: student.dob ? student.dob.toISOString() : null,
       age: this.calculateAge(student.dob),
       contactNumber: student.contactNumber,
+      remarks: student.remarks,
       photoFileId: student.photoFileId,
       photoUrl,
       enrollments: student.enrollments.map((e) => ({
@@ -231,6 +232,7 @@ export class StudentsService {
     parentName?: string;
     dob?: string;
     contactNumber?: string;
+    remarks?: string;
     photoFileId?: string | null;
     classIds?: string[];
   }) {
@@ -244,6 +246,7 @@ export class StudentsService {
         parentName: data.parentName ?? null,
         dob: data.dob ? new Date(data.dob) : null,
         contactNumber: data.contactNumber ?? null,
+        remarks: data.remarks ?? null,
         photoFileId: data.photoFileId ?? null,
         enrollments: data.classIds?.length
           ? { create: data.classIds.map((cid) => ({ classId: cid, academicYearId: academicYearId! })) }
@@ -261,6 +264,7 @@ export class StudentsService {
       parentName?: string;
       dob?: string;
       contactNumber?: string;
+      remarks?: string;
       photoFileId?: string | null;
     },
   ) {
@@ -272,6 +276,7 @@ export class StudentsService {
         ...(data.parentName !== undefined ? { parentName: data.parentName } : {}),
         ...(data.dob !== undefined ? { dob: new Date(data.dob) } : {}),
         ...(data.contactNumber !== undefined ? { contactNumber: data.contactNumber } : {}),
+        ...(data.remarks !== undefined ? { remarks: data.remarks } : {}),
         ...(data.photoFileId !== undefined ? { photoFileId: data.photoFileId } : {}),
       },
     });

@@ -216,6 +216,17 @@ export default function StudentDetailScreen() {
           ))}
         </ScrollView>
 
+        {/* Notes / Remarks */}
+        {!!data?.remarks && (
+          <View style={styles.notesCard}>
+            <View style={styles.notesHeader}>
+              <Ionicons name="document-text-outline" size={16} color={Colors.textSecondary} />
+              <Text style={styles.notesTitle}>Notes</Text>
+            </View>
+            <Text style={styles.notesText}>{data.remarks}</Text>
+          </View>
+        )}
+
         {activeTab === 'classes' && (
           <View>
             {(data?.enrollments ?? []).map((e) => (
@@ -359,6 +370,10 @@ const styles = StyleSheet.create({
   tabActive: { backgroundColor: Colors.primary },
   tabText: { fontSize: 14, fontWeight: '600', color: Colors.textSecondary },
   tabTextActive: { color: '#fff' },
+  notesCard: { backgroundColor: Colors.surface, borderRadius: BorderRadius.md, padding: Spacing.lg, marginBottom: Spacing.lg },
+  notesHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: Spacing.xs },
+  notesTitle: { fontSize: 13, fontWeight: '700', color: Colors.textSecondary, textTransform: 'uppercase' },
+  notesText: { fontSize: 14, color: Colors.textPrimary, lineHeight: 20 },
   card: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface,
     borderRadius: BorderRadius.md, padding: Spacing.lg, marginBottom: Spacing.sm,

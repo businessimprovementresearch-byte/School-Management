@@ -20,6 +20,10 @@ export class CreateStudentDto {
   @IsOptional()
   contactNumber?: string;
 
+  @IsString()
+  @IsOptional()
+  remarks?: string;
+
   @IsUUID()
   @IsOptional()
   photoFileId?: string | null;
