@@ -299,6 +299,16 @@ export class StudentsService {
     const enrollment = existing ?? await this.prisma.classEnrollment.create({
       data: { studentId, classId, academicYearId: yearId },
     });
+    if (!existing) {
+      await this.prisma.studentClassHistory.create({
+        data: {
+          studentId,
+          classId,
+          academicYearId: yearId,
+          action: 'ENROLLED',
+        },
+      });
+    }
     return {
       id: enrollment.id,
       studentId: enrollment.studentId,
@@ -310,6 +320,7 @@ export class StudentsService {
   }
 
   async updateEnrollment(enrollmentId: string, data: { status?: string; classId?: string }) {
+    const existing = await this.prisma.classEnrollment.findUnique({ where: { id: enrollmentId } });
     const enrollment = await this.prisma.classEnrollment.update({
       where: { id: enrollmentId },
       data: {
@@ -318,6 +329,16 @@ export class StudentsService {
       },
       include: { class: true, academicYear: true },
     });
+    if (data.classId && existing && data.classId !== existing.classId) {
+      await this.prisma.studentClassHistory.create({
+        data: {
+          studentId: enrollment.studentId,
+          classId: data.classId,
+          academicYearId: enrollment.academicYearId,
+          action: 'PROMOTED',
+        },
+      });
+    }
     return {
       id: enrollment.id,
       status: enrollment.status,

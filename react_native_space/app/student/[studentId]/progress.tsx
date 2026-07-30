@@ -19,6 +19,13 @@ export default function StudentProgressScreen() {
   const { data: student } = useStudentsControllerFindOne(studentId, { query: { enabled: !!studentId } });
   const enrollments = student?.enrollments ?? [];
   const [selectedClassId, setSelectedClassId] = useState<string | undefined>(undefined);
+  const classHistory = [...(student?.classHistory ?? [])].sort(
+    (a, b) => new Date(a?.date ?? 0).getTime() - new Date(b?.date ?? 0).getTime(),
+  );
+  const formatAction = (action?: string) => {
+    if (!action) return '';
+    return action.charAt(0) + action.slice(1).toLowerCase();
+  };
 
   const classId = selectedClassId || (enrollments?.[0]?.classId ?? undefined);
   const { data, isLoading } = useProgressControllerFindByStudent(
@@ -49,6 +56,19 @@ export default function StudentProgressScreen() {
         <Text style={styles.topTitle}>Progress</Text>
         <View style={{ width: 24 }} />
       </View>
+      {classHistory.length > 0 && (
+        <View style={styles.timelineCard}>
+          <Text style={styles.timelineTitle}>Class History</Text>
+          {classHistory.map((h) => (
+            <View key={h?.id} style={styles.timelineRow}>
+              <Text style={styles.timelineYear}>{h?.academicYearName ?? ''}</Text>
+              <Text style={styles.timelineDetail}>
+                {h?.className ?? ''} → {formatAction(h?.action)}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.classSelector}>
         {enrollments.map((e) => (
           <Pressable key={e?.classId} style={[styles.chip, classId === e?.classId && styles.chipActive]} onPress={() => setSelectedClassId(e?.classId)}>
@@ -105,6 +125,11 @@ const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.lg, paddingVertical: Spacing.md },
   topTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
   classSelector: { paddingHorizontal: Spacing.lg, marginBottom: Spacing.md, maxHeight: 40 },
+  timelineCard: { backgroundColor: Colors.surface, borderRadius: BorderRadius.md, padding: Spacing.lg, marginHorizontal: Spacing.lg, marginBottom: Spacing.md },
+  timelineTitle: { fontSize: 13, fontWeight: '700', color: Colors.textSecondary, textTransform: 'uppercase', marginBottom: Spacing.sm },
+  timelineRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: Spacing.xs, gap: Spacing.md },
+  timelineYear: { fontSize: 13, color: Colors.textSecondary, width: 90 },
+  timelineDetail: { fontSize: 14, color: Colors.textPrimary, fontWeight: '600', flex: 1 },
   chip: { backgroundColor: Colors.surface, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, borderRadius: BorderRadius.full, marginRight: Spacing.sm, borderWidth: 1, borderColor: Colors.border },
   chipActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
   chipText: { fontSize: 13, fontWeight: '600', color: Colors.textSecondary },
