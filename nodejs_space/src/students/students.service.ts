@@ -11,7 +11,8 @@ export class StudentsService {
     private uploadService: UploadService,
   ) { }
 
-  private calculateAge(dob: Date): number {
+  private calculateAge(dob: Date | null): number | null {
+    if (!dob) return null;
     const today = new Date();
     let age = today.getFullYear() - dob.getFullYear();
     const m = today.getMonth() - dob.getMonth();
@@ -29,9 +30,6 @@ export class StudentsService {
   ) {
     const where: Prisma.StudentWhereInput = {};
     const activeYearId = await requireAcademicYearId(this.prisma).catch(() => null);
-    if (!includeInactive) {
-      where.isActive = true;
-    }
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -68,12 +66,11 @@ export class StudentsService {
         name: s.name,
         nickname: s.nickname,
         parentName: s.parentName,
-        dob: s.dob.toISOString(),
+        dob: s.dob ? s.dob.toISOString() : null,
         age: this.calculateAge(s.dob),
         contactNumber: s.contactNumber,
         photoFileId: s.photoFileId,
         photoUrl: await this.uploadService.getFileUrlByFileId(s.photoFileId),
-        isActive: s.isActive,
         enrolledClasses: s.enrollments.map((e) => ({
           id: e.class.id,
           name: e.class.name,
@@ -169,12 +166,11 @@ export class StudentsService {
       name: student.name,
       nickname: student.nickname,
       parentName: student.parentName,
-      dob: student.dob.toISOString(),
+      dob: student.dob ? student.dob.toISOString() : null,
       age: this.calculateAge(student.dob),
       contactNumber: student.contactNumber,
       photoFileId: student.photoFileId,
       photoUrl,
-      isActive: student.isActive,
       enrollments: student.enrollments.map((e) => ({
         id: e.id,
         classId: e.classId,
@@ -232,9 +228,9 @@ export class StudentsService {
   async create(data: {
     name: string;
     nickname?: string;
-    parentName: string;
-    dob: string;
-    contactNumber: string;
+    parentName?: string;
+    dob?: string;
+    contactNumber?: string;
     photoFileId?: string | null;
     classIds?: string[];
   }) {
@@ -245,9 +241,9 @@ export class StudentsService {
       data: {
         name: data.name,
         nickname: data.nickname ?? null,
-        parentName: data.parentName,
-        dob: new Date(data.dob),
-        contactNumber: data.contactNumber,
+        parentName: data.parentName ?? null,
+        dob: data.dob ? new Date(data.dob) : null,
+        contactNumber: data.contactNumber ?? null,
         photoFileId: data.photoFileId ?? null,
         enrollments: data.classIds?.length
           ? { create: data.classIds.map((cid) => ({ classId: cid, academicYearId: academicYearId! })) }

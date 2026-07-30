@@ -7,7 +7,6 @@ import { Colors, Spacing, BorderRadius } from '@/src/theme';
 import {
   useStudentsControllerFindOne,
   useStudentsControllerRemove,
-  useStudentsControllerSetActive,
   useAcademicYearsControllerFindAll,
   useStudentsControllerAddEnrollment,
   useStudentsControllerUpdateEnrollment,
@@ -51,7 +50,6 @@ export default function StudentDetailScreen() {
   const updateEnrollmentMutation = useStudentsControllerUpdateEnrollment();
   const deleteEnrollmentMutation = useStudentsControllerDeleteEnrollment();
   const deleteMutation = useStudentsControllerRemove();
-  const setActiveMutation = useStudentsControllerSetActive();
 
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('classes');
@@ -147,28 +145,10 @@ export default function StudentDetailScreen() {
   const enrolledYearIds = new Set((data?.enrollments ?? []).map((e) => e?.academicYearId));
   const missingYears = (academicYears ?? []).filter((y) => y?.id && !enrolledYearIds.has(y.id));
 
-  const handleToggleActive = async () => {
-    const nextActive = !(data?.isActive ?? true);
-    const confirmed = await confirmAsync(
-      nextActive ? 'Reactivate Student' : 'Deactivate Student',
-      nextActive
-        ? `Reactivate ${data?.name ?? 'this student'}? They'll show up in the active students list again.`
-        : `Deactivate ${data?.name ?? 'this student'}? Their records (attendance, progress, history) are kept, but they'll be hidden from the active students list.`,
-    );
-    if (!confirmed) return;
-    setActiveMutation.mutate(
-      { id: studentId, data: { isActive: nextActive } },
-      {
-        onSuccess: () => refetch(),
-        onError: (e) => notify('Error', getErrorMessage(e, 'Failed to update student status')),
-      },
-    );
-  };
-
   const handleDelete = async () => {
     const confirmed = await confirmAsync(
-      'Delete Student Permanently',
-      `Permanently delete ${data?.name ?? 'this student'}? This also erases their attendance, progress, and history. This cannot be undone — use "Deactivate" instead if you just want to archive them.`,
+      'Delete Student',
+      `Remove ${data?.name ?? 'this student'} permanently? This cannot be undone.`,
     );
     if (!confirmed) return;
     deleteMutation.mutate(
@@ -210,12 +190,6 @@ export default function StudentDetailScreen() {
           <Avatar uri={data?.photoUrl} name={data?.name} size={80} />
           <Text style={styles.name}>{data?.name ?? ''}</Text>
           {!!data?.nickname && <Text style={styles.nickname}>"{data.nickname}"</Text>}
-          {data && !data.isActive && (
-            <View style={styles.inactiveBadge}>
-              <Ionicons name="person-remove-outline" size={12} color={Colors.textSecondary} />
-              <Text style={styles.inactiveBadgeText}>Inactive</Text>
-            </View>
-          )}
           <Text style={styles.info}>Age: {data?.age ?? ''} | Parent: {data?.parentName ?? ''}</Text>
           <Text style={styles.info}>{data?.contactNumber ?? ''}</Text>
           {!isEnrolledThisYear && (
@@ -361,28 +335,10 @@ export default function StudentDetailScreen() {
         </Pressable>
 
         {isAdmin && (
-          <>
-            <Pressable
-              style={[styles.deactivateButton, !data?.isActive && styles.reactivateButton]}
-              onPress={handleToggleActive}
-              disabled={setActiveMutation.isPending}
-            >
-              <Ionicons
-                name={data?.isActive ? 'person-remove-outline' : 'person-add-outline'}
-                size={18}
-                color={data?.isActive ? Colors.warning : Colors.success}
-              />
-              <Text style={[styles.deactivateButtonText, !data?.isActive && styles.reactivateButtonText]}>
-                {setActiveMutation.isPending
-                  ? 'Updating...'
-                  : data?.isActive ? 'Deactivate Student' : 'Reactivate Student'}
-              </Text>
-            </Pressable>
-            <Pressable style={styles.deleteButton} onPress={handleDelete} disabled={deleteMutation.isPending}>
-              <Ionicons name="trash-outline" size={18} color={Colors.error} />
-              <Text style={styles.deleteButtonText}>{deleteMutation.isPending ? 'Deleting...' : 'Delete Permanently'}</Text>
-            </Pressable>
-          </>
+          <Pressable style={styles.deleteButton} onPress={handleDelete} disabled={deleteMutation.isPending}>
+            <Ionicons name="trash-outline" size={18} color={Colors.error} />
+            <Text style={styles.deleteButtonText}>{deleteMutation.isPending ? 'Deleting...' : 'Delete Student'}</Text>
+          </Pressable>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -428,12 +384,6 @@ const styles = StyleSheet.create({
   reEnrollBtnText: { fontSize: 12, fontWeight: '700', color: '#fff' },
   deleteButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.error, borderRadius: BorderRadius.md, padding: Spacing.lg, marginTop: Spacing.md, gap: Spacing.sm },
   deleteButtonText: { fontSize: 16, fontWeight: '600', color: Colors.error },
-  inactiveBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: Colors.textSecondary + '14', borderRadius: BorderRadius.full, paddingHorizontal: Spacing.md, paddingVertical: 4, marginTop: Spacing.sm },
-  inactiveBadgeText: { fontSize: 12, fontWeight: '700', color: Colors.textSecondary },
-  deactivateButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.warning, borderRadius: BorderRadius.md, padding: Spacing.lg, marginTop: Spacing.xl, gap: Spacing.sm },
-  deactivateButtonText: { fontSize: 16, fontWeight: '600', color: Colors.warning },
-  reactivateButton: { borderColor: Colors.success },
-  reactivateButtonText: { color: Colors.success },
   cardIconBtn: { padding: 6, marginLeft: 4 },
   addYearSection: { marginTop: Spacing.md, backgroundColor: Colors.surface, borderRadius: BorderRadius.md, padding: Spacing.md },
   addYearLabel: { fontSize: 13, color: Colors.textSecondary, marginBottom: Spacing.sm },

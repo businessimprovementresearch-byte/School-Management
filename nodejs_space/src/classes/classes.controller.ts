@@ -65,7 +65,7 @@ export class ClassesController {
     @Param('classId') classId: string,
     @Param('academicYearId') academicYearId: string,
     @Body() dto: { isActive: boolean },
-  ): Promise<ClassDetailResponseDto> {
+  ) {
     return this.classesService.setYearStatus(
       classId,
       academicYearId,

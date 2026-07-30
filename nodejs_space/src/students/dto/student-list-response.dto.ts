@@ -10,13 +10,12 @@ export class StudentListItemDto {
   @ApiProperty() id: string;
   @ApiProperty() name: string;
   @ApiProperty({ nullable: true, type: String }) nickname: string | null;
-  @ApiProperty() parentName: string;
-  @ApiProperty() dob: string;
-  @ApiProperty() age: number;
-  @ApiProperty() contactNumber: string;
+  @ApiProperty({ nullable: true, type: String }) parentName: string | null;
+  @ApiProperty({ nullable: true, type: String }) dob: string | null;
+  @ApiProperty({ nullable: true, type: Number }) age: number | null;
+  @ApiProperty({ nullable: true, type: String }) contactNumber: string | null;
   @ApiProperty({ nullable: true, type: String }) photoFileId: string | null;
   @ApiProperty({ nullable: true, type: String }) photoUrl: string | null;
-  @ApiProperty() isActive: boolean;
   @ApiProperty({ type: () => [EnrolledClassDto] }) enrolledClasses: EnrolledClassDto[];
 }
 

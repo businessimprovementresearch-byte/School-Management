@@ -26,13 +26,20 @@ export default function AddStudentScreen() {
   };
 
   const handleSave = async () => {
-    if (!name.trim() || !parentName.trim() || !dob.trim() || !contactNumber.trim()) {
-      Alert.alert('Error', 'Please fill all required fields');
+    if (!name.trim()) {
+      Alert.alert('Error', 'Please fill in the student name');
       return;
     }
     try {
       await createMutation.mutateAsync({
-        data: { name: name.trim(), nickname: nickname.trim() || undefined, parentName: parentName.trim(), dob, contactNumber: contactNumber.trim(), classIds: selectedClasses },
+        data: {
+          name: name.trim(),
+          nickname: nickname.trim() || undefined,
+          parentName: parentName.trim() || undefined,
+          dob: dob.trim() || undefined,
+          contactNumber: contactNumber.trim() || undefined,
+          classIds: selectedClasses,
+        },
       });
       router.back();
     } catch (e) {
@@ -52,11 +59,11 @@ export default function AddStudentScreen() {
         <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Student name" placeholderTextColor={Colors.textSecondary + '80'} />
         <Text style={styles.label}>Nickname</Text>
         <TextInput style={styles.input} value={nickname} onChangeText={setNickname} placeholder="What the student prefers to be called" placeholderTextColor={Colors.textSecondary + '80'} />
-        <Text style={styles.label}>Parent Name *</Text>
+        <Text style={styles.label}>Parent Name</Text>
         <TextInput style={styles.input} value={parentName} onChangeText={setParentName} placeholder="Parent/Guardian name" placeholderTextColor={Colors.textSecondary + '80'} />
-        <Text style={styles.label}>Date of Birth * (YYYY-MM-DD)</Text>
+        <Text style={styles.label}>Date of Birth (YYYY-MM-DD)</Text>
         <TextInput style={styles.input} value={dob} onChangeText={setDob} placeholder="2015-06-15" placeholderTextColor={Colors.textSecondary + '80'} />
-        <Text style={styles.label}>Contact Number *</Text>
+        <Text style={styles.label}>Contact Number</Text>
         <TextInput style={styles.input} value={contactNumber} onChangeText={setContactNumber} placeholder="+65 xxxx xxxx" placeholderTextColor={Colors.textSecondary + '80'} keyboardType="phone-pad" />
 
         <Text style={[styles.label, { marginTop: Spacing.xl }]}>Enroll in Classes</Text>

@@ -29,8 +29,6 @@ export class ClassDetailResponseDto {
   @ApiProperty() name: string;
   @ApiProperty() grade: string;
   @ApiProperty({ nullable: true, type: String }) description: string | null;
-  @ApiProperty({ nullable: true, type: String }) activeAcademicYearId: string | null;
-  @ApiProperty() isActiveThisYear: boolean;
   @ApiProperty({ type: () => [ClassTeacherDto] }) teachers: ClassTeacherDto[];
   @ApiProperty({ type: () => [ClassStudentDto] }) students: ClassStudentDto[];
   @ApiProperty({ type: () => [ClassSessionInfoDto] }) sessions: ClassSessionInfoDto[];

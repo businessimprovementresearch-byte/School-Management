@@ -11,15 +11,18 @@ export interface StudentDetailResponseDto {
   name: string;
   /** @nullable */
   nickname: string | null;
-  parentName: string;
-  dob: string;
-  age: number;
-  contactNumber: string;
+  /** @nullable */
+  parentName: string | null;
+  /** @nullable */
+  dob: string | null;
+  /** @nullable */
+  age: number | null;
+  /** @nullable */
+  contactNumber: string | null;
   /** @nullable */
   photoFileId: string | null;
   /** @nullable */
   photoUrl: string | null;
-  isActive: boolean;
   enrollments: EnrollmentInfoDto[];
   attendanceSummary: AttendanceSummaryDto;
   recentAttendance: RecentAttendanceDto[];

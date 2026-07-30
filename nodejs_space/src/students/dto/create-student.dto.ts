@@ -9,13 +9,16 @@ export class CreateStudentDto {
   nickname?: string;
 
   @IsString()
-  parentName: string;
+  @IsOptional()
+  parentName?: string;
 
   @IsDateString()
-  dob: string;
+  @IsOptional()
+  dob?: string;
 
   @IsString()
-  contactNumber: string;
+  @IsOptional()
+  contactNumber?: string;
 
   @IsUUID()
   @IsOptional()

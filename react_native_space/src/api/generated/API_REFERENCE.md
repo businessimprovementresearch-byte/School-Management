@@ -336,7 +336,7 @@ Import from `@/src/api/generated/schemas`. Field signatures (derived from swagge
 - `CreateMetricDto`: `{ name: string; description?: string | null; classId: string; type: string }`
 - `CreateProgressDto`: `{ studentId: string; progressMetricId: string; classSessionId: string; value: number; notes?: string | null }`
 - `CreateSessionDto`: `{ classId: string; date: string; academicYearId: string; termId?: string | null }`
-- `CreateStudentDto`: `{ name: string; parentName: string; dob: string; contactNumber: string; photoFileId?: string | null; classIds?: string[] }`
+- `CreateStudentDto`: `{ name: string; parentName?: string; dob?: string; contactNumber?: string; photoFileId?: string | null; classIds?: string[] }`
 - `CreateTeacherDto`: `{ email: string; password: string; name: string; dob: string; contactNumber: string; photoFileId?: string | null; classIds?: string[] }`
 - `CreateTermDto`: `{ name: string; startDate: string; endDate: string; academicYearId: string }`
 - `DashboardFeedbackDto`: `{ id: string; classSessionId: string; teacherId: string; teacherName: string; studentId: string | null; studentName: string | null; content: string; type: string; createdAt: string }`
@@ -386,8 +386,8 @@ Import from `@/src/api/generated/schemas`. Field signatures (derived from swagge
 - `SignupResponseDto`: `{ id: string; email: string; name: string; role: string }`
 - `StudentAttendanceEntry`: `{ studentId: string; status: string }`
 - `StudentBreakdownDto`: `{ studentId: string; studentName: string; present: number; absent: number; late: number; excused: number; total: number; percentage: number }`
-- `StudentDetailResponseDto`: `{ id: string; name: string; parentName: string; dob: string; age: number; contactNumber: string; photoFileId: string | null; photoUrl: string | null; enrollments: EnrollmentInfoDto[]; attendanceSummary: AttendanceSummaryDto; recentAttendance: RecentAttendanceDto[]; progress: ProgressInfoDto[]; feedback: FeedbackInfoDto[]; classHistory: ClassHistoryInfoDto[]; createdAt: string }`
-- `StudentListItemDto`: `{ id: string; name: string; parentName: string; dob: string; age: number; contactNumber: string; photoFileId: string | null; photoUrl: string | null; enrolledClasses: EnrolledClassDto[] }`
+- `StudentDetailResponseDto`: `{ id: string; name: string; parentName: string | null; dob: string | null; age: number | null; contactNumber: string | null; photoFileId: string | null; photoUrl: string | null; enrollments: EnrollmentInfoDto[]; attendanceSummary: AttendanceSummaryDto; recentAttendance: RecentAttendanceDto[]; progress: ProgressInfoDto[]; feedback: FeedbackInfoDto[]; classHistory: ClassHistoryInfoDto[]; createdAt: string }`
+- `StudentListItemDto`: `{ id: string; name: string; parentName: string | null; dob: string | null; age: number | null; contactNumber: string | null; photoFileId: string | null; photoUrl: string | null; enrolledClasses: EnrolledClassDto[] }`
 - `StudentListResponseDto`: `{ items: StudentListItemDto[]; total: number; page: number; totalPages: number }`
 - `StudentsControllerFindAllParams`: `unknown`
 - `SuccessResponseDto`: `{ success: boolean }`

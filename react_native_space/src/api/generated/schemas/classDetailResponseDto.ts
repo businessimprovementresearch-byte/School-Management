@@ -10,9 +10,6 @@ export interface ClassDetailResponseDto {
   grade: string;
   /** @nullable */
   description: string | null;
-  /** @nullable */
-  activeAcademicYearId: string | null;
-  isActiveThisYear: boolean;
   teachers: ClassTeacherDto[];
   students: ClassStudentDto[];
   sessions: ClassSessionInfoDto[];

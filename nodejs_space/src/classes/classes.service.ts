@@ -106,19 +106,11 @@ export class ClassesService {
     });
     if (!cls) throw new NotFoundException('Class not found');
 
-    const yearStatus = activeYearId
-      ? await this.prisma.classYearStatus.findUnique({
-          where: { classId_academicYearId: { classId: id, academicYearId: activeYearId } },
-        })
-      : null;
-
     return {
       id: cls.id,
       name: cls.name,
       grade: cls.grade,
       description: cls.description,
-      activeAcademicYearId: activeYearId,
-      isActiveThisYear: yearStatus ? yearStatus.isActive : true,
       teachers: await Promise.all(
         cls.assignments.map(async (a) => ({
           id: a.teacher.id,
@@ -171,7 +163,7 @@ export class ClassesService {
     academicYearId: string,
     isActive: boolean,
   ) {
-    await this.prisma.classYearStatus.upsert({
+    return this.prisma.classYearStatus.upsert({
       where: {
         classId_academicYearId: {
           classId,
@@ -187,7 +179,6 @@ export class ClassesService {
         isActive,
       },
     });
-    return this.findOne(classId);
   }
   async create(data: { name: string; grade: string; description?: string }) {
     const cls = await this.prisma.class.create({ data });
