@@ -85,11 +85,13 @@ model Teacher {
 
 model Student {
   id                  String                @id @default(uuid())
+  studentIdNumber     String?               @unique
   name                String
   nickname            String?
   parentName          String?
   dob                 DateTime?
   contactNumber       String?
+  studentContactNumber String?
   remarks             String?                @db.Text
   photoFileId         String?
   createdAt           DateTime              @default(now())

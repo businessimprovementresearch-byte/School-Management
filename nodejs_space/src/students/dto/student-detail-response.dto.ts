@@ -85,4 +85,6 @@ export class StudentDetailResponseDto {
   @ApiProperty({ type: () => [FeedbackInfoDto] }) feedback: FeedbackInfoDto[];
   @ApiProperty({ type: () => [ClassHistoryInfoDto] }) classHistory: ClassHistoryInfoDto[];
   @ApiProperty() createdAt: string;
+  @ApiProperty({ nullable: true, type: String }) studentContactNumber: string | null;
+  @ApiProperty({ nullable: true, type: String }) studentIdNumber: string | null;
 }

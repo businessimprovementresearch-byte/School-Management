@@ -1,7 +1,7 @@
 import * as ImagePicker from 'expo-image-picker';
 import { uploadControllerGetPresignedUrl, uploadControllerCompleteUpload } from '@/src/api/generated/api';
 
-export type UploadResult = { fileId: string };
+export type UploadResult = { fileId: string; uri: string };
 
 /**
  * Launches the image library, uploads the chosen image to S3 via the backend
@@ -57,5 +57,5 @@ export async function pickAndUploadPhoto(): Promise<UploadResult | null> {
     fileSize: (blob as any)?.size ?? undefined,
   });
 
-  return { fileId: completed?.id ?? '' };
+  return { fileId: completed?.id ?? '', uri };
 }

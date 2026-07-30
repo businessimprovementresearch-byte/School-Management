@@ -63,6 +63,7 @@ export class StudentsService {
     const mappedItems = await Promise.all(
       items.map(async (s) => ({
         id: s.id,
+        studentIdNumber: s.studentIdNumber,
         name: s.name,
         nickname: s.nickname,
         parentName: s.parentName,
@@ -163,12 +164,14 @@ export class StudentsService {
 
     return {
       id: student.id,
+      studentIdNumber: student.studentIdNumber,
       name: student.name,
       nickname: student.nickname,
       parentName: student.parentName,
       dob: student.dob ? student.dob.toISOString() : null,
       age: this.calculateAge(student.dob),
       contactNumber: student.contactNumber,
+      studentContactNumber: student.studentContactNumber,
       remarks: student.remarks,
       photoFileId: student.photoFileId,
       photoUrl,
@@ -227,11 +230,13 @@ export class StudentsService {
   }
 
   async create(data: {
+    studentIdNumber?: string;
     name: string;
     nickname?: string;
     parentName?: string;
     dob?: string;
     contactNumber?: string;
+    studentContactNumber?: string;
     remarks?: string;
     photoFileId?: string | null;
     classIds?: string[];
@@ -241,11 +246,13 @@ export class StudentsService {
       : undefined;
     const student = await this.prisma.student.create({
       data: {
+        studentIdNumber: data.studentIdNumber ?? null,
         name: data.name,
         nickname: data.nickname ?? null,
         parentName: data.parentName ?? null,
         dob: data.dob ? new Date(data.dob) : null,
         contactNumber: data.contactNumber ?? null,
+        studentContactNumber: data.studentContactNumber ?? null,
         remarks: data.remarks ?? null,
         photoFileId: data.photoFileId ?? null,
         enrollments: data.classIds?.length
@@ -259,11 +266,13 @@ export class StudentsService {
   async update(
     id: string,
     data: {
+      studentIdNumber?: string;
       name?: string;
       nickname?: string;
       parentName?: string;
       dob?: string;
       contactNumber?: string;
+      studentContactNumber?: string;
       remarks?: string;
       photoFileId?: string | null;
     },
@@ -271,11 +280,13 @@ export class StudentsService {
     await this.prisma.student.update({
       where: { id },
       data: {
+        ...(data.studentIdNumber !== undefined ? { studentIdNumber: data.studentIdNumber } : {}),
         ...(data.name !== undefined ? { name: data.name } : {}),
         ...(data.nickname !== undefined ? { nickname: data.nickname } : {}),
         ...(data.parentName !== undefined ? { parentName: data.parentName } : {}),
         ...(data.dob !== undefined ? { dob: new Date(data.dob) } : {}),
         ...(data.contactNumber !== undefined ? { contactNumber: data.contactNumber } : {}),
+        ...(data.studentContactNumber !== undefined ? { studentContactNumber: data.studentContactNumber } : {}),
         ...(data.remarks !== undefined ? { remarks: data.remarks } : {}),
         ...(data.photoFileId !== undefined ? { photoFileId: data.photoFileId } : {}),
       },

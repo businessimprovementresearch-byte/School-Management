@@ -12,6 +12,7 @@ import {
   useStudentsControllerUpdateEnrollment,
   useStudentsControllerDeleteEnrollment,
   useClassesControllerFindAll,
+  useAwardsControllerFindIssuances,
 } from '@/src/api/generated/api';
 import { useAuth } from '@/src/context/AuthContext';
 import Avatar from '@/src/components/Avatar';
@@ -62,6 +63,10 @@ export default function StudentDetailScreen() {
   const [editingEnrollmentId, setEditingEnrollmentId] = useState<string | null>(null);
   const [pickerYearId, setPickerYearId] = useState<string | undefined>(undefined);
   const { data: allClasses } = useClassesControllerFindAll({ query: { enabled: pickerOpen } });
+  const { data: awardIssuances } = useAwardsControllerFindIssuances(
+    { studentId },
+    { query: { enabled: !!studentId } },
+  );
 
   useFocusEffect(useCallback(() => { if (studentId) refetch(); }, [studentId]));
 
@@ -324,6 +329,23 @@ export default function StudentDetailScreen() {
             picking needed there anymore. */}
         {activeTab === 'progress' && (
           <View>
+            <Text style={styles.sectionTitle}>Awards</Text>
+            {(awardIssuances ?? []).map((a) => (
+              <View key={a?.id} style={styles.card}>
+                <View style={styles.iconBox}>
+                  <Ionicons name="ribbon" size={20} color={Colors.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.cardTitle}>{a?.awardName ?? ''}</Text>
+                  <Text style={styles.cardSub}>
+                    {a?.issuedAt ? new Date(a.issuedAt).toLocaleDateString() : ''}
+                    {a?.note ? ` • ${a.note}` : ''}
+                  </Text>
+                </View>
+              </View>
+            ))}
+            {(awardIssuances?.length ?? 0) === 0 && <Text style={styles.emptyText}>No awards yet</Text>}
+
             <Pressable style={styles.reportButton} onPress={() => router.push(`/student/${studentId}/progress`)}>
               <Ionicons name="trending-up" size={20} color={Colors.secondary} />
               <Text style={styles.reportButtonText}>View Progress</Text>
@@ -385,6 +407,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface,
     borderRadius: BorderRadius.md, padding: Spacing.lg, marginBottom: Spacing.sm,
   },
+  iconBox: { width: 40, height: 40, borderRadius: BorderRadius.md, backgroundColor: Colors.primary + '14', alignItems: 'center', justifyContent: 'center', marginRight: Spacing.sm },
   cardTitle: { fontSize: 15, fontWeight: '600', color: Colors.textPrimary },
   cardSub: { fontSize: 13, color: Colors.textSecondary, marginTop: 2 },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary, marginVertical: Spacing.sm },

@@ -17,6 +17,7 @@ export class StudentListItemDto {
   @ApiProperty({ nullable: true, type: String }) photoFileId: string | null;
   @ApiProperty({ nullable: true, type: String }) photoUrl: string | null;
   @ApiProperty({ type: () => [EnrolledClassDto] }) enrolledClasses: EnrolledClassDto[];
+  @ApiProperty({ nullable: true, type: String }) studentIdNumber: string | null;
 }
 
 export class StudentListResponseDto {

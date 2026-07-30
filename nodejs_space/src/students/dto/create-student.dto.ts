@@ -2,6 +2,10 @@ import { IsString, IsOptional, IsArray, IsUUID, IsDateString } from 'class-valid
 
 export class CreateStudentDto {
   @IsString()
+  @IsOptional()
+  studentIdNumber?: string;
+
+  @IsString()
   name: string;
 
   @IsString()
@@ -19,6 +23,10 @@ export class CreateStudentDto {
   @IsString()
   @IsOptional()
   contactNumber?: string;
+
+  @IsString()
+  @IsOptional()
+  studentContactNumber?: string;
 
   @IsString()
   @IsOptional()

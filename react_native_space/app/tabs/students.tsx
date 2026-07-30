@@ -82,6 +82,7 @@ export default function StudentsScreen() {
                 <Avatar uri={item?.photoUrl} name={item?.name} size={48} />
                 <View style={styles.studentInfo}>
                   <Text style={styles.studentName}>{item?.name ?? ''}{item?.nickname ? ` (${item.nickname})` : ''}</Text>
+                  {!!item?.studentIdNumber && <Text style={styles.studentId}>ID: {item.studentIdNumber}</Text>}
                   <Text style={styles.studentParent}>{item?.parentName ?? ''}</Text>
                   <View style={styles.classChips}>
                     {(item?.enrolledClasses ?? []).map((c) => (
@@ -132,6 +133,7 @@ const styles = StyleSheet.create({
   },
   studentInfo: { flex: 1, marginLeft: Spacing.md },
   studentName: { fontSize: 16, fontWeight: '600', color: Colors.textPrimary },
+  studentId: { fontSize: 12, color: Colors.primary, fontWeight: '600', marginTop: 1 },
   studentParent: { fontSize: 13, color: Colors.textSecondary, marginTop: 2 },
   classChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
   classChip: { backgroundColor: Colors.primary + '15', paddingHorizontal: 8, paddingVertical: 2, borderRadius: BorderRadius.full },

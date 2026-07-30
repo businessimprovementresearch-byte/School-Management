@@ -1,6 +1,11 @@
 import { IsString, IsOptional, IsUUID, IsDateString } from 'class-validator';
 
 export class UpdateStudentDto {
+
+  @IsString()
+  @IsOptional()
+  studentIdNumber?: string;
+
   @IsString()
   @IsOptional()
   name?: string;
@@ -20,6 +25,10 @@ export class UpdateStudentDto {
   @IsString()
   @IsOptional()
   contactNumber?: string;
+
+  @IsString()
+  @IsOptional()
+  studentContactNumber?: string;
 
   @IsString()
   @IsOptional()
