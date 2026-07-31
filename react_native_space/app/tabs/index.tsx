@@ -78,7 +78,22 @@ export default function DashboardScreen() {
               <ActionButton icon="checkmark-done-circle" label="Record Attendance" onPress={() => router.push('/tabs/attendance')} />
             </View>
           </View>
-        ) : null}
+        ) : (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Quick Actions</Text>
+            <View style={styles.actionsGrid}>
+              <ActionButton
+                icon="checkmark-done-circle"
+                label="Record Attendance"
+                onPress={() => {
+                  const nextSession = data?.pendingAttendanceSessions?.[0] ?? data?.todaySessions?.[0];
+                  if (nextSession) router.push(`/class/${nextSession.classId}/session/${nextSession.id}`);
+                  else router.push('/tabs/attendance');
+                }}
+              />
+            </View>
+          </View>
+        )}
 
         {/* Today's Sessions */}
         {(data?.todaySessions?.length ?? 0) > 0 ? (
