@@ -14,6 +14,7 @@ import type { TermListItemDto, AcademicYearListItemDto } from '@/src/api/generat
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/src/theme';
 import { getErrorMessage } from '@/src/api/customFetch';
+import { formatDate } from '@/src/lib/dateFormat';
 
 export default function TermsScreen() {
   const router = useRouter();

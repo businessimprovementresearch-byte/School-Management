@@ -13,6 +13,7 @@ import type { AcademicYearListItemDto } from '@/src/api/generated/schemas';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/src/theme';
 import { getErrorMessage } from '@/src/api/customFetch';
+import { formatDate } from '@/src/lib/dateFormat';
 
 export default function AcademicYearsScreen() {
   const router = useRouter();

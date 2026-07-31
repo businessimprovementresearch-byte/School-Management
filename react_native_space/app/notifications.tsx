@@ -12,6 +12,7 @@ import {
 import type { NotificationDto } from '@/src/api/generated/schemas';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/src/theme';
+import { formatDate } from '@/src/lib/dateFormat';
 
 function iconForType(type?: string): keyof typeof Ionicons.glyphMap {
   switch (type) {

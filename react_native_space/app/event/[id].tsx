@@ -16,6 +16,7 @@ import { theme } from '@/src/theme';
 import { getErrorMessage } from '@/src/api/customFetch';
 import { useAuth } from '@/src/context/AuthContext';
 import PersonPicker, { PickedPerson } from '@/src/components/PersonPicker';
+import { formatDate } from '@/src/lib/dateFormat';
 
 export default function EventDetailScreen() {
   const { id = '' } = useLocalSearchParams<{ id: string }>();

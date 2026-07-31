@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/src/theme';
 import { getErrorMessage } from '@/src/api/customFetch';
 import { useAuth } from '@/src/context/AuthContext';
+import { formatDate } from '@/src/lib/dateFormat';
 
 export default function EventsScreen() {
   const router = useRouter();
