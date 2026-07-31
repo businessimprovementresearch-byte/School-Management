@@ -39,7 +39,7 @@ export class TeachersService {
         dob: t.dob ? t.dob.toISOString() : null,
         age: this.calculateAge(t.dob),
         contactNumber: t.contactNumber,
-        remarks: teacher.remarks,
+        remarks: t.remarks,
         photoFileId: t.photoFileId,
         photoUrl: await this.uploadService.getFileUrlByFileId(t.photoFileId),
         assignedClasses: t.assignments.map((a) => ({
@@ -84,6 +84,7 @@ export class TeachersService {
       dob: teacher.dob ? teacher.dob.toISOString() : null,
       age: this.calculateAge(teacher.dob),
       contactNumber: teacher.contactNumber,
+      remarks: teacher.remarks,
       photoFileId: teacher.photoFileId,
       photoUrl: await this.uploadService.getFileUrlByFileId(teacher.photoFileId),
       assignedClasses: teacher.assignments.map((a) => ({
@@ -108,7 +109,7 @@ export class TeachersService {
     name: string;
     dob?: string | null;
     contactNumber?: string | null;
-    remarks?: string | null;
+    remarks?: string;
     photoFileId?: string | null;
     classIds?: string[];
   }) {
@@ -126,8 +127,9 @@ export class TeachersService {
       data: {
         userId: user.id,
         name: data.name,
-        dob: new Date(data.dob),
-        contactNumber: data.contactNumber,
+        dob: data.dob ? new Date(data.dob) : null,
+        contactNumber: data.contactNumber ?? null,
+        remarks: data.remarks ?? null,
         photoFileId: data.photoFileId ?? null,
         assignments: data.classIds?.length
           ? { create: data.classIds.map((cid) => ({ classId: cid, academicYearId: academicYearId! })) }
