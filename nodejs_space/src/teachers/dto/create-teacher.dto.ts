@@ -12,10 +12,16 @@ export class CreateTeacherDto {
   name: string;
 
   @IsDateString()
-  dob: string;
+  @IsOptional()
+  dob?: string;
 
   @IsString()
-  contactNumber: string;
+  @IsOptional()
+  contactNumber?: string;
+
+  @IsString()
+  @IsOptional()
+  contactNumber?: string;
 
   @IsUUID()
   @IsOptional()

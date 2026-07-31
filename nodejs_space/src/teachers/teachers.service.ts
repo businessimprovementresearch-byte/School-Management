@@ -12,12 +12,15 @@ export class TeachersService {
     private uploadService: UploadService,
   ) {}
 
-  private calculateAge(dob: Date): number {
-    const today = new Date();
-    let age = today.getFullYear() - dob.getFullYear();
-    const m = today.getMonth() - dob.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
-    return age;
+  private calculateAge(dob: Date | null): number | null { 
+    if (!dob) return null;
+    else {
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const m = today.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+      return age;
+    }
   }
 
   async findAll() {
@@ -33,7 +36,7 @@ export class TeachersService {
         id: t.id,
         userId: t.userId,
         name: t.name,
-        dob: t.dob.toISOString(),
+        dob: t.dob ? t.dob.toISOString() : null,
         age: this.calculateAge(t.dob),
         contactNumber: t.contactNumber,
         photoFileId: t.photoFileId,
@@ -77,7 +80,7 @@ export class TeachersService {
       id: teacher.id,
       userId: teacher.userId,
       name: teacher.name,
-      dob: teacher.dob.toISOString(),
+      dob: teacher.dob ? teacher.dob.toISOString() : null,
       age: this.calculateAge(teacher.dob),
       contactNumber: teacher.contactNumber,
       photoFileId: teacher.photoFileId,
@@ -102,8 +105,8 @@ export class TeachersService {
     email: string;
     password: string;
     name: string;
-    dob: string;
-    contactNumber: string;
+    dob: data.dob ? new Date(data.dob) : null;
+    contactNumber: data.contactNumber ?? null;
     photoFileId?: string | null;
     classIds?: string[];
   }) {

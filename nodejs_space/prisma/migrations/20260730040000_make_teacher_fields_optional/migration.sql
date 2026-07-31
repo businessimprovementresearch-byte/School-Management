@@ -1,0 +1,2 @@
+ALTER TABLE "teachers" ALTER COLUMN "dob" DROP NOT NULL;
+ALTER TABLE "teachers" ALTER COLUMN "contactNumber" DROP NOT NULL;

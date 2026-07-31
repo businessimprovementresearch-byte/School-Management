@@ -65,7 +65,8 @@ model Teacher {
   id                  String               @id @default(uuid())
   userId              String               @unique
   name                String
-  dob                 DateTime
+  dob                 DateTime?
+  contactNumber       String?
   contactNumber       String
   photoFileId         String?
   createdAt           DateTime             @default(now())

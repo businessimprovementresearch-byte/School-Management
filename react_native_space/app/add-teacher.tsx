@@ -24,13 +24,13 @@ export default function AddTeacherScreen() {
   };
 
   const handleSave = async () => {
-    if (!email.trim() || !password.trim() || !name.trim() || !dob.trim() || !contactNumber.trim()) {
+    if (!email.trim() || !password.trim() || !name.trim()) {
       Alert.alert('Error', 'Please fill all required fields');
       return;
     }
     try {
       await createMutation.mutateAsync({
-        data: { email: email.trim(), password, name: name.trim(), dob, contactNumber: contactNumber.trim(), classIds: selectedClasses },
+        data: { email: email.trim(), password, name: name.trim(), dob: dob.trim() || undefined, contactNumber: contactNumber.trim() || undefined, classIds: selectedClasses },
       });
       router.back();
     } catch (e) {
@@ -52,10 +52,10 @@ export default function AddTeacherScreen() {
         <TextInput style={styles.input} value={password} onChangeText={setPassword} secureTextEntry placeholder="Min 6 characters" placeholderTextColor={Colors.textSecondary + '80'} />
         <Text style={styles.label}>Name *</Text>
         <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Full name" placeholderTextColor={Colors.textSecondary + '80'} />
-        <Text style={styles.label}>Date of Birth * (YYYY-MM-DD)</Text>
-        <TextInput style={styles.input} value={dob} onChangeText={setDob} placeholder="1990-01-01" placeholderTextColor={Colors.textSecondary + '80'} />
-        <Text style={styles.label}>Contact Number *</Text>
-        <TextInput style={styles.input} value={contactNumber} onChangeText={setContactNumber} keyboardType="phone-pad" placeholder="+65 xxxx xxxx" placeholderTextColor={Colors.textSecondary + '80'} />
+        <Text style={styles.label}>Date of Birth (YYYY-MM-DD)</Text>
+        <TextInput style={styles.input} value={dob} onChangeText={setDob} placeholder="1990-01-01 (optional)" placeholderTextColor={Colors.textSecondary + '80'} />
+        <Text style={styles.label}>Contact Number</Text>
+        <TextInput style={styles.input} value={contactNumber} onChangeText={setContactNumber} keyboardType="phone-pad" placeholder="+65 xxxx xxxx (optional)" placeholderTextColor={Colors.textSecondary + '80'} />
 
         <Text style={[styles.label, { marginTop: Spacing.xl }]}>Assign to Classes</Text>
         <View style={styles.classGrid}>
