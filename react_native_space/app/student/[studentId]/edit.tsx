@@ -6,6 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius } from '@/src/theme';
 import { useStudentsControllerFindOne, useStudentsControllerUpdate } from '@/src/api/generated/api';
 import { getErrorMessage } from '@/src/api/customFetch';
+import { pickAndUploadPhoto } from '@/src/lib/uploadPhoto';
+import Avatar from '@/src/components/Avatar';
 
 export default function EditStudentScreen() {
   const { studentId = '' } = useLocalSearchParams<{ studentId: string }>();
@@ -14,6 +16,9 @@ export default function EditStudentScreen() {
   const updateMutation = useStudentsControllerUpdate();
 
   const [name, setName] = useState('');
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [photoFileId, setPhotoFileId] = useState<string | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [nickname, setNickname] = useState('');
   const [parentName, setParentName] = useState('');
   const [dob, setDob] = useState('');
@@ -23,6 +28,8 @@ export default function EditStudentScreen() {
   useEffect(() => {
     if (data) {
       setName(data?.name ?? '');
+      setPhotoUri(data?.photoUrl ?? null);
+      setPhotoFileId(data?.photoFileId ?? null);
       setNickname(data?.nickname ?? '');
       setParentName(data?.parentName ?? '');
       setDob(data?.dob ? data.dob.split('T')[0] : '');
@@ -31,9 +38,24 @@ export default function EditStudentScreen() {
     }
   }, [data]);
 
+  const handlePickPhoto = async () => {
+    try {
+      setUploadingPhoto(true);
+      const res = await pickAndUploadPhoto();
+      if (res?.fileId) {
+        setPhotoFileId(res.fileId);
+        setPhotoUri(res.uri);
+      }
+    } catch (e: any) {
+      Alert.alert('Error', e?.message ?? 'Failed to upload photo');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
   const handleSave = async () => {
     try {
-      await updateMutation.mutateAsync({ id: studentId, data: { name, nickname, parentName, dob, contactNumber, remarks } });
+      await updateMutation.mutateAsync({ id: studentId, data: { name, nickname, parentName, dob, contactNumber, remarks, photoFileId: photoFileId ?? undefined } });
       router.back();
     } catch (e) {
       Alert.alert('Error', getErrorMessage(e, 'Failed to update student'));
@@ -48,6 +70,15 @@ export default function EditStudentScreen() {
         <View style={{ width: 24 }} />
       </View>
       <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.photoSection}>
+          <Pressable onPress={handlePickPhoto} disabled={uploadingPhoto}>
+            <Avatar uri={photoUri} name={name} size={88} />
+            <View style={styles.photoBadge}>
+              {uploadingPhoto ? <ActivityIndicator size="small" color="#fff" /> : <Ionicons name="camera" size={16} color="#fff" />}
+            </View>
+          </Pressable>
+          <Text style={styles.photoHint}>Tap to change photo</Text>
+        </View>
         <Text style={styles.label}>Name</Text>
         <TextInput style={styles.input} value={name} onChangeText={setName} />
         <Text style={styles.label}>Nickname</Text>
@@ -83,6 +114,13 @@ const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.lg, paddingVertical: Spacing.md },
   topTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
   content: { padding: Spacing.lg },
+  photoSection: { alignItems: 'center', marginBottom: Spacing.md },
+  photoBadge: {
+    position: 'absolute', bottom: 0, right: 0, width: 28, height: 28, borderRadius: 14,
+    backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2, borderColor: Colors.background,
+  },
+  photoHint: { fontSize: 12, color: Colors.textSecondary, marginTop: Spacing.xs },
   label: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary, marginBottom: Spacing.xs, marginTop: Spacing.md },
   input: { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: BorderRadius.md, padding: Spacing.md, fontSize: 16, color: Colors.textPrimary },
   textArea: { minHeight: 100, paddingTop: Spacing.md },
