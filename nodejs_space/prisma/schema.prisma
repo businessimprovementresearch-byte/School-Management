@@ -67,6 +67,7 @@ model Teacher {
   name                String
   dob                 DateTime?
   contactNumber       String?
+  remarks             String?                @db.Text
   photoFileId         String?
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt

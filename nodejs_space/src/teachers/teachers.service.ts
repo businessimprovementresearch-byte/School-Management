@@ -10,9 +10,9 @@ export class TeachersService {
   constructor(
     private prisma: PrismaService,
     private uploadService: UploadService,
-  ) {}
+  ) { }
 
-  private calculateAge(dob: Date | null): number | null { 
+  private calculateAge(dob: Date | null): number | null {
     if (!dob) return null;
     else {
       const today = new Date();
@@ -39,6 +39,7 @@ export class TeachersService {
         dob: t.dob ? t.dob.toISOString() : null,
         age: this.calculateAge(t.dob),
         contactNumber: t.contactNumber,
+        remarks: teacher.remarks,
         photoFileId: t.photoFileId,
         photoUrl: await this.uploadService.getFileUrlByFileId(t.photoFileId),
         assignedClasses: t.assignments.map((a) => ({
@@ -105,8 +106,9 @@ export class TeachersService {
     email: string;
     password: string;
     name: string;
-    dob: data.dob ? new Date(data.dob) : null;
-    contactNumber: data.contactNumber ?? null;
+    dob?: string | null;
+    contactNumber?: string | null;
+    remarks?: string | null;
     photoFileId?: string | null;
     classIds?: string[];
   }) {
@@ -139,6 +141,7 @@ export class TeachersService {
     name?: string;
     dob?: string;
     contactNumber?: string;
+    remarks?: string;
     photoFileId?: string | null;
   }) {
     await this.prisma.teacher.update({
@@ -147,6 +150,7 @@ export class TeachersService {
         ...(data.name !== undefined ? { name: data.name } : {}),
         ...(data.dob !== undefined ? { dob: new Date(data.dob) } : {}),
         ...(data.contactNumber !== undefined ? { contactNumber: data.contactNumber } : {}),
+        ...(data.remarks !== undefined ? { remarks: data.remarks } : {}),
         ...(data.photoFileId !== undefined ? { photoFileId: data.photoFileId } : {}),
       },
     });

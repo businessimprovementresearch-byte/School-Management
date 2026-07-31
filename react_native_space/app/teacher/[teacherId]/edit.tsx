@@ -16,6 +16,7 @@ export default function EditTeacherScreen() {
   const [name, setName] = useState('');
   const [dob, setDob] = useState('');
   const [contactNumber, setContactNumber] = useState('');
+  const [remarks, setRemarks] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -23,13 +24,14 @@ export default function EditTeacherScreen() {
       setName(data?.name ?? '');
       setDob(data?.dob ? data.dob.split('T')[0] : '');
       setContactNumber(data?.contactNumber ?? '');
+      setRemarks(data?.remarks ?? '');
     }
   }, [data]);
 
   const handleSave = () => {
     setError('');
     if (!name?.trim()) { setError('Name is required'); return; }
-    updateMutation.mutate({ id: teacherId, data: { name: name.trim(), dob: dob || undefined, contactNumber: contactNumber || undefined } }, {
+    updateMutation.mutate({ id: teacherId, data: { name: name.trim(), dob: dob || undefined, contactNumber: contactNumber || undefined, remarks: remarks || undefined } }, {
       onSuccess: () => router.back(),
       onError: (e) => setError(getErrorMessage(e, 'Failed to update')),
     });
@@ -50,6 +52,7 @@ export default function EditTeacherScreen() {
           <TextInput label="Name" value={name} onChangeText={setName} mode="outlined" style={styles.input} outlineColor={theme.colors.border} activeOutlineColor={theme.colors.primary} />
           <TextInput label="Date of Birth (YYYY-MM-DD)" value={dob} onChangeText={setDob} mode="outlined" style={styles.input} outlineColor={theme.colors.border} activeOutlineColor={theme.colors.primary} />
           <TextInput label="Contact Number" value={contactNumber} onChangeText={setContactNumber} mode="outlined" style={styles.input} outlineColor={theme.colors.border} activeOutlineColor={theme.colors.primary} keyboardType="phone-pad" />
+          <TextInput label="Remarks / Special Comments" value={remarks} onChangeText={setRemarks} mode="outlined" style={styles.input} outlineColor={theme.colors.border} activeOutlineColor={theme.colors.primary} multiline numberOfLines={4} />
           <Button mode="contained" onPress={handleSave} loading={updateMutation?.isPending} style={styles.btn} buttonColor={theme.colors.primary}>
             Save Changes
           </Button>

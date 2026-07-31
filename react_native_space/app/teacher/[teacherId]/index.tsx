@@ -70,6 +70,11 @@ export default function TeacherDetailScreen() {
           ))}
         </View>
 
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Remarks</Text>
+          {data?.remarks ? <Text style={styles.remarksText}>{data.remarks}</Text> : <Text style={styles.emptyText}>No remarks added</Text>}
+        </View>
+
         {isAdmin && (
           <Button mode="outlined" textColor={theme.colors.error} style={styles.deleteBtn} onPress={handleDelete} loading={deleteMutation?.isPending}>
             Remove Teacher
@@ -100,4 +105,5 @@ const styles = StyleSheet.create({
   classGrade: { fontSize: 12, color: theme.colors.textSecondary },
   emptyText: { fontSize: 14, color: theme.colors.textSecondary, textAlign: 'center', paddingVertical: 16 },
   deleteBtn: { marginHorizontal: 16, marginTop: 24, borderColor: theme.colors.error },
+  remarksText: { fontSize: 14, color: theme.colors.text, lineHeight: 20 },
 });

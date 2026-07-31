@@ -21,7 +21,7 @@ export class CreateTeacherDto {
 
   @IsString()
   @IsOptional()
-  contactNumber?: string;
+  remarks?: string;
 
   @IsUUID()
   @IsOptional()

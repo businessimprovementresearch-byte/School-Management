@@ -21,6 +21,7 @@ export class TeacherDetailResponseDto {
   @ApiProperty() dob: string;
   @ApiProperty() age: number;
   @ApiProperty() contactNumber: string;
+  @ApiProperty({ nullable: true, type: String }) remarks: string | null;
   @ApiProperty({ nullable: true, type: String }) photoFileId: string | null;
   @ApiProperty({ nullable: true, type: String }) photoUrl: string | null;
   @ApiProperty({ type: () => [TeacherClassDto] }) assignedClasses: TeacherClassDto[];
