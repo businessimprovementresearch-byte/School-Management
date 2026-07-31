@@ -18,9 +18,9 @@ export class TeacherDetailResponseDto {
   @ApiProperty() id: string;
   @ApiProperty() userId: string;
   @ApiProperty() name: string;
-  @ApiProperty() dob: string;
-  @ApiProperty() age: number;
-  @ApiProperty() contactNumber: string;
+  @ApiProperty({ nullable: true, type: String }) dob: string | null;
+  @ApiProperty({ nullable: true, type: Number }) age: number | null;
+  @ApiProperty({ nullable: true, type: String }) contactNumber: string | null;
   @ApiProperty({ nullable: true, type: String }) remarks: string | null;
   @ApiProperty({ nullable: true, type: String }) photoFileId: string | null;
   @ApiProperty({ nullable: true, type: String }) photoUrl: string | null;
