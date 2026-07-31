@@ -7,6 +7,7 @@ import { Colors, Spacing, BorderRadius } from '@/src/theme';
 import { useClassesControllerFindAll, useAttendanceControllerGetOverview, useAttendanceControllerGetByDate } from '@/src/api/generated/api';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { useFocusEffect } from 'expo-router';
+import { formatDate } from '@/src/lib/dateFormat';
 
 export default function AttendanceScreen() {
   const router = useRouter();
@@ -107,7 +108,7 @@ export default function AttendanceScreen() {
               }}
             >
               <View style={[styles.statusDot, { backgroundColor: s?.attendanceSubmitted ? Colors.success : Colors.error }]} />
-              <Text style={styles.sessionDate}>{s?.date ? new Date(s.date).toLocaleDateString() : ''}</Text>
+              <Text style={styles.sessionDate}>{s?.date ? formatDate(s.date) : ''}</Text>
               <Text style={styles.sessionStatus}>{s?.attendanceSubmitted ? 'Submitted' : 'Pending'}</Text>
             </Pressable>
           ))}

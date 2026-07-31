@@ -14,6 +14,7 @@ import { useAuth } from '@/src/context/AuthContext';
 import { getErrorMessage } from '@/src/api/customFetch';
 import Avatar from '@/src/components/Avatar';
 import LoadingScreen from '@/src/components/LoadingScreen';
+import { formatDate } from '@/src/lib/dateFormat';
 
 // Alert.alert() is a no-op on react-native-web; window.confirm/alert are
 // the fallback so confirmations/errors actually show up on web (same
@@ -170,7 +171,7 @@ export default function ClassDetailScreen() {
             ) : (
               <View style={[styles.statusDot, { backgroundColor: s?.attendanceSubmitted ? Colors.success : Colors.error }]} />
             )}
-            <Text style={styles.sessionDate}>{s?.date ? new Date(s.date).toLocaleDateString() : ''}</Text>
+            <Text style={styles.sessionDate}>{s?.date ? formatDate(s.date) : ''}</Text>
             {s?.isHoliday ? (
               <View style={styles.holidayBadge}>
                 <Text style={styles.holidayBadgeText}>Holiday</Text>

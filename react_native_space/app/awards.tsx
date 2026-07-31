@@ -17,6 +17,7 @@ import { theme } from '@/src/theme';
 import { getErrorMessage } from '@/src/api/customFetch';
 import { useAuth } from '@/src/context/AuthContext';
 import PersonPicker, { PickedPerson } from '@/src/components/PersonPicker';
+import { formatDate } from '@/src/lib/dateFormat';
 
 export default function AwardsScreen() {
   const router = useRouter();
@@ -136,7 +137,7 @@ export default function AwardsScreen() {
       <View style={{ flex: 1 }}>
         <Text style={styles.cardTitle}>{item?.recipientName ?? ''}</Text>
         <Text style={styles.cardSub}>{item?.awardName ?? ''}</Text>
-        <Text style={styles.cardMeta}>{item?.issuedAt?.split('T')?.[0] ?? ''}{item?.note ? ` • ${item.note}` : ''}</Text>
+        <Text style={styles.cardMeta}>{item?.issuedAt ? formatDate(item.issuedAt) : ''}{item?.note ? ` • ${item.note}` : ''}</Text>
       </View>
     </View>
   );

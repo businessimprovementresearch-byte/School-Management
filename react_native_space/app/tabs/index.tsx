@@ -7,6 +7,7 @@ import { Colors, Spacing, BorderRadius } from '@/src/theme';
 import { useAuth } from '@/src/context/AuthContext';
 import { useDashboardControllerGetDashboard } from '@/src/api/generated/api';
 import LoadingScreen from '@/src/components/LoadingScreen';
+import { formatDate } from '@/src/lib/dateFormat';
 
 export default function DashboardScreen() {
   const { user } = useAuth();
@@ -57,7 +58,7 @@ export default function DashboardScreen() {
               >
                 <View style={{ flex: 1 }}>
                   <Text style={styles.pendingClass}>{s?.className ?? ''}</Text>
-                  <Text style={styles.pendingDate}>{s?.date ? new Date(s.date).toLocaleDateString() : ''}</Text>
+                  <Text style={styles.pendingDate}>{s?.date ? formatDate(s.date) : ''}</Text>
                 </View>
                 <View style={styles.pendingChip}>
                   <Text style={styles.pendingChipText}>Not Submitted</Text>

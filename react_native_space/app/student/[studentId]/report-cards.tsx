@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius } from '@/src/theme';
 import { useReportCardsControllerFindAll, reportCardsControllerGetDownload } from '@/src/api/generated/api';
 import LoadingScreen from '@/src/components/LoadingScreen';
+import { formatDate } from '@/src/lib/dateFormat';
 
 export default function StudentReportCardsScreen() {
   const { studentId = '' } = useLocalSearchParams<{ studentId: string }>();
@@ -34,7 +35,7 @@ export default function StudentReportCardsScreen() {
             <Ionicons name="document" size={24} color={Colors.secondary} />
             <View style={{ flex: 1, marginLeft: Spacing.md }}>
               <Text style={styles.cardTitle}>{rc?.academicYearName ?? ''}{rc?.termName ? ` - ${rc.termName}` : ''}</Text>
-              <Text style={styles.cardSub}>Generated {rc?.generatedAt ? new Date(rc.generatedAt).toLocaleDateString() : ''}</Text>
+              <Text style={styles.cardSub}>Generated {rc?.generatedAt ? formatDate(rc.generatedAt) : ''}</Text>
             </View>
             <Ionicons name="download" size={20} color={Colors.primary} />
           </Pressable>

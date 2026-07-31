@@ -9,6 +9,7 @@ import { useAuth } from '@/src/context/AuthContext';
 import Avatar from '@/src/components/Avatar';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { getErrorMessage } from '@/src/api/customFetch';
+import { formatDate } from '@/src/lib/dateFormat';
 
 type AttStatus = 'PRESENT' | 'ABSENT' | 'UNSURE';
 type TAttStatus = 'PRESENT' | 'ABSENT';
@@ -109,7 +110,7 @@ export default function SessionDetailScreen() {
         <View style={{ width: 24 }} />
       </View>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.dateText}>{data?.date ? new Date(data.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : ''}</Text>
+        <Text style={styles.dateText}>{data?.date ? formatDate(data.date) : ''}</Text>
 
         {isAdmin ? (
           <Pressable
@@ -215,7 +216,7 @@ export default function SessionDetailScreen() {
             <Text style={styles.feedbackTeacher}>{f?.teacherName ?? ''} - {f?.type ?? ''}</Text>
             {f?.studentName ? <Text style={styles.feedbackStudent}>Re: {f.studentName}</Text> : null}
             <Text style={styles.feedbackContent}>{f?.content ?? ''}</Text>
-            <Text style={styles.feedbackDate}>{f?.createdAt ? new Date(f.createdAt).toLocaleDateString() : ''}</Text>
+            <Text style={styles.feedbackDate}>{f?.createdAt ? formatDate(f.createdAt) : ''}</Text>
           </View>
         ))}
       </ScrollView>

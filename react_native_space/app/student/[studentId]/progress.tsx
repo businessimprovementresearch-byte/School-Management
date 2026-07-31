@@ -12,6 +12,7 @@ import {
   reportCardsControllerGetDownload,
 } from '@/src/api/generated/api';
 import LoadingScreen from '@/src/components/LoadingScreen';
+import { formatDate } from '@/src/lib/dateFormat';
 
 export default function StudentProgressScreen() {
   const { studentId = '' } = useLocalSearchParams<{ studentId: string }>();
@@ -91,7 +92,7 @@ export default function StudentProgressScreen() {
               <Text style={styles.metricName}>{m?.metricName ?? ''} ({m?.metricType ?? ''})</Text>
               {(m?.entries ?? []).map((e, i) => (
                 <View key={i} style={styles.entryRow}>
-                  <Text style={styles.entryDate}>{e?.date ? new Date(e.date).toLocaleDateString() : ''}</Text>
+                  <Text style={styles.entryDate}>{e?.date ? formatDate(e.date) : ''}</Text>
                   <Text style={styles.entryValue}>{e?.value ?? 0}</Text>
                   {e?.notes ? <Text style={styles.entryNotes}>{e.notes}</Text> : null}
                 </View>
