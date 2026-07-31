@@ -75,7 +75,7 @@ export default function DashboardScreen() {
               <ActionButton icon="person-add" label="Add Student" onPress={() => router.push('/add-student')} />
               <ActionButton icon="add-circle" label="Add Session" onPress={() => router.push('/add-session')} />
               <ActionButton icon="document-text" label="Report Card" onPress={() => router.push('/generate-report')} />
-              <ActionButton icon="calendar" label="Years" onPress={() => router.push('/academic-years')} />
+              <ActionButton icon="checkmark-done-circle" label="Record Attendance" onPress={() => router.push('/tabs/attendance')} />
             </View>
           </View>
         ) : null}
