@@ -105,7 +105,7 @@ export default function AcademicYearsScreen() {
           <Text style={styles.cardTitle}>{item?.name ?? ''}</Text>
           {item?.isActive && <View style={styles.activeBadge}><Text style={styles.activeBadgeText}>Active</Text></View>}
         </View>
-        <Text style={styles.cardSub}>{item?.startDate?.split('T')?.[0] ?? ''} → {item?.endDate?.split('T')?.[0] ?? ''}</Text>
+        <Text style={styles.cardSub}>{formatDate(item?.startDate)} → {formatDate(item?.endDate)}</Text>
       </View>
       <Button mode="text" compact onPress={() => toggleActive(item)} textColor={item?.isActive ? theme.colors.error : theme.colors.success}>
         {item?.isActive ? 'Deactivate' : 'Activate'}

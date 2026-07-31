@@ -37,7 +37,7 @@ export default function EventsScreen() {
       <View style={styles.iconBox}><Ionicons name="sparkles" size={22} color={theme.colors.primary} /></View>
       <View style={{ flex: 1 }}>
         <Text style={styles.cardTitle}>{item?.name ?? ''}</Text>
-        <Text style={styles.cardSub}>{item?.date?.split('T')?.[0] ?? ''}{item?.location ? ` • ${item.location}` : ''}</Text>
+        <Text style={styles.cardSub}>{formatDate(item?.date)}{item?.location ? ` • ${item.location}` : ''}</Text>
         <Text style={styles.cardMeta}>{item?.participantCount ?? 0} participants • {item?.groupCount ?? 0} groups</Text>
       </View>
       <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />

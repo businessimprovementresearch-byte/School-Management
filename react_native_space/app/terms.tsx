@@ -83,7 +83,7 @@ export default function TermsScreen() {
     <View style={styles.card}>
       <View style={{ flex: 1 }}>
         <Text style={styles.cardTitle}>{item?.name ?? ''}</Text>
-        <Text style={styles.cardSub}>{item?.startDate?.split('T')?.[0] ?? ''} → {item?.endDate?.split('T')?.[0] ?? ''}</Text>
+        <Text style={styles.cardSub}>{formatDate(item?.startDate)} → {formatDate(item?.endDate)}</Text>
       </View>
       <IconButton icon="pencil-outline" onPress={() => openEditModal(item)} iconColor={theme.colors.textSecondary} size={20} />
       <IconButton icon="delete-outline" onPress={() => handleRemove(item?.id ?? '')} iconColor={theme.colors.error} size={20} />

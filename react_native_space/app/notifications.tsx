@@ -50,7 +50,7 @@ export default function NotificationsScreen() {
       <View style={{ flex: 1 }}>
         <Text style={styles.cardTitle}>{item?.title ?? ''}</Text>
         <Text style={styles.cardBody}>{item?.body ?? ''}</Text>
-        <Text style={styles.cardMeta}>{item?.createdAt?.split('T')?.[0] ?? ''}</Text>
+        <Text style={styles.cardMeta}>{formatDate(item?.createdAt)}</Text>
       </View>
       {!item?.read ? <View style={styles.dot} /> : null}
     </Pressable>

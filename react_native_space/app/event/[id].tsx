@@ -105,7 +105,7 @@ export default function EventDetailScreen() {
       {isLoading ? <ActivityIndicator style={{ marginTop: 40 }} color={theme.colors.primary} /> : (
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.metaCard}>
-            <Text style={styles.metaDate}>{data?.date?.split('T')?.[0] ?? ''}</Text>
+            <Text style={styles.metaDate}>{formatDate(data?.date)}</Text>
             {!!data?.location && <Text style={styles.metaLoc}>{data.location}</Text>}
             {!!data?.description && <Text style={styles.metaDesc}>{data.description}</Text>}
           </View>
