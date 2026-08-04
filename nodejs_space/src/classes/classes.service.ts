@@ -80,8 +80,8 @@ export class ClassesService {
     return sortByGrade(mapped);
   }
 
-  async findOne(id: string) {
-    const activeYearId = await requireAcademicYearId(this.prisma).catch(() => null);
+  async findOne(id: string, academicYearId?: string) {
+    const activeYearId = await requireAcademicYearId(this.prisma, academicYearId).catch(() => null);
     const cls = await this.prisma.class.findUnique({
       where: { id },
       include: {

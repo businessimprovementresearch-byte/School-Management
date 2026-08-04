@@ -9,6 +9,7 @@ import {
   useClassesControllerAssignTeacher,
   useClassesControllerRemoveTeacher,
   useTeachersControllerFindAll,
+  useAcademicYearsControllerFindAll,
 } from '@/src/api/generated/api';
 import { useAuth } from '@/src/context/AuthContext';
 import { getErrorMessage } from '@/src/api/customFetch';
@@ -38,7 +39,16 @@ export default function ClassDetailScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
-  const { data, isLoading, refetch } = useClassesControllerFindOne(classId, { query: { enabled: !!classId } });
+  const { data: academicYears } = useAcademicYearsControllerFindAll();
+  const [selectedYearId, setSelectedYearId] = useState<string | undefined>(undefined);
+  const activeYear = academicYears?.find((y) => y?.isActive) ?? academicYears?.[0];
+  const effectiveYearId = selectedYearId ?? activeYear?.id;
+
+  const { data, isLoading, refetch } = useClassesControllerFindOne(
+    classId,
+    effectiveYearId,
+    { query: { enabled: !!classId && !!effectiveYearId } },
+  );
   const [refreshing, setRefreshing] = useState(false);
 
   // Assign-teacher picker: fetch the full teacher list only while the
@@ -70,7 +80,7 @@ export default function ClassDetailScreen() {
     );
   };
 
-  useFocusEffect(useCallback(() => { if (classId) refetch(); }, [classId]));
+  useFocusEffect(useCallback(() => { if (classId && effectiveYearId) refetch(); }, [classId, effectiveYearId]));
 
   const onRefresh = async () => { setRefreshing(true); await refetch(); setRefreshing(false); };
 
@@ -93,6 +103,24 @@ export default function ClassDetailScreen() {
           {data?.description ? <Text style={styles.classDesc}>{data.description}</Text> : null}
         </View>
 
+        {(academicYears?.length ?? 0) > 1 && (
+          <>
+            <Text style={styles.sectionTitle}>Tahun Ajaran</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.yearRow}>
+              {(academicYears ?? []).map((y) => (
+                <Pressable
+                  key={y?.id}
+                  style={[styles.yearChip, effectiveYearId === y?.id && styles.yearChipActive]}
+                  onPress={() => y?.id && setSelectedYearId(y.id)}
+                >
+                  <Text style={[styles.yearChipText, effectiveYearId === y?.id && styles.yearChipTextActive]}>
+                    {y?.name ?? ''}{y?.isActive ? ' (Aktif)' : ''}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </>
+        )}
         {/* Teachers */}
         <Text style={styles.sectionTitle}>Teachers</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.teacherRow}>
@@ -219,6 +247,11 @@ const styles = StyleSheet.create({
   teacherRow: { marginBottom: Spacing.sm, maxHeight: 80 },
   teacherItem: { alignItems: 'center', marginRight: Spacing.lg, width: 70 },
   teacherName: { fontSize: 12, color: Colors.textSecondary, marginTop: 4, textAlign: 'center' },
+  yearRow: { marginBottom: Spacing.sm },
+  yearChip: { paddingHorizontal: Spacing.md, paddingVertical: 6, borderRadius: BorderRadius.full, backgroundColor: Colors.surface, marginRight: Spacing.sm, borderWidth: 1, borderColor: Colors.divider },
+  yearChipActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  yearChipText: { fontSize: 13, fontWeight: '600', color: Colors.textSecondary },
+  yearChipTextActive: { color: '#fff' },
   emptySmall: { color: Colors.textSecondary, fontSize: 13 },
   removeTeacherBtn: { position: 'absolute', top: -4, right: -4, backgroundColor: Colors.background, borderRadius: 10 },
   addTeacherCircle: {

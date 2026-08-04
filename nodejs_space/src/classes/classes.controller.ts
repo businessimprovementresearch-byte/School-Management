@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Patch, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Patch, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ClassesService } from './classes.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -37,8 +37,11 @@ export class ClassesController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<ClassDetailResponseDto> {
-    return this.classesService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+    @Query('academicYearId') academicYearId?: string,
+  ): Promise<ClassDetailResponseDto> {
+    return this.classesService.findOne(id, academicYearId);
   }
 
   @Post(':classId/teachers')

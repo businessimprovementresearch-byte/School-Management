@@ -1388,68 +1388,48 @@ export function useClassesControllerFindAll<TData = Awaited<ReturnType<typeof cl
 
 
 
-export const getClassesControllerFindOneUrl = (id: string,) => {
-
-
-
-
-  return `/api/classes/${id}`
+export const getClassesControllerFindOneUrl = (id: string, academicYearId?: string,) => {
+  const normalizedParams = new URLSearchParams();
+  if (academicYearId !== undefined) {
+    normalizedParams.append('academicYearId', academicYearId);
+  }
+  const stringifiedParams = normalizedParams.toString();
+  return stringifiedParams.length > 0 ? `/api/classes/${id}?${stringifiedParams}` : `/api/classes/${id}`
 }
 
-export const classesControllerFindOne = async (id: string, options?: RequestInit): Promise<ClassDetailResponseDto> => {
-
-  return customFetch<ClassDetailResponseDto>(getClassesControllerFindOneUrl(id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
+export const classesControllerFindOne = async (id: string, academicYearId?: string, options?: RequestInit): Promise<ClassDetailResponseDto> => {
+  return customFetch<ClassDetailResponseDto>(getClassesControllerFindOneUrl(id, academicYearId),
+  { ...options, method: 'GET' }
 );}
 
 
+export const getClassesControllerFindOneQueryKey = (id: string, academicYearId?: string,) => {
+  return [`/api/classes/${id}`, ...(academicYearId !== undefined ? [{ academicYearId }] : [])] as const;
+}
 
 
-
-export const getClassesControllerFindOneQueryKey = (id: string,) => {
-    return [
-    `/api/classes/${id}`
-    ] as const;
-    }
-
-
-export const getClassesControllerFindOneQueryOptions = <TData = Awaited<ReturnType<typeof classesControllerFindOne>>, TError = ErrorType<unknown>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof classesControllerFindOne>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getClassesControllerFindOneQueryOptions = <TData = Awaited<ReturnType<typeof classesControllerFindOne>>, TError = ErrorType<unknown>>(
+  id: string, academicYearId?: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof classesControllerFindOne>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getClassesControllerFindOneQueryKey(id);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof classesControllerFindOne>>> = ({ signal }) => classesControllerFindOne(id, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof classesControllerFindOne>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+  const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getClassesControllerFindOneQueryKey(id, academicYearId);
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof classesControllerFindOne>>> = ({ signal }) => classesControllerFindOne(id, academicYearId, { signal, ...requestOptions });
+  return { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof classesControllerFindOne>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type ClassesControllerFindOneQueryResult = NonNullable<Awaited<ReturnType<typeof classesControllerFindOne>>>
 export type ClassesControllerFindOneQueryError = ErrorType<unknown>
 
-
 export function useClassesControllerFindOne<TData = Awaited<ReturnType<typeof classesControllerFindOne>>, TError = ErrorType<unknown>>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof classesControllerFindOne>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof classesControllerFindOne>>,
-          TError,
-          Awaited<ReturnType<typeof classesControllerFindOne>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+  id: string, academicYearId?: string,
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof classesControllerFindOne>>, TError, TData>>, request?: SecondParameter<typeof customFetch>},
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getClassesControllerFindOneQueryOptions(id, academicYearId, options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
 export function useClassesControllerFindOne<TData = Awaited<ReturnType<typeof classesControllerFindOne>>, TError = ErrorType<unknown>>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof classesControllerFindOne>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
