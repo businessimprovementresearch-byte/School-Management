@@ -15,8 +15,17 @@ export default function AttendanceScreen() {
   const [viewMode, setViewMode] = useState<'CLASS' | 'DATE'>('CLASS');
   const [selectedClassId, setSelectedClassId] = useState<string>('');
   const now = new Date();
-  const [month] = useState(now.getMonth() + 1);
-  const [year] = useState(now.getFullYear());
+  const [month, setMonth] = useState(now.getMonth() + 1);
+  const [year, setYear] = useState(now.getFullYear());
+
+  const goToPrevMonth = () => {
+    if (month === 1) { setMonth(12); setYear((y) => y - 1); } else { setMonth((m) => m - 1); }
+  };
+  const goToNextMonth = () => {
+    if (month === 12) { setMonth(1); setYear((y) => y + 1); } else { setMonth((m) => m + 1); }
+  };
+  const goToCurrentMonth = () => { setMonth(now.getMonth() + 1); setYear(now.getFullYear()); };
+  const monthLabel = new Date(year, month - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   const classId = selectedClassId || (classesData?.[0]?.id ?? '');
 
@@ -32,7 +41,7 @@ export default function AttendanceScreen() {
     { query: { enabled: viewMode === 'DATE' } },
   );
 
-  useFocusEffect(useCallback(() => { if (classId && viewMode === 'CLASS') refetch(); }, [classId, viewMode]));
+  useFocusEffect(useCallback(() => { if (classId && viewMode === 'CLASS') refetch(); }, [classId, viewMode, month, year]));
   useFocusEffect(useCallback(() => { if (viewMode === 'DATE') refetchByDate(); }, [selectedDate, viewMode]));
 
   const onRefresh = async () => {
@@ -73,6 +82,19 @@ export default function AttendanceScreen() {
               </Pressable>
             ))}
           </ScrollView>
+
+          <View style={styles.dateRow}>
+            <Pressable style={styles.dateNavBtn} onPress={goToPrevMonth}>
+              <Ionicons name="chevron-back" size={20} color={Colors.textPrimary} />
+            </Pressable>
+            <Text style={[styles.dateInput, { paddingVertical: 8 }]}>{monthLabel}</Text>
+            <Pressable style={styles.dateNavBtn} onPress={goToNextMonth}>
+              <Ionicons name="chevron-forward" size={20} color={Colors.textPrimary} />
+            </Pressable>
+            <Pressable style={styles.todayBtn} onPress={goToCurrentMonth}>
+              <Text style={styles.todayBtnText}>This Month</Text>
+            </Pressable>
+          </View>
 
           {!classId ? (
             <View style={styles.empty}><Text style={styles.emptyText}>Select a class</Text></View>
