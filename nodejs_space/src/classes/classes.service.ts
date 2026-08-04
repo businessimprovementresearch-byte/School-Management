@@ -98,6 +98,7 @@ export class ClassesService {
             studentAttendance: true,
             term: true,
           },
+          ...(activeYearId ? { where: { academicYearId: activeYearId } } : {}),
           orderBy: { date: 'desc' },
           take: 50,
         },
