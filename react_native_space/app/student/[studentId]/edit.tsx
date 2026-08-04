@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, ScrollView, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, ScrollView, StyleSheet, Pressable, Alert, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +8,11 @@ import { useStudentsControllerFindOne, useStudentsControllerUpdate } from '@/src
 import { getErrorMessage } from '@/src/api/customFetch';
 import { pickAndUploadPhoto } from '@/src/lib/uploadPhoto';
 import Avatar from '@/src/components/Avatar';
+
+const notify = (title: string, message: string) => {
+  if (Platform.OS === 'web') window.alert(`${title}\n\n${message}`);
+  else Alert.alert(title, message);
+};
 
 export default function EditStudentScreen() {
   const { studentId = '' } = useLocalSearchParams<{ studentId: string }>();
@@ -47,7 +52,7 @@ export default function EditStudentScreen() {
         setPhotoUri(res.uri);
       }
     } catch (e: any) {
-      Alert.alert('Error', e?.message ?? 'Failed to upload photo');
+      notify('Error', e?.message ?? 'Failed to upload photo');
     } finally {
       setUploadingPhoto(false);
     }
@@ -55,10 +60,21 @@ export default function EditStudentScreen() {
 
   const handleSave = async () => {
     try {
-      await updateMutation.mutateAsync({ id: studentId, data: { name, nickname, parentName, dob, contactNumber, remarks, photoFileId: photoFileId ?? undefined } });
+      await updateMutation.mutateAsync({
+        id: studentId,
+        data: {
+          name,
+          nickname,
+          parentName,
+          dob: dob.trim() ? dob.trim() : undefined,
+          contactNumber,
+          remarks,
+          photoFileId: photoFileId ?? undefined,
+        },
+      });
       router.back();
     } catch (e) {
-      Alert.alert('Error', getErrorMessage(e, 'Failed to update student'));
+      notify('Error', getErrorMessage(e, 'Failed to update student'));
     }
   };
 
