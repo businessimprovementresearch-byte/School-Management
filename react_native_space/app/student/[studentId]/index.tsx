@@ -39,7 +39,7 @@ const notify = (title: string, message: string) => {
 };
 
 export default function StudentDetailScreen() {
-  const { studentId = '', tab: urlTab } = useLocalSearchParams<{ studentId: string; tab?: string }>();
+  const { studentId = '' } = useLocalSearchParams<{ studentId: string }>();
   const router = useRouter();
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
@@ -53,7 +53,7 @@ export default function StudentDetailScreen() {
   const deleteMutation = useStudentsControllerRemove();
 
   const [refreshing, setRefreshing] = useState(false);
-  const activeTab = urlTab ?? 'classes';
+  const [activeTab, setActiveTab] = useState('classes');
 
   // Class picker modal: either moving an existing enrollment to a
   // different class (editingEnrollmentId set), or adding a brand new
@@ -220,7 +220,7 @@ export default function StudentDetailScreen() {
         {/* Tabs */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabRow}>
           {tabs.map((t) => (
-            <Pressable key={t} style={[styles.tab, activeTab === t && styles.tabActive]} onPress={() => router.setParams({ tab: t })}>
+            <Pressable key={t} style={[styles.tab, activeTab === t && styles.tabActive]} onPress={() => setActiveTab(t)}>
               <Text style={[styles.tabText, activeTab === t && styles.tabTextActive]}>
                 {t.charAt(0).toUpperCase() + t.slice(1)}
               </Text>

@@ -11,12 +11,9 @@ import Avatar from '@/src/components/Avatar';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { useFocusEffect } from 'expo-router';
 
-let savedScrollOffset = 0;
-
 export default function StudentsScreen() {
   const { user } = useAuth();
   const router = useRouter();
-  const listRef = React.useRef<FlashList<any>>(null);
   const [search, setSearch] = useState('');
   const [selectedClass, setSelectedClass] = useState<string | undefined>(undefined);
   const isAdmin = user?.role === 'ADMIN';
@@ -78,14 +75,8 @@ export default function StudentsScreen() {
       {isLoading ? <LoadingScreen /> : (
         <View style={{ flex: 1 }}>
           <FlashList
-            ref={listRef}
             data={students}
             keyExtractor={(item) => item?.id ?? ''}
-            onScroll={(e) => { savedScrollOffset = e.nativeEvent.contentOffset.y; }}
-            scrollEventThrottle={16}
-            onLoad={() => {
-              if (savedScrollOffset > 0) listRef.current?.scrollToOffset({ offset: savedScrollOffset, animated: false });
-            }}
             renderItem={({ item }) => (
               <Pressable style={styles.studentCard} onPress={() => router.push(`/student/${item?.id}`)}>
                 <Avatar uri={item?.photoUrl} name={item?.name} size={48} />
