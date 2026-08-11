@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, ScrollView, StyleSheet, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, Button, ActivityIndicator } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useStudentsControllerFindAll, useAcademicYearsControllerFindAll, useTermsControllerFindAll, useReportCardsControllerGenerate } from '@/src/api/generated/api';
 import type { StudentListItemDto, AcademicYearListItemDto, TermListItemDto } from '@/src/api/generated/schemas';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,8 +12,10 @@ import { getErrorMessage } from '@/src/api/customFetch';
 export default function GenerateReportScreen() {
   const router = useRouter();
   const { data: studentsData, isLoading: studentsLoading } = useStudentsControllerFindAll({ page: 1, limit: 500 });
-  const { data: years } = useAcademicYearsControllerFindAll();
+  const { data: years, refetch: refetchYears } = useAcademicYearsControllerFindAll();
   const activeYear = (years ?? []).find((y: AcademicYearListItemDto) => y?.isActive);
+
+  useFocusEffect(useCallback(() => { refetchYears(); }, [refetchYears]));
   const { data: terms } = useTermsControllerFindAll({ academicYearId: activeYear?.id ?? '' }, { query: { enabled: !!activeYear?.id } });
   const generateMutation = useReportCardsControllerGenerate();
 
