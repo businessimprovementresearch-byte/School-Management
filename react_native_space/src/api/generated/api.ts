@@ -1575,13 +1575,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type ClassesControllerRemoveTeacherMutationResult = NonNullable<Awaited<ReturnType<typeof classesControllerRemoveTeacher>>>
+export type ClassesControllerRemoveTeacherMutationResult = NonNullable<Awaited<ReturnType<typeof classesControllerRemoveTeacher>>>
 
-    export type ClassesControllerRemoveTeacherMutationError = ErrorType<unknown>
+export type ClassesControllerRemoveTeacherMutationError = ErrorType<unknown>
 
-    export const useClassesControllerRemoveTeacher = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerRemoveTeacher>>, TError,{classId: string;teacherId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
+export const useClassesControllerRemoveTeacher = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerRemoveTeacher>>, TError,{classId: string;teacherId: string}, TContext>, request?: SecondParameter<typeof customFetch>},
+      queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof classesControllerRemoveTeacher>>,
         TError,
         {classId: string;teacherId: string},
