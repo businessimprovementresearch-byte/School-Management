@@ -41,7 +41,7 @@ export default function ClassDetailScreen() {
   const isAdmin = user?.role === 'ADMIN';
   const { data: academicYears } = useAcademicYearsControllerFindAll();
   const activeYear = academicYears?.find((y) => y?.isActive) ?? academicYears?.[0];
-  const effectiveYearId = selectedYearId ?? activeYear?.id;
+  const effectiveYearId = urlYearId ?? activeYear?.id;
 
   const { data, isLoading, refetch } = useClassesControllerFindOne(
     classId,
