@@ -1625,7 +1625,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export const useClassesControllerRemove = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerRemove>>, TError,{classId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult
+ , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof classesControllerRemove>>,
         TError,
         {classId: string},
