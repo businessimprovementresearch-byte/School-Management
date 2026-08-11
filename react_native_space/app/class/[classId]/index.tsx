@@ -8,6 +8,7 @@ import {
   useClassesControllerFindOne,
   useClassesControllerAssignTeacher,
   useClassesControllerRemoveTeacher,
+  useClassesControllerRemove,
   useTeachersControllerFindAll,
   useAcademicYearsControllerFindAll,
 } from '@/src/api/generated/api';
@@ -59,6 +60,22 @@ export default function ClassDetailScreen() {
 
   const assignTeacherMutation = useClassesControllerAssignTeacher();
   const removeTeacherMutation = useClassesControllerRemoveTeacher();
+  const deleteClassMutation = useClassesControllerRemove();
+
+  const handleDeleteClass = async () => {
+    const confirmed = await confirmAsync(
+      'Delete Class',
+      `Delete "${data?.name ?? 'this class'}"? This will remove all its sessions, enrollments, and related data. This cannot be undone.`,
+    );
+    if (!confirmed) return;
+    deleteClassMutation.mutate(
+      { classId },
+      {
+        onSuccess: () => router.back(),
+        onError: (e) => notify('Error', getErrorMessage(e, 'Failed to delete class')),
+      },
+    );
+  };
 
   const handleAssignTeacher = (teacherId: string) => {
     assignTeacherMutation.mutate(
@@ -215,6 +232,19 @@ export default function ClassDetailScreen() {
           </Pressable>
         ) : null}
 
+        {isAdmin ? (
+          <Pressable
+            style={styles.deleteClassBtn}
+            onPress={handleDeleteClass}
+            disabled={deleteClassMutation.isPending}
+          >
+            <Ionicons name="trash" size={18} color={Colors.error} />
+            <Text style={styles.deleteClassText}>
+              {deleteClassMutation.isPending ? 'Deleting...' : 'Delete Class'}
+            </Text>
+          </Pressable>
+        ) : null}
+
         {/* Metrics */}
         {(data?.metrics?.length ?? 0) > 0 ? (
           <>
@@ -271,6 +301,8 @@ const styles = StyleSheet.create({
   sessionTerm: { fontSize: 12, color: Colors.textSecondary },
   addSessionBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: Spacing.md, gap: Spacing.sm, marginTop: Spacing.sm },
   addSessionText: { fontSize: 15, fontWeight: '600', color: Colors.primary },
+  deleteClassBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: Spacing.md, gap: Spacing.sm, marginTop: Spacing.xs },
+  deleteClassText: { fontSize: 15, fontWeight: '600', color: Colors.error },
   metricRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface, borderRadius: BorderRadius.sm, padding: Spacing.md, marginBottom: 4, gap: Spacing.sm },
   metricName: { flex: 1, fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
   metricType: { fontSize: 12, color: Colors.textSecondary },

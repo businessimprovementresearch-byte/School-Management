@@ -181,6 +181,14 @@ export class ClassesService {
       },
     });
   }
+
+  async remove(classId: string) {
+    const existing = await this.prisma.class.findUnique({ where: { id: classId } });
+    if (!existing) throw new NotFoundException('Class not found');
+    await this.prisma.class.delete({ where: { id: classId } });
+    return { success: true };
+  }
+
   async create(data: { name: string; grade: string; description?: string }) {
     const cls = await this.prisma.class.create({ data });
     return this.findOne(cls.id);

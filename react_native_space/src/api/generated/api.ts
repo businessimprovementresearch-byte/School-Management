@@ -1590,6 +1590,50 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getClassesControllerRemoveTeacherMutationOptions(options), queryClient);
     }
 
+export const getClassesControllerRemoveUrl = (classId: string,) => {
+  return `/api/classes/${classId}`
+}
+
+export const classesControllerRemove = async (classId: string, options?: RequestInit): Promise<SuccessResponseDto> => {
+  return customFetch<SuccessResponseDto>(getClassesControllerRemoveUrl(classId),
+  {
+    ...options,
+    method: 'DELETE'
+  }
+);}
+
+export const getClassesControllerRemoveMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerRemove>>, TError,{classId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof classesControllerRemove>>, TError,{classId: string}, TContext> => {
+
+const mutationKey = ['classesControllerRemove'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof classesControllerRemove>>, {classId: string}> = (props) => {
+          const {classId} = props ?? {};
+          return  classesControllerRemove(classId,requestOptions)
+        }
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ClassesControllerRemoveMutationResult = NonNullable<Awaited<ReturnType<typeof classesControllerRemove>>>
+    export type ClassesControllerRemoveMutationError = ErrorType<unknown>
+
+    export const useClassesControllerRemove = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerRemove>>, TError,{classId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult
+        Awaited<ReturnType<typeof classesControllerRemove>>,
+        TError,
+        {classId: string},
+        TContext
+      > => {
+      return useMutation(getClassesControllerRemoveMutationOptions(options), queryClient);
+    }
+    
 export const getTeachersControllerFindAllUrl = () => {
 
 
