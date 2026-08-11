@@ -89,14 +89,17 @@ export class StudentsService {
   }
 
   async findOne(id: string) {
-    const student = await this.prisma.student.findUnique({
-      where: { id },
-      include: {
-        enrollments: { include: { class: true, academicYear: true }, orderBy: { academicYear: { startDate: 'desc' } } },
-        attendance: {
-          include: { classSession: { include: { class: true } } },
-          orderBy: { classSession: { date: 'desc' } },
-        },
+  const activeYearId = await requireAcademicYearId(this.prisma).catch(() => null);
+
+  const student = await this.prisma.student.findUnique({
+    where: { id },
+    include: {
+      enrollments: { include: { class: true, academicYear: true }, orderBy: { academicYear: { startDate: 'desc' } } },
+      attendance: {
+        where: activeYearId ? { classSession: { academicYearId: activeYearId } } : undefined,
+        include: { classSession: { include: { class: true } } },
+        orderBy: { classSession: { date: 'desc' } },
+      },
         progress: {
           include: {
             progressMetric: { include: { class: true } },
