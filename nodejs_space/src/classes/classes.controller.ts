@@ -82,12 +82,6 @@ export class ClassesController {
     return this.classesService.create(dto);
   }
 
-  @Post()
-  @Roles('ADMIN')
-  async create(@Body() dto: CreateClassDto): Promise<ClassDetailResponseDto> {
-    return this.classesService.create(dto);
-  }
-
   @Delete(':classId')
   @Roles('ADMIN')
   async remove(@Param('classId') classId: string): Promise<SuccessResponseDto> {
