@@ -66,8 +66,21 @@ export class ReportCardsService {
       take: 10,
     });
 
-    // Generate PDF
-    const pdfBuffer = await this.generatePdf(student, academicYear, term, { totalSessions, present, attendance }, progress, feedback);
+    const classIds = Array.from(new Set(attendance.map((a) => a.classSession.classId)));
+    const classes = classIds.length
+      ? await this.prisma.class.findMany({ where: { id: { in: classIds } } })
+      : [];
+    const className = classes.map((c) => c.name).join(', ') || '-';
+
+    const teacherAssignment = classIds.length
+      ? await this.prisma.teacherAssignment.findFirst({
+          where: { classId: { in: classIds }, academicYearId },
+          include: { teacher: true },
+        })
+      : null;
+    const facilitatorName = teacherAssignment?.teacher?.name ?? feedback[0]?.teacher?.name ?? '';
+
+    const pdfBuffer = await this.generatePdf(student, className, { totalSessions, present, percentage }, progress, feedback, facilitatorName);
 
     // Upload to S3
     const fileName = `report-card-${student.name.replace(/\s+/g, '-')}-${academicYear.name.replace(/\s+/g, '-')}.pdf`;
@@ -99,11 +112,11 @@ export class ReportCardsService {
 
   private async generatePdf(
     student: any,
-    academicYear: any,
-    term: { id: string; name: string } | null,
-    attendanceData: any,
+    className: string,
+    attendanceData: { totalSessions: number; present: number; percentage: number },
     progress: any[],
     feedback: any[],
+    facilitatorName: string,
   ): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       const doc = new PDFDocument({ margin: 50 });
@@ -112,66 +125,134 @@ export class ReportCardsService {
       doc.on('end', () => resolve(Buffer.concat(chunks) as Buffer));
       doc.on('error', reject);
 
-      // Title
-      doc.fontSize(20).font('Helvetica-Bold').text('Pasar Baru Gurmukhi & Kirtan Class', { align: 'center' });
-      doc.fontSize(16).text('Report Card', { align: 'center' });
-      doc.moveDown();
+      const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
 
-      // Student Info
-      doc.fontSize(12).font('Helvetica');
-      doc.text(`Student: ${student.name}`);
-      doc.text(`Parent: ${student.parentName}`);
-      doc.text(`Academic Year: ${academicYear.name}`);
-      if (term) doc.text(`Term: ${term.name}`);
-      doc.text(`Date of Birth: ${new Date(student.dob).toLocaleDateString()}`);
-      doc.moveDown();
+      // Simple table drawing helper (borders + wrapped text per cell)
+      const drawTable = (
+        headers: string[],
+        rows: string[][],
+        colWidths: number[],
+      ) => {
+        const startX = doc.page.margins.left;
+        const rowHeight = 22;
+        let y = doc.y;
 
-      // Attendance Summary
-      doc.fontSize(14).font('Helvetica-Bold').text('Attendance Summary');
-      doc.fontSize(12).font('Helvetica');
-      doc.text(`Total Sessions: ${attendanceData.totalSessions}`);
-      doc.text(`Present: ${attendanceData.present}`);
-      doc.text(`Attendance Rate: ${attendanceData.totalSessions > 0 ? Math.round((attendanceData.present / attendanceData.totalSessions) * 100) : 0}%`);
-      doc.moveDown();
-
-      // Progress
-      if (progress.length > 0) {
-        doc.fontSize(14).font('Helvetica-Bold').text('Progress');
-        doc.fontSize(12).font('Helvetica');
-        const metricMap = new Map<string, { name: string; className: string; values: number[] }>();
-        for (const p of progress) {
-          const key = p.progressMetricId;
-          if (!metricMap.has(key)) {
-            metricMap.set(key, {
-              name: p.progressMetric.name,
-              className: p.progressMetric.class.name,
-              values: [],
-            });
+        const drawRow = (cells: string[], isHeader: boolean) => {
+          let x = startX;
+          doc.font(isHeader ? 'Helvetica-Bold' : 'Helvetica').fontSize(10);
+          for (let i = 0; i < cells.length; i++) {
+            doc.rect(x, y, colWidths[i], rowHeight).stroke();
+            doc.text(cells[i], x + 4, y + 6, { width: colWidths[i] - 8, align: 'left' });
+            x += colWidths[i];
           }
-          metricMap.get(key)!.values.push(p.value);
-        }
-        for (const [, data] of metricMap) {
-          const avg = data.values.reduce((a, b) => a + b, 0) / data.values.length;
-          doc.text(`${data.className} - ${data.name}: Average ${avg.toFixed(1)}`);
-        }
-        doc.moveDown();
-      }
+          y += rowHeight;
+        };
 
-      // Feedback / Teacher Comments
+        drawRow(headers, true);
+        for (const row of rows) {
+          if (y + rowHeight > doc.page.height - doc.page.margins.bottom) {
+            doc.addPage();
+            y = doc.page.margins.top;
+          }
+          drawRow(row, false);
+        }
+        doc.y = y + 10;
+      };
+
+      // Title
+      doc.fontSize(18).font('Helvetica-Bold').text('Student Progress Report', { align: 'center' });
+      doc.fontSize(13).font('Helvetica').text('Gurmukhi Class Pasar Baru', { align: 'center' });
+      doc.moveDown(1.5);
+
+      // Student Information
+      doc.fontSize(12).font('Helvetica-Bold').text('Student Information');
+      doc.moveDown(0.3);
+      doc.font('Helvetica').fontSize(11);
+      doc.text(`Name: ${student.name}`);
+      doc.text(`Class: ${className}`);
+      doc.moveDown(1);
+
+      // Split progress into exam (SCORE) vs additional (LEVEL/RATING) metrics
+      const examMetrics = new Map<string, { name: string; values: number[]; notes: string[] }>();
+      const additionalMetrics = new Map<string, { name: string; values: number[]; notes: string[] }>();
+      for (const p of progress) {
+        const target = p.progressMetric.type === 'SCORE' ? examMetrics : additionalMetrics;
+        const key = p.progressMetricId;
+        if (!target.has(key)) target.set(key, { name: p.progressMetric.name, values: [], notes: [] });
+        const entry = target.get(key)!;
+        entry.values.push(p.value);
+        if (p.notes) entry.notes.push(p.notes);
+      }
+      const avg = (values: number[]) => values.reduce((a, b) => a + b, 0) / values.length;
+      const TOTAL_MARKS = 100; // Metrics are recorded as a value out of 100
+
+      // Exam Results
+      doc.font('Helvetica-Bold').fontSize(12).text('Exam Results');
+      doc.moveDown(0.3);
+      const examRows = Array.from(examMetrics.values()).map((m) => {
+        const marks = avg(m.values);
+        return [m.name, marks.toFixed(1), `${TOTAL_MARKS}`, `${Math.round((marks / TOTAL_MARKS) * 100)}%`];
+      });
+      drawTable(
+        ['Exam Component', 'Marks Obtained', 'Total Marks', 'Score'],
+        examRows.length ? examRows : [['-', '-', '-', '-']],
+        [pageWidth * 0.4, pageWidth * 0.2, pageWidth * 0.2, pageWidth * 0.2],
+      );
+
+      // Additional Scores
+      doc.font('Helvetica-Bold').fontSize(12).text('Additional Scores');
+      doc.moveDown(0.3);
+      const additionalRows = Array.from(additionalMetrics.values()).map((m) => {
+        const marks = avg(m.values);
+        return [m.name, marks.toFixed(1), `${TOTAL_MARKS}`, m.notes.join('; ') || '-'];
+      });
+      drawTable(
+        ['Additional Component', 'Score', 'Total Marks', 'Remarks'],
+        additionalRows.length ? additionalRows : [['-', '-', '-', '-']],
+        [pageWidth * 0.3, pageWidth * 0.2, pageWidth * 0.2, pageWidth * 0.3],
+      );
+
+      // Attendance & Final Score
+      doc.font('Helvetica-Bold').fontSize(12).text(`# Class Attended: `, { continued: true });
+      doc.font('Helvetica').text(`${attendanceData.present} / ${attendanceData.totalSessions}`);
+      doc.font('Helvetica-Bold').text(`Attendance Score: `, { continued: true });
+      doc.font('Helvetica').text(`${attendanceData.percentage}%`);
+
+      const allScorePercentages = [
+        ...Array.from(examMetrics.values()).map((m) => (avg(m.values) / TOTAL_MARKS) * 100),
+        ...Array.from(additionalMetrics.values()).map((m) => (avg(m.values) / TOTAL_MARKS) * 100),
+        attendanceData.percentage,
+      ];
+      const finalScore = allScorePercentages.length
+        ? Math.round(allScorePercentages.reduce((a, b) => a + b, 0) / allScorePercentages.length)
+        : 0;
+      doc.font('Helvetica-Bold').text(`Final Score: `, { continued: true });
+      doc.font('Helvetica').text(`${finalScore}%`);
+      doc.moveDown(1);
+
+      // Comments (from teacher feedback)
+      doc.font('Helvetica-Bold').fontSize(12).text('Comments');
+      doc.moveDown(0.3);
+      doc.font('Helvetica').fontSize(11);
       if (feedback.length > 0) {
-        doc.fontSize(14).font('Helvetica-Bold').text('Teacher Comments');
-        doc.fontSize(12).font('Helvetica');
         for (const f of feedback.slice(0, 5)) {
-          doc.text(`${f.classSession.class.name} - ${f.teacher.name}: "${f.content}"`);
+          doc.text(`- ${f.content}`);
         }
-        doc.moveDown();
+      } else {
+        doc.text('-');
       }
+      doc.moveDown(1);
 
-      doc.fontSize(10).text(`Generated on ${new Date().toLocaleDateString()}`, { align: 'right' });
+      // Facilitator's Name
+      doc.font('Helvetica-Bold').fontSize(12).text(`Facilitator's Name: `, { continued: true });
+      doc.font('Helvetica').text(facilitatorName || '-');
+
+      doc.moveDown(1);
+      doc.fontSize(9).font('Helvetica').text(`Generated on ${new Date().toLocaleDateString()}`, { align: 'right' });
       doc.end();
     });
   }
-
+  
   async findAll(studentId: string) {
     const reportCards = await this.prisma.reportCard.findMany({
       where: { studentId },
