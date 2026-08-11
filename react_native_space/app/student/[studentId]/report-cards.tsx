@@ -1,24 +1,37 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, Linking } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, Linking, Alert } from 'react-native'; // + Alert
+import { useReportCardsControllerFindAll, reportCardsControllerGetDownload, useReportCardsControllerRemove } from '@/src/api/generated/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius } from '@/src/theme';
-import { useReportCardsControllerFindAll, reportCardsControllerGetDownload } from '@/src/api/generated/api';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { formatDate } from '@/src/lib/dateFormat';
 
 export default function StudentReportCardsScreen() {
   const { studentId = '' } = useLocalSearchParams<{ studentId: string }>();
   const router = useRouter();
-  const { data, isLoading } = useReportCardsControllerFindAll({ studentId }, { query: { enabled: !!studentId } });
-
+  const { data, isLoading, refetch } = useReportCardsControllerFindAll({ studentId }, { query: { enabled: !!studentId } });
+  const removeMutation = useReportCardsControllerRemove();
+  
   const handleDownload = async (id: string) => {
     try {
       const result = await reportCardsControllerGetDownload(id);
       if (result?.url) Linking.openURL(result.url);
     } catch { /* ignore */ }
   };
+
+  const handleDelete = (id: string) => {
+    Alert.alert(
+      'Delete Report Card',
+      'Are you sure you want to delete this report card? This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: () => removeMutation.mutate({ id }, { onSuccess: () => refetch() }) },
+      ],
+    );
+  };
+
 
   if (isLoading) return <LoadingScreen />;
 
@@ -31,14 +44,19 @@ export default function StudentReportCardsScreen() {
       </View>
       <ScrollView contentContainerStyle={styles.content}>
         {(data ?? []).map((rc) => (
-          <Pressable key={rc?.id} style={styles.card} onPress={() => handleDownload(rc?.id ?? '')}>
-            <Ionicons name="document" size={24} color={Colors.secondary} />
-            <View style={{ flex: 1, marginLeft: Spacing.md }}>
-              <Text style={styles.cardTitle}>{rc?.academicYearName ?? ''}{rc?.termName ? ` - ${rc.termName}` : ''}</Text>
-              <Text style={styles.cardSub}>Generated {rc?.generatedAt ? formatDate(rc.generatedAt) : ''}</Text>
-            </View>
-            <Ionicons name="download" size={20} color={Colors.primary} />
-          </Pressable>
+          <View key={rc?.id} style={styles.card}>
+            <Pressable style={styles.cardMain} onPress={() => handleDownload(rc?.id ?? '')}>
+              <Ionicons name="document" size={24} color={Colors.secondary} />
+              <View style={{ flex: 1, marginLeft: Spacing.md }}>
+                <Text style={styles.cardTitle}>{rc?.academicYearName ?? ''}{rc?.termName ? ` - ${rc.termName}` : ''}</Text>
+                <Text style={styles.cardSub}>Generated {rc?.generatedAt ? formatDate(rc.generatedAt) : ''}</Text>
+              </View>
+              <Ionicons name="download" size={20} color={Colors.primary} />
+            </Pressable>
+            <Pressable style={styles.deleteBtn} onPress={() => handleDelete(rc?.id ?? '')} hitSlop={8}>
+              <Ionicons name="trash-outline" size={20} color={Colors.error} />
+            </Pressable>
+          </View>
         ))}
         {(data?.length ?? 0) === 0 && <Text style={styles.emptyText}>No report cards generated yet</Text>}
       </ScrollView>

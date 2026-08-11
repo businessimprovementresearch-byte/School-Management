@@ -252,7 +252,7 @@ export class ReportCardsService {
       doc.end();
     });
   }
-  
+
   async findAll(studentId: string) {
     const reportCards = await this.prisma.reportCard.findMany({
       where: { studentId },
@@ -282,5 +282,15 @@ export class ReportCardsService {
     if (!reportCard) throw new NotFoundException('Report card not found');
     const result = await this.uploadService.getFileUrl(reportCard.pdfFileId, 'download');
     return result;
+  }
+
+  async remove(id: string) {
+    const reportCard = await this.prisma.reportCard.findUnique({ where: { id } });
+    if (!reportCard) throw new NotFoundException('Report card not found');
+
+    // Deleting the underlying PDF file cascades to delete the report card record too
+    await this.uploadService.deleteFile(reportCard.pdfFileId);
+
+    return { id };
   }
 }

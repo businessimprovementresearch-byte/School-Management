@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, ScrollView, StyleSheet, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
-import { Text, Button, ActivityIndicator } from 'react-native-paper';
+import { Text, Button, ActivityIndicator, Searchbar } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useStudentsControllerFindAll, useAcademicYearsControllerFindAll, useTermsControllerFindAll, useReportCardsControllerGenerate } from '@/src/api/generated/api';
@@ -21,10 +21,18 @@ export default function GenerateReportScreen() {
 
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [selectedTermId, setSelectedTermId] = useState('');
+  const [studentSearch, setStudentSearch] = useState('');   // 👈 baris baru (tambahan state)
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   const students = studentsData?.items ?? [];
+
+  const selectedStudent = students.find((s) => s?.id === selectedStudentId);   // 👈 taruh di sini
+  const filteredStudents = React.useMemo(() => {                                // 👈 dan ini
+    const q = studentSearch.trim().toLowerCase();
+    if (!q) return students;
+    return students.filter((s) => s?.name?.toLowerCase()?.includes(q));
+  }, [students, studentSearch]);
 
   const handleGenerate = () => {
     setError(''); setSuccess('');
@@ -36,15 +44,15 @@ export default function GenerateReportScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={16}><Ionicons name="arrow-back" size={24} color={theme.colors.text} /></Pressable>
-        <Text style={styles.headerTitle}>Generate Report Card</Text>
-        <View style={{ width: 24 }} />
-      </View>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        {!!error && <Text style={styles.error}>{error}</Text>}
-        {!!success && <Text style={styles.success}>{success}</Text>}
+  <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.header}>
+      <Pressable onPress={() => router.back()} hitSlop={16}><Ionicons name="arrow-back" size={24} color={theme.colors.text} /></Pressable>
+      <Text style={styles.headerTitle}>Generate Report Card</Text>
+      <View style={{ width: 24 }} />
+    </View>
+    <ScrollView contentContainerStyle={styles.scroll}>
+      {!!error && <Text style={styles.error}>{error}</Text>}
+      {!!success && <Text style={styles.success}>{success}</Text>}
 
         <Text style={styles.label}>Academic Year</Text>
         <View style={styles.infoBox}>
@@ -52,15 +60,40 @@ export default function GenerateReportScreen() {
         </View>
 
         <Text style={styles.label}>Select Student</Text>
-        {studentsLoading ? <ActivityIndicator color={theme.colors.primary} /> : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-            {students.map((s: StudentListItemDto) => (
-              <Pressable key={s?.id} style={[styles.selectChip, selectedStudentId === s?.id && styles.selectChipActive]} onPress={() => setSelectedStudentId(s?.id ?? '')}>
-                <Text style={[styles.selectChipText, selectedStudentId === s?.id && styles.selectChipTextActive]}>{s?.name ?? ''}</Text>
-              </Pressable>
-            ))}
-          </ScrollView>
-        )}
+      {studentsLoading ? <ActivityIndicator color={theme.colors.primary} /> : (
+        <>
+          {selectedStudent ? (                                    // 👈 GANTI seluruh blok chip horizontal lama di sini
+            <View style={styles.selectedStudentRow}>
+              <View style={styles.selectedStudentChip}>
+                <Text style={styles.selectedStudentText}>{selectedStudent?.name ?? ''}</Text>
+                <Pressable onPress={() => { setSelectedStudentId(''); setStudentSearch(''); }} hitSlop={8}>
+                  <Ionicons name="close-circle" size={18} color="#FFF" />
+                </Pressable>
+              </View>
+            </View>
+          ) : (
+            <>
+              <Searchbar
+                placeholder="Search student by name..."
+                value={studentSearch}
+                onChangeText={setStudentSearch}
+                style={styles.searchbar}
+                inputStyle={styles.searchbarInput}
+              />
+              <ScrollView style={styles.studentList} nestedScrollEnabled keyboardShouldPersistTaps="handled">
+                {filteredStudents.map((s) => (
+                  <Pressable key={s?.id} style={styles.studentRow} onPress={() => { setSelectedStudentId(s?.id ?? ''); setStudentSearch(''); }}>
+                    <Text style={styles.studentRowText}>{s?.name ?? ''}</Text>
+                  </Pressable>
+                ))}
+                {filteredStudents.length === 0 && (
+                  <Text style={styles.emptyStudentText}>No students found</Text>
+                )}
+              </ScrollView>
+            </>
+          )}
+        </>
+      )}
 
         <Text style={styles.label}>Select Term (optional)</Text>
         <View style={styles.termRow}>

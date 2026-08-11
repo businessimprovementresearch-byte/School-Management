@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ReportCardsService } from './report-cards.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -30,5 +30,11 @@ export class ReportCardsController {
   @Get(':id/download')
   async getDownload(@Param('id') id: string): Promise<FileUrlResponseDto> {
     return this.service.getDownloadUrl(id);
+  }
+
+  @Delete(':id')
+  @Roles('ADMIN')
+  async remove(@Param('id') id: string): Promise<{ id: string }> {
+    return this.service.remove(id);
   }
 }
