@@ -35,12 +35,11 @@ const notify = (title: string, message: string) => {
 };
 
 export default function ClassDetailScreen() {
-  const { classId = '' } = useLocalSearchParams<{ classId: string }>();
+  const { classId = '', academicYearId: urlYearId } = useLocalSearchParams<{ classId: string; academicYearId?: string }>();
   const router = useRouter();
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
   const { data: academicYears } = useAcademicYearsControllerFindAll();
-  const [selectedYearId, setSelectedYearId] = useState<string | undefined>(undefined);
   const activeYear = academicYears?.find((y) => y?.isActive) ?? academicYears?.[0];
   const effectiveYearId = selectedYearId ?? activeYear?.id;
 
@@ -111,7 +110,7 @@ export default function ClassDetailScreen() {
                 <Pressable
                   key={y?.id}
                   style={[styles.yearChip, effectiveYearId === y?.id && styles.yearChipActive]}
-                  onPress={() => y?.id && setSelectedYearId(y.id)}
+                  onPress={() => y?.id && router.setParams({ academicYearId: y.id })}
                 >
                   <Text style={[styles.yearChipText, effectiveYearId === y?.id && styles.yearChipTextActive]}>
                     {y?.name ?? ''}{y?.isActive ? ' (Aktif)' : ''}
