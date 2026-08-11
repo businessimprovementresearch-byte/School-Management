@@ -4021,6 +4021,7 @@ export function useReportCardsControllerGetDownload<TData = Awaited<ReturnType<t
   return { ...query, queryKey: queryOptions.queryKey };
 }
 
+// edited
 export const getReportCardsControllerRemoveUrl = (id: string,) => {
   return `/api/report-cards/${id}`
 }
