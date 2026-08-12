@@ -25,6 +25,22 @@ export class AcademicYearsService {
         endDate: new Date(data.endDate),
       },
     });
+
+    // New academic years start with an empty class list: every existing
+    // class is marked inactive for this year by default, so nothing carries
+    // over automatically. Admin has to explicitly activate/assign classes
+    // (teachers, students) for the new year from scratch.
+    const existingClasses = await this.prisma.class.findMany({ select: { id: true } });
+    if (existingClasses.length > 0) {
+      await this.prisma.classYearStatus.createMany({
+        data: existingClasses.map((c) => ({
+          classId: c.id,
+          academicYearId: year.id,
+          isActive: false,
+        })),
+      });
+    }
+
     return {
       id: year.id,
       name: year.name,
