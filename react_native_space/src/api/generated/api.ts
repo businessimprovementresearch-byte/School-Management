@@ -4021,7 +4021,6 @@ export function useReportCardsControllerGetDownload<TData = Awaited<ReturnType<t
   return { ...query, queryKey: queryOptions.queryKey };
 }
 
-// edited
 export const getReportCardsControllerRemoveUrl = (id: string,) => {
   return `/api/report-cards/${id}`
 }
@@ -4034,37 +4033,28 @@ export const reportCardsControllerRemove = async (id: string, options?: RequestI
   }
 );}
 
-export const getReportCardsControllerRemoveMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reportCardsControllerRemove>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof reportCardsControllerRemove>>, TError,{id: string}, TContext> => {
+export function getReportCardsControllerRemoveMutationOptions<TError = ErrorType<unknown>, TContext = unknown>(options?: { mutation?: UseMutationOptions<Awaited<ReturnType<typeof reportCardsControllerRemove>>, TError, {id: string}, TContext>, request?: SecondParameter<typeof customFetch> }): UseMutationOptions<Awaited<ReturnType<typeof reportCardsControllerRemove>>, TError, {id: string}, TContext> {
+  const mutationKey = ['reportCardsControllerRemove'];
+  const {mutation: mutationOptions, request: requestOptions} = options ?
+        options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+        options
+        : {...options, mutation: {...options.mutation, mutationKey}}
+        : {mutation: { mutationKey, }, request: undefined};
 
-const mutationKey = ['reportCardsControllerRemove'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof reportCardsControllerRemove>>, {id: string}> = (props) => {
+    const {id} = props ?? {};
+    return reportCardsControllerRemove(id, requestOptions);
+  };
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof reportCardsControllerRemove>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-          return  reportCardsControllerRemove(id,requestOptions)
-        }
-
-  return  { mutationFn, ...mutationOptions }}
+  return { mutationFn, ...mutationOptions };
+}
 
 export type ReportCardsControllerRemoveMutationResult = NonNullable<Awaited<ReturnType<typeof reportCardsControllerRemove>>>
 export type ReportCardsControllerRemoveMutationError = ErrorType<unknown>
 
-export const useReportCardsControllerRemove = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reportCardsControllerRemove>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult
-        Awaited<ReturnType<typeof reportCardsControllerRemove>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-      return useMutation(getReportCardsControllerRemoveMutationOptions(options), queryClient);
-    }
+export function useReportCardsControllerRemove<TError = ErrorType<unknown>, TContext = unknown>(options?: { mutation?: UseMutationOptions<Awaited<ReturnType<typeof reportCardsControllerRemove>>, TError, {id: string}, TContext>, request?: SecondParameter<typeof customFetch> }, queryClient?: QueryClient): UseMutationResult<Awaited<ReturnType<typeof reportCardsControllerRemove>>, TError, {id: string}, TContext> {
+  return useMutation(getReportCardsControllerRemoveMutationOptions(options), queryClient);
+}
 
 export const getEventsControllerFindAllUrl = () => {
 
