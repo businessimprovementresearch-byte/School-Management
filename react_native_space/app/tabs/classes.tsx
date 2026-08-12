@@ -151,6 +151,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: '700', color: Colors.textPrimary },
   content: { padding: Spacing.lg },
   section: { marginBottom: Spacing.xl },
+  emptyGradeText: { fontSize: 13, color: Colors.textSecondary, fontStyle: 'italic', paddingVertical: 4 },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: Colors.textSecondary, marginBottom: Spacing.sm, textTransform: 'uppercase', letterSpacing: 0.5 },
   classCard: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface,
