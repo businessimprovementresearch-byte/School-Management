@@ -5,6 +5,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateProgressDto } from './dto/create-progress.dto';
 import { ProgressResponseDto } from './dto/progress-response.dto';
 import { ProgressListResponseDto } from './dto/progress-list-response.dto';
+import { CreateProgressDto } from './dto/create-progress.dto';
+import { BulkProgressDto } from './dto/bulk-progress.dto';
 
 @ApiTags('Progress')
 @Controller('api/progress')
@@ -15,6 +17,19 @@ export class ProgressController {
   @Post()
   async create(@Body() dto: CreateProgressDto): Promise<ProgressResponseDto> {
     return this.progressService.create(dto);
+  }
+
+  @Post('bulk')
+  async bulkSave(@Body() dto: BulkProgressDto) {
+    return this.progressService.bulkSave(dto.classSessionId, dto.progressMetricId, dto.entries);
+  }
+
+  @Get('session')
+  async findBySession(
+    @Query('classSessionId') classSessionId: string,
+    @Query('progressMetricId') progressMetricId: string,
+  ) {
+    return this.progressService.findBySession(classSessionId, progressMetricId);
   }
 
   @Get()

@@ -20,7 +20,7 @@ export class MetricsController {
   }
 
   @Post()
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'TEACHER')
   async create(@Body() dto: CreateMetricDto): Promise<MetricResponseDto> {
     return this.service.create(dto);
   }

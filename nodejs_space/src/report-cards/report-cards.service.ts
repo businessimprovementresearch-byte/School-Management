@@ -156,6 +156,7 @@ export class ReportCardsService {
           }
           drawRow(row, false);
         }
+        doc.x = startX;
         doc.y = y + 10;
       };
 
@@ -168,8 +169,8 @@ export class ReportCardsService {
       doc.fontSize(12).font('Helvetica-Bold').text('Student Information');
       doc.moveDown(0.3);
       doc.font('Helvetica').fontSize(11);
-      doc.text(`Name: ${student.name}`);
-      doc.text(`Class: ${className}`);
+      doc.text(`Name          : ${student.name}`);
+      doc.text(`Class         : ${className}`);
       doc.moveDown(1);
 
       // Split progress into exam (SCORE) vs additional (LEVEL/RATING) metrics
@@ -199,25 +200,7 @@ export class ReportCardsService {
         [pageWidth * 0.4, pageWidth * 0.2, pageWidth * 0.2, pageWidth * 0.2],
       );
 
-      // Additional Scores
-      doc.font('Helvetica-Bold').fontSize(12).text('Additional Scores');
-      doc.moveDown(0.3);
-      const additionalRows = Array.from(additionalMetrics.values()).map((m) => {
-        const marks = avg(m.values);
-        return [m.name, marks.toFixed(1), `${TOTAL_MARKS}`, m.notes.join('; ') || '-'];
-      });
-      drawTable(
-        ['Additional Component', 'Score', 'Total Marks', 'Remarks'],
-        additionalRows.length ? additionalRows : [['-', '-', '-', '-']],
-        [pageWidth * 0.3, pageWidth * 0.2, pageWidth * 0.2, pageWidth * 0.3],
-      );
-
-      // Attendance & Final Score
-      doc.font('Helvetica-Bold').fontSize(12).text(`# Class Attended: `, { continued: true });
-      doc.font('Helvetica').text(`${attendanceData.present} / ${attendanceData.totalSessions}`);
-      doc.font('Helvetica-Bold').text(`Attendance Score: `, { continued: true });
-      doc.font('Helvetica').text(`${attendanceData.percentage}%`);
-
+      // Additional Scores (attendance & final score digabung sebagai baris, sesuai template)
       const allScorePercentages = [
         ...Array.from(examMetrics.values()).map((m) => (avg(m.values) / TOTAL_MARKS) * 100),
         ...Array.from(additionalMetrics.values()).map((m) => (avg(m.values) / TOTAL_MARKS) * 100),
@@ -226,25 +209,42 @@ export class ReportCardsService {
       const finalScore = allScorePercentages.length
         ? Math.round(allScorePercentages.reduce((a, b) => a + b, 0) / allScorePercentages.length)
         : 0;
-      doc.font('Helvetica-Bold').text(`Final Score: `, { continued: true });
-      doc.font('Helvetica').text(`${finalScore}%`);
+
+      doc.font('Helvetica-Bold').fontSize(12).text('Additional Scores');
+      doc.moveDown(0.3);
+      const additionalRows: string[][] = [
+        ['# Class Attended', `${attendanceData.present} / ${attendanceData.totalSessions}`, '-', '-'],
+        ['Attendance Score', `${attendanceData.percentage}%`, '-', '-'],
+        ...Array.from(additionalMetrics.values()).map((m) => {
+          const marks = avg(m.values);
+          return [m.name, marks.toFixed(1), `${TOTAL_MARKS}`, m.notes.join('; ') || '-'];
+        }),
+        ['Final Score', `${finalScore}%`, '-', '-'],
+      ];
+      drawTable(
+        ['Additional Component', 'Score', 'Total Marks', 'Remarks'],
+        additionalRows,
+        [pageWidth * 0.3, pageWidth * 0.2, pageWidth * 0.2, pageWidth * 0.3],
+      );
       doc.moveDown(1);
 
-      // Comments (from teacher feedback)
+      // Comments (kotak bergaris seperti template)
       doc.font('Helvetica-Bold').fontSize(12).text('Comments');
       doc.moveDown(0.3);
+      const boxX = doc.page.margins.left;
+      const boxY = doc.y;
+      const boxHeight = 150;
+      doc.rect(boxX, boxY, pageWidth, boxHeight).stroke();
       doc.font('Helvetica').fontSize(11);
-      if (feedback.length > 0) {
-        for (const f of feedback.slice(0, 5)) {
-          doc.text(`- ${f.content}`);
-        }
-      } else {
-        doc.text('-');
-      }
-      doc.moveDown(1);
+      const commentText = feedback.length > 0
+        ? feedback.slice(0, 5).map((f) => `- ${f.content}`).join('\n')
+        : '';
+      doc.text(commentText, boxX + 8, boxY + 8, { width: pageWidth - 16, height: boxHeight - 16 });
+      doc.x = boxX;
+      doc.y = boxY + boxHeight + 12;
 
       // Facilitator's Name
-      doc.font('Helvetica-Bold').fontSize(12).text(`Facilitator's Name: `, { continued: true });
+      doc.font('Helvetica-Bold').fontSize(12).text(`Facilitator's Name    : `, { continued: true });
       doc.font('Helvetica').text(facilitatorName || '-');
 
       doc.moveDown(1);

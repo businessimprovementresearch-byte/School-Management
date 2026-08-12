@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { useSessionsControllerFindOne, useSessionsControllerSetHoliday, useAttendanceControllerBulkSave, useFeedbackControllerCreate, useMetricsControllerFindAll, useMetricsControllerCreate, useProgressControllerBulkSave, useProgressControllerFindBySession } from '@/src/api/generated/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,6 +22,53 @@ export default function SessionDetailScreen() {
   const { data, isLoading, refetch } = useSessionsControllerFindOne(sessionId, { query: { enabled: !!sessionId } });
   const bulkSave = useAttendanceControllerBulkSave();
   const createFeedback = useFeedbackControllerCreate();
+  const { data: metrics, refetch: refetchMetrics } = useMetricsControllerFindAll({ classId }, { query: { enabled: !!classId } });
+  const createMetric = useMetricsControllerCreate();
+  const bulkScores = useProgressControllerBulkSave();
+  const [showNewMetric, setShowNewMetric] = useState(false);
+  const [newMetricName, setNewMetricName] = useState('');
+  const [newMetricKind, setNewMetricKind] = useState<'QUIZ' | 'ASSIGNMENT'>('QUIZ');
+  const [activeMetricId, setActiveMetricId] = useState<string | null>(null);
+  const [scores, setScores] = useState<Record<string, string>>({});
+  const { data: existingScores } = useProgressControllerFindBySession(
+    { classSessionId: sessionId, progressMetricId: activeMetricId ?? '' },
+    { query: { enabled: !!activeMetricId } },
+  );
+
+  React.useEffect(() => {
+    if (existingScores) {
+      const s: Record<string, string> = {};
+      for (const e of existingScores) s[e.studentId] = String(e.value);
+      setScores(s);
+    }
+  }, [existingScores]);
+
+  const handleCreateMetric = async () => {
+    if (!newMetricName.trim()) return;
+    try {
+      await createMetric.mutateAsync({
+        data: { name: newMetricName.trim(), classId, type: newMetricKind === 'QUIZ' ? 'SCORE' : 'RATING' },
+      });
+      setNewMetricName('');
+      setShowNewMetric(false);
+      refetchMetrics();
+    } catch (e) {
+      Alert.alert('Error', getErrorMessage(e, 'Failed to create'));
+    }
+  };
+
+  const handleSaveScores = async () => {
+    if (!activeMetricId) return;
+    try {
+      const entries = (data?.students ?? [])
+        .filter((s) => scores[s?.id ?? ''] !== undefined && scores[s?.id ?? ''] !== '')
+        .map((s) => ({ studentId: s!.id, value: parseFloat(scores[s!.id]) }));
+      await bulkScores.mutateAsync({ data: { classSessionId: sessionId, progressMetricId: activeMetricId, entries } });
+      Alert.alert('Berhasil', 'Nilai tersimpan');
+    } catch (e) {
+      Alert.alert('Error', getErrorMessage(e, 'Failed to save scores'));
+    }
+  };
   const setHoliday = useSessionsControllerSetHoliday();
 
   const [studentAtt, setStudentAtt] = useState<Record<string, AttStatus>>({});
@@ -193,6 +240,64 @@ export default function SessionDetailScreen() {
         {!!attError && <Text style={styles.errorText}>{attError}</Text>}
         {!!attSuccess && <Text style={styles.successText}>{attSuccess}</Text>}
         </>
+        ) : null}
+
+        {/* Quiz / Assignment */}
+        <Text style={styles.sectionTitle}>Quiz / Assignment</Text>
+        <View style={{ flexDirection: 'row', gap: 8, marginBottom: Spacing.sm }}>
+          {(metrics ?? []).filter((m) => m?.classId === classId).map((m) => (
+            <Pressable
+              key={m?.id}
+              style={[styles.holidayBtn, activeMetricId === m?.id && styles.holidayBtnActive]}
+              onPress={() => setActiveMetricId(m?.id ?? null)}
+            >
+              <Text style={[styles.holidayBtnText, activeMetricId === m?.id && styles.holidayBtnTextActive]}>
+                {m?.name} ({m?.type === 'SCORE' ? 'Quiz' : 'Assignment'})
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {!showNewMetric ? (
+          <Pressable onPress={() => setShowNewMetric(true)}>
+            <Text style={{ color: Colors.primary, fontWeight: '600', marginBottom: Spacing.md }}>+ Tambah Quiz/Assignment</Text>
+          </Pressable>
+        ) : (
+          <View style={{ marginBottom: Spacing.md }}>
+            <TextInput style={styles.input} placeholder="Nama (mis. Ulangan Bab 1)" value={newMetricName} onChangeText={setNewMetricName} />
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: Spacing.sm }}>
+              <Pressable style={[styles.holidayBtn, newMetricKind === 'QUIZ' && styles.holidayBtnActive]} onPress={() => setNewMetricKind('QUIZ')}>
+                <Text style={[styles.holidayBtnText, newMetricKind === 'QUIZ' && styles.holidayBtnTextActive]}>Quiz</Text>
+              </Pressable>
+              <Pressable style={[styles.holidayBtn, newMetricKind === 'ASSIGNMENT' && styles.holidayBtnActive]} onPress={() => setNewMetricKind('ASSIGNMENT')}>
+                <Text style={[styles.holidayBtnText, newMetricKind === 'ASSIGNMENT' && styles.holidayBtnTextActive]}>Assignment</Text>
+              </Pressable>
+            </View>
+            <Pressable style={styles.saveBtn} onPress={handleCreateMetric}>
+              <Text style={styles.saveBtnText}>Buat</Text>
+            </Pressable>
+          </View>
+        )}
+
+        {activeMetricId ? (
+          <>
+            {(data?.students ?? []).map((s) => (
+              <View key={s?.id} style={styles.attRow}>
+                <Avatar uri={s?.photoUrl} name={s?.name} size={36} />
+                <Text style={styles.attName} numberOfLines={1}>{s?.name ?? ''}</Text>
+                <TextInput
+                  style={[styles.input, { width: 70, padding: 8 }]}
+                  keyboardType="numeric"
+                  placeholder="0-100"
+                  value={scores[s?.id ?? ''] ?? ''}
+                  onChangeText={(v) => setScores((prev) => ({ ...prev, [s?.id ?? '']: v }))}
+                />
+              </View>
+            ))}
+            <Pressable style={styles.saveBtn} onPress={handleSaveScores} disabled={bulkScores.isPending}>
+              {bulkScores.isPending ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveBtnText}>Simpan Nilai</Text>}
+            </Pressable>
+          </>
         ) : null}
 
         {/* Feedback */}

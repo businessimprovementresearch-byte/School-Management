@@ -30,6 +30,34 @@ export class ProgressService {
     };
   }
 
+  async bulkSave(classSessionId: string, progressMetricId: string, entries: { studentId: string; value: number; notes?: string | null }[]) {
+    let savedCount = 0;
+    for (const e of entries) {
+      const existing = await this.prisma.studentProgress.findFirst({
+        where: { studentId: e.studentId, progressMetricId, classSessionId },
+      });
+      if (existing) {
+        await this.prisma.studentProgress.update({
+          where: { id: existing.id },
+          data: { value: e.value, notes: e.notes ?? null },
+        });
+      } else {
+        await this.prisma.studentProgress.create({
+          data: { studentId: e.studentId, progressMetricId, classSessionId, value: e.value, notes: e.notes ?? null },
+        });
+      }
+      savedCount++;
+    }
+    return { savedCount };
+  }
+
+  async findBySession(classSessionId: string, progressMetricId: string) {
+    const entries = await this.prisma.studentProgress.findMany({
+      where: { classSessionId, progressMetricId },
+    });
+    return entries.map((e) => ({ studentId: e.studentId, value: e.value, notes: e.notes }));
+  }
+
   async findByStudent(studentId: string) {
     const entries = await this.prisma.studentProgress.findMany({
       where: { studentId },
