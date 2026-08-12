@@ -18,16 +18,6 @@ import Avatar from '@/src/components/Avatar';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { formatDate } from '@/src/lib/dateFormat';
 
-const confirmAsync = (title: string, message: string): Promise<boolean> => {
-  if (Platform.OS === 'web') return Promise.resolve(window.confirm(`${title}\n\n${message}`));
-  return new Promise((resolve) => {
-    Alert.alert(title, message, [
-      { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-      { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
-    ]);
-  });
-};
-
 // Alert.alert() is a no-op on react-native-web; window.confirm/alert are
 // the fallback so confirmations/errors actually show up on web (same
 // pattern used on the student detail screen).
@@ -72,10 +62,13 @@ export default function ClassDetailScreen() {
   const removeTeacherMutation = useClassesControllerRemoveTeacher();
   const deleteClassMutation = useClassesControllerRemove();
 
-  const handleDelete = async (id: string) => {
-  const confirmed = await confirmAsync('Delete Report Card', 'Are you sure you want to delete this report card? This cannot be undone.');
+  const handleDeleteClass = async () => {
+  const confirmed = await confirmAsync('Delete Class', `Are you sure you want to delete "${data?.name ?? 'this class'}"? This cannot be undone.`);
     if (!confirmed) return;
-    removeMutation.mutate({ id }, { onSuccess: () => refetch() });
+    deleteClassMutation.mutate({ classId }, {
+      onSuccess: () => router.back(),
+      onError: (e) => notify('Error', getErrorMessage(e, 'Failed to delete class')),
+    });
   };
 
   const handleAssignTeacher = (teacherId: string) => {
