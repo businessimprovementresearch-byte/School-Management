@@ -83,7 +83,6 @@ export default function ClassesScreen() {
 
   const grouped = gradeOrder
     .map((grade) => [grade, (data ?? []).filter((c) => c?.grade === grade)] as const)
-    .filter(([, items]) => items.length > 0);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -111,7 +110,10 @@ export default function ClassesScreen() {
             <Text style={styles.sectionTitle}>
               {grade === 'Special' ? 'Special Classes' : grade === 'Nursery' ? 'Nursery' : `Grade ${grade}`}
             </Text>
-            {(classes ?? []).map((c) => (
+            {classes.length === 0 ? (
+              <Text style={styles.emptyGradeText}>No classes yet for this grade</Text>
+            ) : (
+            (classes ?? []).map((c) => (
               <Pressable
                 key={c?.id}
                 style={styles.classCard}
@@ -129,9 +131,10 @@ export default function ClassesScreen() {
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
               </Pressable>
-            ))}
-          </View>
-        ))}
+            ))
+          )}
+        </View>
+      ))}
       </ScrollView>
     </SafeAreaView>
   );
