@@ -1626,8 +1626,18 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ClassesControllerUpdateMutationError = ErrorType<unknown>
 
     export const useClassesControllerUpdate = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerUpdate>>, TError,{classId: string;data: BodyType<UpdateClassDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult
+    TContext = unknown>(
+      options?: {
+        mutation?: UseMutationOptions<
+          Awaited<ReturnType<typeof classesControllerUpdate>>,
+          TError,
+          { classId: string; data: BodyType<UpdateClassDto> },
+          TContext
+        >;
+        request?: SecondParameter<typeof customFetch>;
+      },
+      queryClient?: QueryClient
+    ): UseMutationResult<
         Awaited<ReturnType<typeof classesControllerUpdate>>,
         TError,
         {classId: string;data: BodyType<UpdateClassDto>},
