@@ -56,7 +56,7 @@ export class AcademicYearsService {
     };
   }
 
-  async remove(id: string) {
+  async remove(id: string, force = false) {
     const year = await this.prisma.academicYear.findUnique({
       where: { id },
       include: { _count: { select: { terms: true, sessions: true, reportCards: true, history: true } } },
@@ -69,7 +69,7 @@ export class AcademicYearsService {
 
     const usageCount =
       year._count.terms + year._count.sessions + year._count.reportCards + year._count.history;
-    if (usageCount > 0) {
+    if (usageCount > 0 && !force) {
       throw new ConflictException(
         `Cannot delete "${year.name}": it still has ${year._count.terms} term(s), ${year._count.sessions} session(s), ${year._count.reportCards} report card(s) and ${year._count.history} class history record(s) linked to it. Remove those first.`,
       );

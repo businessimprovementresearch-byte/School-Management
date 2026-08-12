@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AcademicYearsService } from './academic-years.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -35,8 +35,8 @@ export class AcademicYearsController {
 
   @Delete(':id')
   @Roles('ADMIN')
-  async remove(@Param('id') id: string): Promise<SuccessResponseDto> {
-    return this.service.remove(id);
+  async remove(@Param('id') id: string, @Query('force') force?: string): Promise<SuccessResponseDto> {
+    return this.service.remove(id, force === 'true');
   }
 
   @Post(':id/rollover')

@@ -25,6 +25,20 @@ const confirmAsync = (title: string, message: string): Promise<boolean> => {
   });
 };
 
+const confirmAsync = (title: string, message: string, confirmLabel = 'Delete'): Promise<boolean> => {
+  if (Platform.OS === 'web') return Promise.resolve(window.confirm(`${title}\n\n${message}`));
+  return new Promise((resolve) => {
+    Alert.alert(title, message, [
+      { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+      { text: confirmLabel, style: 'destructive', onPress: () => resolve(true) },
+    ]);
+  });
+};
+const notify = (title: string, message: string) => {
+  if (Platform.OS === 'web') window.alert(`${title}\n\n${message}`);
+  else Alert.alert(title, message);
+};
+
 export default function AcademicYearsScreen() {
   const router = useRouter();
   const { data, isLoading, refetch } = useAcademicYearsControllerFindAll();
@@ -86,20 +100,32 @@ export default function AcademicYearsScreen() {
     updateMutation.mutate({ id: item?.id ?? '', data: { isActive: !item?.isActive } }, { onSuccess: () => refetch() });
   };
 
-  const handleDelete = async (item: AcademicYearListItemDto) => {
-    const confirmed = await confirmAsync('Delete Academic Year', `Are you sure you want to delete "${item?.name ?? ''}"? This cannot be undone.`);
-    if (!confirmed) return;
+  const doRemove = (item: AcademicYearListItemDto, force: boolean) => {
     removeMutation.mutate(
-      { id: item?.id ?? '' },
+      { id: item?.id ?? '', force },
       {
         onSuccess: () => refetch(),
-        onError: (e) => {
+        onError: async (e) => {
           const msg = getErrorMessage(e, 'Failed to delete academic year');
-          if (Platform.OS === 'web') window.alert(msg);
-          else Alert.alert('Cannot Delete', msg);
+          if (!force && /still has/i.test(msg)) {
+            const confirmed = await confirmAsync(
+              'Cannot Delete',
+              `${msg}\n\nDelete anyway? This will permanently remove all linked terms, sessions, report cards, and class history too.`,
+              'Delete Anyway',
+            );
+            if (confirmed) doRemove(item, true);
+            return;
+          }
+          notify('Cannot Delete', msg);
         },
       },
     );
+  };
+
+  const handleDelete = async (item: AcademicYearListItemDto) => {
+    const confirmed = await confirmAsync('Delete Academic Year', `Are you sure you want to delete "${item?.name ?? ''}"? This cannot be undone.`);
+    if (!confirmed) return;
+    doRemove(item, false);
   };
 
   const renderItem = ({ item }: { item: AcademicYearListItemDto }) => (

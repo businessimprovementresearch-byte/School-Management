@@ -3233,27 +3233,22 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getAcademicYearsControllerUpdateMutationOptions(options), queryClient);
     }
 
-export const getAcademicYearsControllerRemoveUrl = (id: string,) => {
-
-
-
-
-  return `/api/academic-years/${id}`
+export const getAcademicYearsControllerRemoveUrl = (id: string, force?: boolean,) => {
+  const normalizedParams = new URLSearchParams();
+  if (force !== undefined) {
+    normalizedParams.append('force', force.toString());
+  }
+  const stringifiedParams = normalizedParams.toString();
+  return stringifiedParams.length > 0 ? `/api/academic-years/${id}?${stringifiedParams}` : `/api/academic-years/${id}`
 }
 
-export const academicYearsControllerRemove = async (id: string, options?: RequestInit): Promise<SuccessResponseDto> => {
-
-  return customFetch<SuccessResponseDto>(getAcademicYearsControllerRemoveUrl(id),
+export const academicYearsControllerRemove = async (id: string, force?: boolean, options?: RequestInit): Promise<SuccessResponseDto> => {
+  return customFetch<SuccessResponseDto>(getAcademicYearsControllerRemoveUrl(id,force),
   {
     ...options,
     method: 'DELETE'
-
-
   }
 );}
-
-
-
 
 export const getAcademicYearsControllerRemoveMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof academicYearsControllerRemove>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
@@ -3269,11 +3264,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof academicYearsControllerRemove>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  academicYearsControllerRemove(id,requestOptions)
-        }
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof academicYearsControllerRemove>>, {id: string;force?: boolean}> = (props) => {
+        const {id,force} = props ?? {};
+        return  academicYearsControllerRemove(id,force,requestOptions)
+      }
 
 
 
