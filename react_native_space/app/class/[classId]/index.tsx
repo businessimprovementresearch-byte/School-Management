@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, Linking, Alert, Platform, RefreshControl, Modal } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, Linking, Alert, Platform, RefreshControl, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,6 +9,7 @@ import {
   useClassesControllerAssignTeacher,
   useClassesControllerRemoveTeacher,
   useClassesControllerRemove,
+  useClassesControllerUpdate,
   useTeachersControllerFindAll,
   useAcademicYearsControllerFindAll,
 } from '@/src/api/generated/api';
@@ -62,8 +63,36 @@ export default function ClassDetailScreen() {
   const removeTeacherMutation = useClassesControllerRemoveTeacher();
   const deleteClassMutation = useClassesControllerRemove();
 
+  const updateClassMutation = useClassesControllerUpdate();
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editGrade, setEditGrade] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+
+  const openEditModal = () => {
+    setEditName(data?.name ?? '');
+    setEditGrade(data?.grade ?? '');
+    setEditDescription(data?.description ?? '');
+    setEditOpen(true);
+  };
+
+  const handleSaveClass = () => {
+    if (!editName.trim() || !editGrade.trim()) {
+      notify('Error', 'Name and grade are required');
+      return;
+    }
+    updateClassMutation.mutate(
+      { classId, data: { name: editName.trim(), grade: editGrade.trim(), description: editDescription.trim() || undefined } },
+      {
+        onSuccess: () => { setEditOpen(false); refetch(); },
+        onError: (e) => notify('Error', getErrorMessage(e, 'Failed to update class')),
+      },
+    );
+  };
+
   const handleDeleteClass = async () => {
-  const confirmed = await confirmAsync('Delete Class', `Are you sure you want to delete "${data?.name ?? 'this class'}"? This cannot be undone.`);
+    const confirmed = await confirmAsync('Delete Class', `Are you sure you want to delete "${data?.name ?? 'this class'}"? This cannot be undone.`);
     if (!confirmed) return;
     deleteClassMutation.mutate({ classId }, {
       onSuccess: () => router.back(),
@@ -108,10 +137,39 @@ export default function ClassDetailScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
       >
         <View style={styles.headerCard}>
-          <Text style={styles.className}>{data?.name ?? ''}</Text>
-          <Text style={styles.classGrade}>Grade: {data?.grade ?? ''}</Text>
+          <View style={styles.headerCardTop}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.className}>{data?.name ?? ''}</Text>
+              <Text style={styles.classGrade}>Grade: {data?.grade ?? ''}</Text>
+            </View>
+            {isAdmin && (
+              <Pressable style={styles.editClassBtn} onPress={openEditModal}>
+                <Ionicons name="pencil" size={18} color={Colors.primary} />
+              </Pressable>
+            )}
+          </View>
           {data?.description ? <Text style={styles.classDesc}>{data.description}</Text> : null}
         </View>
+
+        <Modal visible={editOpen} transparent animationType="slide" onRequestClose={() => setEditOpen(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalCard}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Edit Class</Text>
+                <Pressable onPress={() => setEditOpen(false)}><Ionicons name="close" size={24} color={Colors.textPrimary} /></Pressable>
+              </View>
+              <Text style={styles.inputLabel}>Name</Text>
+              <TextInput style={styles.input} value={editName} onChangeText={setEditName} placeholder="Class name" placeholderTextColor={Colors.textSecondary} />
+              <Text style={styles.inputLabel}>Grade</Text>
+              <TextInput style={styles.input} value={editGrade} onChangeText={setEditGrade} placeholder="Grade" placeholderTextColor={Colors.textSecondary} />
+              <Text style={styles.inputLabel}>Description</Text>
+              <TextInput style={[styles.input, styles.inputMultiline]} value={editDescription} onChangeText={setEditDescription} placeholder="Description (optional)" placeholderTextColor={Colors.textSecondary} multiline numberOfLines={3} />
+              <Pressable style={[styles.saveClassBtn, updateClassMutation.isPending && { opacity: 0.6 }]} onPress={handleSaveClass} disabled={updateClassMutation.isPending}>
+                <Text style={styles.saveClassText}>{updateClassMutation.isPending ? 'Saving...' : 'Save Changes'}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
 
         {(academicYears?.length ?? 0) > 1 && (
           <>
@@ -263,6 +321,20 @@ const styles = StyleSheet.create({
   topTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
   content: { padding: Spacing.lg },
   headerCard: { backgroundColor: Colors.surface, borderRadius: BorderRadius.lg, padding: Spacing.lg, marginBottom: Spacing.lg },
+  headerCardTop: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
+  editClassBtn: { padding: 6, borderRadius: BorderRadius.full, backgroundColor: Colors.primary + '14' },
+  inputLabel: { fontSize: 13, fontWeight: '600', color: Colors.textSecondary, marginTop: Spacing.md, marginBottom: 4 },
+  input: {
+    borderWidth: 1, borderColor: Colors.divider, borderRadius: BorderRadius.sm,
+    paddingHorizontal: Spacing.md, paddingVertical: 10, fontSize: 15, color: Colors.textPrimary,
+    backgroundColor: Colors.background,
+  },
+  inputMultiline: { minHeight: 80, textAlignVertical: 'top' },
+  saveClassBtn: {
+    backgroundColor: Colors.primary, borderRadius: BorderRadius.sm, paddingVertical: 12,
+    alignItems: 'center', marginTop: Spacing.lg,
+  },
+  saveClassText: { color: '#fff', fontSize: 15, fontWeight: '700' },
   className: { fontSize: 22, fontWeight: '700', color: Colors.textPrimary },
   classGrade: { fontSize: 14, color: Colors.textSecondary, marginTop: 2 },
   classDesc: { fontSize: 14, color: Colors.textSecondary, marginTop: Spacing.sm },

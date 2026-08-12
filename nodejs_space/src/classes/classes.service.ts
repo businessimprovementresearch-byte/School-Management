@@ -193,4 +193,14 @@ export class ClassesService {
     const cls = await this.prisma.class.create({ data });
     return this.findOne(cls.id);
   }
+
+  async update(
+    classId: string,
+    data: { name?: string; grade?: string; description?: string },
+  ) {
+    const existing = await this.prisma.class.findUnique({ where: { id: classId } });
+    if (!existing) throw new NotFoundException('Class not found');
+    await this.prisma.class.update({ where: { id: classId }, data });
+    return this.findOne(classId);
+  }
 }

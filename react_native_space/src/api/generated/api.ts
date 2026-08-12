@@ -108,7 +108,8 @@ import type {
   UpdateStudentDto,
   UpdateTeacherDto,
   UpdateTermDto,
-  UploadControllerGetFileUrlParams
+  UploadControllerGetFileUrlParams,
+  UpdateClassDto,
 } from './schemas';
 
 import { customFetch } from '../customFetch';
@@ -1588,6 +1589,51 @@ export const useClassesControllerRemoveTeacher = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getClassesControllerRemoveTeacherMutationOptions(options), queryClient);
+    }
+
+export const getClassesControllerUpdateUrl = (classId: string,) => {
+  return `/api/classes/${classId}`
+}
+
+export const classesControllerUpdate = async (classId: string, updateClassDto: UpdateClassDto, options?: RequestInit): Promise<ClassDetailResponseDto> => {
+  return customFetch<ClassDetailResponseDto>(getClassesControllerUpdateUrl(classId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateClassDto)
+  }
+);}
+
+export const getClassesControllerUpdateMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerUpdate>>, TError,{classId: string;data: BodyType<UpdateClassDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof classesControllerUpdate>>, TError,{classId: string;data: BodyType<UpdateClassDto>}, TContext> => {
+
+const mutationKey = ['classesControllerUpdate'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof classesControllerUpdate>>, {classId: string;data: BodyType<UpdateClassDto>}> = (props) => {
+          const {classId,data} = props ?? {};
+          return  classesControllerUpdate(classId,data,requestOptions)
+        }
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ClassesControllerUpdateMutationResult = NonNullable<Awaited<ReturnType<typeof classesControllerUpdate>>>
+    export type ClassesControllerUpdateMutationBody = BodyType<UpdateClassDto>
+    export type ClassesControllerUpdateMutationError = ErrorType<unknown>
+
+    export const useClassesControllerUpdate = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerUpdate>>, TError,{classId: string;data: BodyType<UpdateClassDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult
+        Awaited<ReturnType<typeof classesControllerUpdate>>,
+        TError,
+        {classId: string;data: BodyType<UpdateClassDto>},
+        TContext
+      > => {
+      return useMutation(getClassesControllerUpdateMutationOptions(options), queryClient);
     }
 
 export const getClassesControllerRemoveUrl = (classId: string,) => {

@@ -123,3 +123,4 @@ export * from './updateTeacherDto';
 export * from './uploadControllerGetFileUrlParams';
 export * from './userInfoDto';
 export * from './createClassDto';
+export * from './updateClassDto';

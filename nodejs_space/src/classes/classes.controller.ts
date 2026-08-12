@@ -12,6 +12,7 @@ import { TeacherAssignmentResponseDto } from './dto/teacher-assignment-response.
 import { SuccessResponseDto } from '../common/dto/success-response.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import type { Request } from 'express';
+import { UpdateClassDto } from './dto/update-class.dto';
 
 @ApiTags('Classes')
 @Controller('api/classes')
@@ -51,6 +52,15 @@ export class ClassesController {
     @Body() dto: AssignTeacherDto,
   ): Promise<TeacherAssignmentResponseDto> {
     return this.classesService.assignTeacher(classId, dto.teacherId, dto.academicYearId);
+  }
+
+  @Patch(':classId')
+  @Roles('ADMIN')
+  async update(
+    @Param('classId') classId: string,
+    @Body() dto: UpdateClassDto,
+  ): Promise<ClassDetailResponseDto> {
+    return this.classesService.update(classId, dto);
   }
 
   @Delete(':classId/teachers/:teacherId')
