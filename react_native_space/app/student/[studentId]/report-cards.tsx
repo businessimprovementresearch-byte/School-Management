@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, Linking, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, Linking, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +7,19 @@ import { Colors, Spacing, BorderRadius } from '@/src/theme';
 import { useReportCardsControllerFindAll, reportCardsControllerGetDownload, useReportCardsControllerRemove } from '@/src/api/generated/api';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { formatDate } from '@/src/lib/dateFormat';
+
+// Alert.alert() is a no-op on react-native-web; window.confirm is the
+// fallback so the confirmation dialog actually shows up on web (same
+// pattern used on the class detail screen).
+const confirmAsync = (title: string, message: string): Promise<boolean> => {
+  if (Platform.OS === 'web') return Promise.resolve(window.confirm(`${title}\n\n${message}`));
+  return new Promise((resolve) => {
+    Alert.alert(title, message, [
+      { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+      { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
+    ]);
+  });
+};
 
 export default function StudentReportCardsScreen() {
   const { studentId = '' } = useLocalSearchParams<{ studentId: string }>();
@@ -21,19 +34,10 @@ export default function StudentReportCardsScreen() {
     } catch { /* ignore */ }
   };
 
-  const handleDelete = (id: string) => {
-    Alert.alert(
-      'Delete Report Card',
-      'Are you sure you want to delete this report card? This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => removeMutation.mutate({ id }, { onSuccess: () => refetch() }),
-        },
-      ],
-    );
+  const handleDelete = async (id: string) => {
+    const confirmed = await confirmAsync('Delete Report Card', 'Are you sure you want to delete this report card? This cannot be undone.');
+    if (!confirmed) return;
+    removeMutation.mutate({ id }, { onSuccess: () => refetch() });
   };
 
   if (isLoading) return <LoadingScreen />;
