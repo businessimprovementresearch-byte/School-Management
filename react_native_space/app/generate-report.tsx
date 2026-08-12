@@ -30,9 +30,9 @@ export default function GenerateReportScreen() {
   const selectedStudent = students.find((s) => s?.id === selectedStudentId);   // 👈 taruh di sini
   const filteredStudents = React.useMemo(() => {                                // 👈 dan ini
     const q = studentSearch.trim().toLowerCase();
-    if (!q) return students;
-    return students.filter((s) => s?.name?.toLowerCase()?.includes(q));
-  }, [students, studentSearch]);
+    if (!q) return [];
+  return students.filter((s) => s?.name?.toLowerCase()?.includes(q)).slice(0, 8);   // 👈 dibatasi max 8 hasil
+}, [students, studentSearch]);
 
   const handleGenerate = () => {
     setError(''); setSuccess('');
@@ -72,24 +72,31 @@ export default function GenerateReportScreen() {
               </View>
             </View>
           ) : (
-            <>
+           <>
               <Searchbar
                 placeholder="Search student by name..."
                 value={studentSearch}
                 onChangeText={setStudentSearch}
                 style={styles.searchbar}
                 inputStyle={styles.searchbarInput}
+                autoFocus
               />
-              <ScrollView style={styles.studentList} nestedScrollEnabled keyboardShouldPersistTaps="handled">
-                {filteredStudents.map((s) => (
-                  <Pressable key={s?.id} style={styles.studentRow} onPress={() => { setSelectedStudentId(s?.id ?? ''); setStudentSearch(''); }}>
-                    <Text style={styles.studentRowText}>{s?.name ?? ''}</Text>
-                  </Pressable>
-                ))}
-                {filteredStudents.length === 0 && (
-                  <Text style={styles.emptyStudentText}>No students found</Text>
-                )}
-              </ScrollView>
+              {studentSearch.trim().length > 0 && (
+                <View style={styles.studentList}>
+                  {filteredStudents.map((s, idx) => (
+                    <Pressable
+                      key={s?.id}
+                      style={[styles.studentRow, idx === filteredStudents.length - 1 && styles.studentRowLast]}
+                      onPress={() => { setSelectedStudentId(s?.id ?? ''); setStudentSearch(''); }}
+                    >
+                      <Text style={styles.studentRowText}>{s?.name ?? ''}</Text>
+                    </Pressable>
+                  ))}
+                  {filteredStudents.length === 0 && (
+                    <Text style={styles.emptyStudentText}>No students found</Text>
+                  )}
+                </View>
+              )}
             </>
           )}
         </>
@@ -125,6 +132,28 @@ const styles = StyleSheet.create({
   infoText: { fontSize: 15, color: theme.colors.text },
   selectChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: theme.colors.border, marginRight: 8, marginBottom: 8 },
   selectChipActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+  searchbar: { backgroundColor: '#FFF', elevation: 1, marginBottom: 8, borderWidth: 1, borderColor: theme.colors.border },
+  searchbarInput: { fontSize: 14, minHeight: 0, color: theme.colors.text },
+  studentList: {
+    marginBottom: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  studentRow: { paddingHorizontal: 14, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: theme.colors.divider, backgroundColor: '#FFFFFF' },
+  studentRowLast: { borderBottomWidth: 0 },
+  studentRowText: { fontSize: 15, color: theme.colors.text, fontWeight: '500' },
+  emptyStudentText: { textAlign: 'center', color: theme.colors.textSecondary, paddingVertical: 16, fontSize: 13 },
+  selectedStudentRow: { marginBottom: 16 },
+  selectedStudentChip: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', backgroundColor: theme.colors.primary, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
+  selectedStudentText: { color: '#FFF', fontWeight: '600', fontSize: 13, marginRight: 8 },
   selectChipText: { fontSize: 13, color: theme.colors.textSecondary },
   selectChipTextActive: { color: '#FFF', fontWeight: '600' },
   termRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 16 },
