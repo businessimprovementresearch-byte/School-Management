@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, FlatList, StyleSheet, Pressable, Alert } from 'react-native';
+import { View, FlatList, StyleSheet, Pressable, Alert, Platform } from 'react-native';
 import { Text, TextInput, Button, ActivityIndicator, Portal, Modal, IconButton } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -14,6 +14,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/src/theme';
 import { getErrorMessage } from '@/src/api/customFetch';
 import { formatDate } from '@/src/lib/dateFormat';
+
+const confirmAsync = (title: string, message: string): Promise<boolean> => {
+  if (Platform.OS === 'web') return Promise.resolve(window.confirm(`${title}\n\n${message}`));
+  return new Promise((resolve) => {
+    Alert.alert(title, message, [
+      { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+      { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
+    ]);
+  });
+};
 
 export default function AcademicYearsScreen() {
   const router = useRouter();
@@ -76,26 +86,19 @@ export default function AcademicYearsScreen() {
     updateMutation.mutate({ id: item?.id ?? '', data: { isActive: !item?.isActive } }, { onSuccess: () => refetch() });
   };
 
-  const handleDelete = (item: AcademicYearListItemDto) => {
-    Alert.alert(
-      'Delete Academic Year',
-      `Are you sure you want to delete "${item?.name ?? ''}"? This cannot be undone.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            removeMutation.mutate(
-              { id: item?.id ?? '' },
-              {
-                onSuccess: () => refetch(),
-                onError: (e) => Alert.alert('Cannot Delete', getErrorMessage(e, 'Failed to delete academic year')),
-              },
-            );
-          },
+  const handleDelete = async (item: AcademicYearListItemDto) => {
+    const confirmed = await confirmAsync('Delete Academic Year', `Are you sure you want to delete "${item?.name ?? ''}"? This cannot be undone.`);
+    if (!confirmed) return;
+    removeMutation.mutate(
+      { id: item?.id ?? '' },
+      {
+        onSuccess: () => refetch(),
+        onError: (e) => {
+          const msg = getErrorMessage(e, 'Failed to delete academic year');
+          if (Platform.OS === 'web') window.alert(msg);
+          else Alert.alert('Cannot Delete', msg);
         },
-      ],
+      },
     );
   };
 
