@@ -2,7 +2,6 @@ import { Controller, Post, Get, Body, Query, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ProgressService } from './progress.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CreateProgressDto } from './dto/create-progress.dto';
 import { ProgressResponseDto } from './dto/progress-response.dto';
 import { ProgressListResponseDto } from './dto/progress-list-response.dto';
 import { CreateProgressDto } from './dto/create-progress.dto';
