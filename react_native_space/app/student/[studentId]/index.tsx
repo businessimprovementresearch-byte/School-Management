@@ -262,6 +262,16 @@ export default function StudentDetailScreen() {
             ))}
             {currentYearEnrollments.length === 0 && <Text style={styles.emptyText}>No enrollments</Text>}
 
+            {isAdmin && activeYear && (
+              <Pressable
+                style={styles.addYearChip}
+                onPress={() => openAddYearPicker(activeYear.id)}
+              >
+                <Ionicons name="add" size={14} color={Colors.primary} />
+                <Text style={styles.addYearChipText}>Tambah Kelas Lain ({activeYear.name})</Text>
+              </Pressable>
+            )}
+
             {isAdmin && missingYears.length > 0 && (
               <View style={styles.addYearSection}>
                 <Text style={styles.addYearLabel}>Backfill a class for a past/missing year:</Text>
