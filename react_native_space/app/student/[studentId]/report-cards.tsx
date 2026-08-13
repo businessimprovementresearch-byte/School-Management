@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl, Modal, Alert, Platform } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl, Modal, Alert, Platform, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,8 +30,14 @@ export default function StudentReportCardsScreen() {
   const handleDownload = async (id: string) => {
     try {
       const result = await reportCardsControllerGetDownload(id);
-      if (result?.url) Linking.openURL(result.url);
-    } catch { /* ignore */ }
+      if (result?.url) {
+        Linking.openURL(result.url);
+      } else {
+        Alert.alert('Error', 'Download link not available');
+      }
+    } catch (e) {
+      Alert.alert('Error', 'Failed to download report card');
+    }
   };
 
   const handleDelete = async (id: string) => {
