@@ -1,5 +1,3 @@
 // @ts-nocheck
 
-export interface AssignTeacherDto {
-  teacherId: string;
-}
+export interface AssignTeacherDto { [key: string]: unknown }

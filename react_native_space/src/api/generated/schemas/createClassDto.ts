@@ -1,7 +1,3 @@
 // @ts-nocheck
 
-export interface CreateClassDto {
-  name: string;
-  grade: string;
-  description?: string;
-}
+export interface CreateClassDto { [key: string]: unknown }

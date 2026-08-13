@@ -1,7 +1,3 @@
 // @ts-nocheck
 
-export interface UpdateAwardDto {
-  name?: string;
-  description?: string;
-  icon?: string;
-}
+export interface UpdateAwardDto { [key: string]: unknown }

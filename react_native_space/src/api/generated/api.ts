@@ -19,33 +19,20 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  AcademicYearListItemDto,
-  AcademicYearResponseDto,
+  AcademicYearsControllerRemoveParams,
   AddClassHistoryDto,
   AddEnrollmentDto,
   AddParticipantDto,
   AddPhotoDto,
-  AlbumDetailDto,
-  AlbumListItemDto,
-  AlertSettingDto,
   AssignTeacherDto,
-  AttendanceByDateResponseDto,
   AttendanceControllerGetByDateParams,
   AttendanceControllerGetOverviewParams,
-  AttendanceOverviewResponseDto,
-  AwardIssuanceDto,
-  AwardListItemDto,
   AwardsControllerFindIssuancesParams,
   BulkAttendanceDto,
-  BulkAttendanceResponseDto,
   BulkCreateSessionsDto,
-  BulkCreateSessionsResponseDto,
-  CheckAlertsResultDto,
-  ClassDetailResponseDto,
-  ClassHistoryResponseDto,
-  ClassListItemDto,
+  BulkProgressDto,
+  ClassesControllerFindOneParams,
   CompleteUploadDto,
-  CompleteUploadResponseDto,
   CreateAcademicYearDto,
   CreateAlbumDto,
   CreateAwardDto,
@@ -59,57 +46,30 @@ import type {
   CreateStudentDto,
   CreateTeacherDto,
   CreateTermDto,
-  DashboardResponseDto,
-  EnrollmentResponseDto,
-  EventDetailDto,
-  EventGroupDto,
-  EventListItemDto,
-  FeedbackResponseDto,
-  FileUrlResponseDto,
   GalleryControllerFindAllAlbumsParams,
-  GalleryPhotoDto,
   GenerateReportCardDto,
   IssueAwardDto,
   LoginDto,
-  LoginResponseDto,
-  MeResponseDto,
-  MetricListItemDto,
-  MetricResponseDto,
   MetricsControllerFindAllParams,
-  NotificationDto,
   PresignedUploadDto,
-  PresignedUploadResponseDto,
+  ProgressControllerFindBySessionParams,
   ProgressControllerFindByStudentParams,
-  ProgressListResponseDto,
-  ProgressResponseDto,
-  ReportCardResponseDto,
   ReportCardsControllerFindAllParams,
-  SessionDetailResponseDto,
+  RolloverAcademicYearDto,
   SetSessionHolidayDto,
   SignupDto,
-  SignupResponseDto,
-  StudentDetailResponseDto,
-  StudentListResponseDto,
   StudentsControllerFindAllParams,
-  SuccessResponseDto,
-  TeacherAssignmentResponseDto,
-  TeacherDetailResponseDto,
-  TeacherListItemDto,
-  TermListItemDto,
-  TermResponseDto,
   TermsControllerFindAllParams,
-  UnreadCountDto,
   UpdateAcademicYearDto,
   UpdateAlertSettingDto,
   UpdateAwardDto,
+  UpdateClassDto,
   UpdateEnrollmentDto,
-  UpdateEnrollmentResponseDto,
   UpdateEventDto,
   UpdateStudentDto,
   UpdateTeacherDto,
   UpdateTermDto,
-  UploadControllerGetFileUrlParams,
-  UpdateClassDto,
+  UploadControllerGetFileUrlParams
 } from './schemas';
 
 import { customFetch } from '../customFetch';
@@ -128,9 +88,9 @@ export const getAuthControllerLoginUrl = () => {
   return `/api/auth/login`
 }
 
-export const authControllerLogin = async (loginDto: LoginDto, options?: RequestInit): Promise<LoginResponseDto> => {
+export const authControllerLogin = async (loginDto: LoginDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<LoginResponseDto>(getAuthControllerLoginUrl(),
+  return customFetch<void>(getAuthControllerLoginUrl(),
   {
     ...options,
     method: 'POST',
@@ -192,9 +152,9 @@ export const getAuthControllerGetMeUrl = () => {
   return `/api/auth/me`
 }
 
-export const authControllerGetMe = async ( options?: RequestInit): Promise<MeResponseDto> => {
+export const authControllerGetMe = async ( options?: RequestInit): Promise<void> => {
 
-  return customFetch<MeResponseDto>(getAuthControllerGetMeUrl(),
+  return customFetch<void>(getAuthControllerGetMeUrl(),
   {
     ...options,
     method: 'GET'
@@ -287,9 +247,9 @@ export const getAuthControllerSignupUrl = () => {
   return `/api/signup`
 }
 
-export const authControllerSignup = async (signupDto: SignupDto, options?: RequestInit): Promise<SignupResponseDto> => {
+export const authControllerSignup = async (signupDto: SignupDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SignupResponseDto>(getAuthControllerSignupUrl(),
+  return customFetch<void>(getAuthControllerSignupUrl(),
   {
     ...options,
     method: 'POST',
@@ -351,9 +311,9 @@ export const getUploadControllerGetPresignedUrlUrl = () => {
   return `/api/upload/presigned`
 }
 
-export const uploadControllerGetPresignedUrl = async (presignedUploadDto: PresignedUploadDto, options?: RequestInit): Promise<PresignedUploadResponseDto> => {
+export const uploadControllerGetPresignedUrl = async (presignedUploadDto: PresignedUploadDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<PresignedUploadResponseDto>(getUploadControllerGetPresignedUrlUrl(),
+  return customFetch<void>(getUploadControllerGetPresignedUrlUrl(),
   {
     ...options,
     method: 'POST',
@@ -415,9 +375,9 @@ export const getUploadControllerCompleteUploadUrl = () => {
   return `/api/upload/complete`
 }
 
-export const uploadControllerCompleteUpload = async (completeUploadDto: CompleteUploadDto, options?: RequestInit): Promise<CompleteUploadResponseDto> => {
+export const uploadControllerCompleteUpload = async (completeUploadDto: CompleteUploadDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<CompleteUploadResponseDto>(getUploadControllerCompleteUploadUrl(),
+  return customFetch<void>(getUploadControllerCompleteUploadUrl(),
   {
     ...options,
     method: 'POST',
@@ -488,9 +448,9 @@ export const getUploadControllerGetFileUrlUrl = (id: string,
 }
 
 export const uploadControllerGetFileUrl = async (id: string,
-    params: UploadControllerGetFileUrlParams, options?: RequestInit): Promise<FileUrlResponseDto> => {
+    params: UploadControllerGetFileUrlParams, options?: RequestInit): Promise<void> => {
 
-  return customFetch<FileUrlResponseDto>(getUploadControllerGetFileUrlUrl(id,params),
+  return customFetch<void>(getUploadControllerGetFileUrlUrl(id,params),
   {
     ...options,
     method: 'GET'
@@ -589,9 +549,9 @@ export const getUploadControllerDeleteFileUrl = (id: string,) => {
   return `/api/files/${id}`
 }
 
-export const uploadControllerDeleteFile = async (id: string, options?: RequestInit): Promise<SuccessResponseDto> => {
+export const uploadControllerDeleteFile = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SuccessResponseDto>(getUploadControllerDeleteFileUrl(id),
+  return customFetch<void>(getUploadControllerDeleteFileUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -645,7 +605,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getUploadControllerDeleteFileMutationOptions(options), queryClient);
     }
 
-export const getStudentsControllerFindAllUrl = (params?: StudentsControllerFindAllParams,) => {
+export const getStudentsControllerFindAllUrl = (params: StudentsControllerFindAllParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -660,9 +620,9 @@ export const getStudentsControllerFindAllUrl = (params?: StudentsControllerFindA
   return stringifiedParams.length > 0 ? `/api/students?${stringifiedParams}` : `/api/students`
 }
 
-export const studentsControllerFindAll = async (params?: StudentsControllerFindAllParams, options?: RequestInit): Promise<StudentListResponseDto> => {
+export const studentsControllerFindAll = async (params: StudentsControllerFindAllParams, options?: RequestInit): Promise<void> => {
 
-  return customFetch<StudentListResponseDto>(getStudentsControllerFindAllUrl(params),
+  return customFetch<void>(getStudentsControllerFindAllUrl(params),
   {
     ...options,
     method: 'GET'
@@ -682,7 +642,7 @@ export const getStudentsControllerFindAllQueryKey = (params?: StudentsController
     }
 
 
-export const getStudentsControllerFindAllQueryOptions = <TData = Awaited<ReturnType<typeof studentsControllerFindAll>>, TError = ErrorType<unknown>>(params?: StudentsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof studentsControllerFindAll>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getStudentsControllerFindAllQueryOptions = <TData = Awaited<ReturnType<typeof studentsControllerFindAll>>, TError = ErrorType<unknown>>(params: StudentsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof studentsControllerFindAll>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -705,7 +665,7 @@ export type StudentsControllerFindAllQueryError = ErrorType<unknown>
 
 
 export function useStudentsControllerFindAll<TData = Awaited<ReturnType<typeof studentsControllerFindAll>>, TError = ErrorType<unknown>>(
- params: undefined |  StudentsControllerFindAllParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof studentsControllerFindAll>>, TError, TData>> & Pick<
+ params: StudentsControllerFindAllParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof studentsControllerFindAll>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof studentsControllerFindAll>>,
           TError,
@@ -715,7 +675,7 @@ export function useStudentsControllerFindAll<TData = Awaited<ReturnType<typeof s
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useStudentsControllerFindAll<TData = Awaited<ReturnType<typeof studentsControllerFindAll>>, TError = ErrorType<unknown>>(
- params?: StudentsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof studentsControllerFindAll>>, TError, TData>> & Pick<
+ params: StudentsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof studentsControllerFindAll>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof studentsControllerFindAll>>,
           TError,
@@ -725,12 +685,12 @@ export function useStudentsControllerFindAll<TData = Awaited<ReturnType<typeof s
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useStudentsControllerFindAll<TData = Awaited<ReturnType<typeof studentsControllerFindAll>>, TError = ErrorType<unknown>>(
- params?: StudentsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof studentsControllerFindAll>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ params: StudentsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof studentsControllerFindAll>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useStudentsControllerFindAll<TData = Awaited<ReturnType<typeof studentsControllerFindAll>>, TError = ErrorType<unknown>>(
- params?: StudentsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof studentsControllerFindAll>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ params: StudentsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof studentsControllerFindAll>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -755,9 +715,9 @@ export const getStudentsControllerCreateUrl = () => {
   return `/api/students`
 }
 
-export const studentsControllerCreate = async (createStudentDto: CreateStudentDto, options?: RequestInit): Promise<StudentDetailResponseDto> => {
+export const studentsControllerCreate = async (createStudentDto: CreateStudentDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<StudentDetailResponseDto>(getStudentsControllerCreateUrl(),
+  return customFetch<void>(getStudentsControllerCreateUrl(),
   {
     ...options,
     method: 'POST',
@@ -819,9 +779,9 @@ export const getStudentsControllerFindOneUrl = (id: string,) => {
   return `/api/students/${id}`
 }
 
-export const studentsControllerFindOne = async (id: string, options?: RequestInit): Promise<StudentDetailResponseDto> => {
+export const studentsControllerFindOne = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<StudentDetailResponseDto>(getStudentsControllerFindOneUrl(id),
+  return customFetch<void>(getStudentsControllerFindOneUrl(id),
   {
     ...options,
     method: 'GET'
@@ -915,9 +875,9 @@ export const getStudentsControllerUpdateUrl = (id: string,) => {
 }
 
 export const studentsControllerUpdate = async (id: string,
-    updateStudentDto: UpdateStudentDto, options?: RequestInit): Promise<StudentDetailResponseDto> => {
+    updateStudentDto: UpdateStudentDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<StudentDetailResponseDto>(getStudentsControllerUpdateUrl(id),
+  return customFetch<void>(getStudentsControllerUpdateUrl(id),
   {
     ...options,
     method: 'PATCH',
@@ -979,9 +939,9 @@ export const getStudentsControllerRemoveUrl = (id: string,) => {
   return `/api/students/${id}`
 }
 
-export const studentsControllerRemove = async (id: string, options?: RequestInit): Promise<SuccessResponseDto> => {
+export const studentsControllerRemove = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SuccessResponseDto>(getStudentsControllerRemoveUrl(id),
+  return customFetch<void>(getStudentsControllerRemoveUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -1035,6 +995,70 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getStudentsControllerRemoveMutationOptions(options), queryClient);
     }
 
+export const getStudentsControllerSetActiveUrl = (id: string,) => {
+
+
+
+
+  return `/api/students/${id}/active`
+}
+
+export const studentsControllerSetActive = async (id: string, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getStudentsControllerSetActiveUrl(id),
+  {
+    ...options,
+    method: 'PATCH'
+
+
+  }
+);}
+
+
+
+
+export const getStudentsControllerSetActiveMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof studentsControllerSetActive>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof studentsControllerSetActive>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['studentsControllerSetActive'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof studentsControllerSetActive>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  studentsControllerSetActive(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type StudentsControllerSetActiveMutationResult = NonNullable<Awaited<ReturnType<typeof studentsControllerSetActive>>>
+
+    export type StudentsControllerSetActiveMutationError = ErrorType<unknown>
+
+    export const useStudentsControllerSetActive = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof studentsControllerSetActive>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof studentsControllerSetActive>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getStudentsControllerSetActiveMutationOptions(options), queryClient);
+    }
+
 export const getStudentsControllerAddEnrollmentUrl = (studentId: string,) => {
 
 
@@ -1044,9 +1068,9 @@ export const getStudentsControllerAddEnrollmentUrl = (studentId: string,) => {
 }
 
 export const studentsControllerAddEnrollment = async (studentId: string,
-    addEnrollmentDto: AddEnrollmentDto, options?: RequestInit): Promise<EnrollmentResponseDto> => {
+    addEnrollmentDto: AddEnrollmentDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<EnrollmentResponseDto>(getStudentsControllerAddEnrollmentUrl(studentId),
+  return customFetch<void>(getStudentsControllerAddEnrollmentUrl(studentId),
   {
     ...options,
     method: 'POST',
@@ -1109,9 +1133,9 @@ export const getStudentsControllerUpdateEnrollmentUrl = (id: string,) => {
 }
 
 export const studentsControllerUpdateEnrollment = async (id: string,
-    updateEnrollmentDto: UpdateEnrollmentDto, options?: RequestInit): Promise<UpdateEnrollmentResponseDto> => {
+    updateEnrollmentDto: UpdateEnrollmentDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<UpdateEnrollmentResponseDto>(getStudentsControllerUpdateEnrollmentUrl(id),
+  return customFetch<void>(getStudentsControllerUpdateEnrollmentUrl(id),
   {
     ...options,
     method: 'PATCH',
@@ -1173,9 +1197,9 @@ export const getStudentsControllerDeleteEnrollmentUrl = (id: string,) => {
   return `/api/enrollments/${id}`
 }
 
-export const studentsControllerDeleteEnrollment = async (id: string, options?: RequestInit): Promise<SuccessResponseDto> => {
+export const studentsControllerDeleteEnrollment = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SuccessResponseDto>(getStudentsControllerDeleteEnrollmentUrl(id),
+  return customFetch<void>(getStudentsControllerDeleteEnrollmentUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -1238,9 +1262,9 @@ export const getStudentsControllerAddClassHistoryUrl = (studentId: string,) => {
 }
 
 export const studentsControllerAddClassHistory = async (studentId: string,
-    addClassHistoryDto: AddClassHistoryDto, options?: RequestInit): Promise<ClassHistoryResponseDto> => {
+    addClassHistoryDto: AddClassHistoryDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<ClassHistoryResponseDto>(getStudentsControllerAddClassHistoryUrl(studentId),
+  return customFetch<void>(getStudentsControllerAddClassHistoryUrl(studentId),
   {
     ...options,
     method: 'POST',
@@ -1302,9 +1326,9 @@ export const getClassesControllerFindAllUrl = () => {
   return `/api/classes`
 }
 
-export const classesControllerFindAll = async ( options?: RequestInit): Promise<ClassListItemDto[]> => {
+export const classesControllerFindAll = async ( options?: RequestInit): Promise<void> => {
 
-  return customFetch<ClassListItemDto[]>(getClassesControllerFindAllUrl(),
+  return customFetch<void>(getClassesControllerFindAllUrl(),
   {
     ...options,
     method: 'GET'
@@ -1389,90 +1413,17 @@ export function useClassesControllerFindAll<TData = Awaited<ReturnType<typeof cl
 
 
 
-export const getClassesControllerFindOneUrl = (id: string, academicYearId?: string,) => {
-  const normalizedParams = new URLSearchParams();
-  if (academicYearId !== undefined) {
-    normalizedParams.append('academicYearId', academicYearId);
-  }
-  const stringifiedParams = normalizedParams.toString();
-  return stringifiedParams.length > 0 ? `/api/classes/${id}?${stringifiedParams}` : `/api/classes/${id}`
-}
-
-export const classesControllerFindOne = async (id: string, academicYearId?: string, options?: RequestInit): Promise<ClassDetailResponseDto> => {
-  return customFetch<ClassDetailResponseDto>(getClassesControllerFindOneUrl(id, academicYearId),
-  { ...options, method: 'GET' }
-);}
+export const getClassesControllerCreateUrl = () => {
 
 
-export const getClassesControllerFindOneQueryKey = (id: string, academicYearId?: string,) => {
-  return [`/api/classes/${id}`, ...(academicYearId !== undefined ? [{ academicYearId }] : [])] as const;
-}
 
 
-export const getClassesControllerFindOneQueryOptions = <TData = Awaited<ReturnType<typeof classesControllerFindOne>>, TError = ErrorType<unknown>>(
-  id: string, academicYearId?: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof classesControllerFindOne>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
-) => {
-  const {query: queryOptions, request: requestOptions} = options ?? {};
-  const queryKey = queryOptions?.queryKey ?? getClassesControllerFindOneQueryKey(id, academicYearId);
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof classesControllerFindOne>>> = ({ signal }) => classesControllerFindOne(id, academicYearId, { signal, ...requestOptions });
-  return { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof classesControllerFindOne>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ClassesControllerFindOneQueryResult = NonNullable<Awaited<ReturnType<typeof classesControllerFindOne>>>
-export type ClassesControllerFindOneQueryError = ErrorType<unknown>
-
-export function useClassesControllerFindOne<TData = Awaited<ReturnType<typeof classesControllerFindOne>>, TError = ErrorType<unknown>>(
-  id: string, academicYearId?: string,
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof classesControllerFindOne>>, TError, TData>>, request?: SecondParameter<typeof customFetch>},
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getClassesControllerFindOneQueryOptions(id, academicYearId, options)
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-  return { ...query, queryKey: queryOptions.queryKey };
-}
-
-export const getClassesControllerAssignTeacherUrl = (classId: string,) => {
-  return `/api/classes/${classId}/teachers`
-}
-
-export const classesControllerAssignTeacher = async (classId: string,
-    assignTeacherDto: AssignTeacherDto, options?: RequestInit): Promise<TeacherAssignmentResponseDto> => {
-
-  return customFetch<TeacherAssignmentResponseDto>(getClassesControllerAssignTeacherUrl(classId),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(assignTeacherDto)
-  }
-);}
-
-export const getClassesControllerAssignTeacherMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerAssignTeacher>>, TError,{classId: string;data: BodyType<AssignTeacherDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof classesControllerAssignTeacher>>, TError,{classId: string;data: BodyType<AssignTeacherDto>}, TContext> => {
-
-const mutationKey = ['classesControllerAssignTeacher'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof classesControllerAssignTeacher>>, {classId: string;data: BodyType<AssignTeacherDto>}> = (props) => {
-          const {classId,data} = props ?? {};
-          return  classesControllerAssignTeacher(classId,data,requestOptions)
-        }
-  return  { mutationFn, ...mutationOptions }}
-
-    export type ClassesControllerAssignTeacherMutationResult = NonNullable<Awaited<ReturnType<typeof classesControllerAssignTeacher>>>
-    export type ClassesControllerAssignTeacherMutationBody = BodyType<AssignTeacherDto>
-    export type ClassesControllerAssignTeacherMutationError = ErrorType<unknown>
-
-    export const getClassesControllerCreateUrl = () => {
   return `/api/classes`
 }
 
-export const classesControllerCreate = async (createClassDto: CreateClassDto, options?: RequestInit): Promise<ClassDetailResponseDto> => {
-  return customFetch<ClassDetailResponseDto>(getClassesControllerCreateUrl(),
+export const classesControllerCreate = async (createClassDto: CreateClassDto, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getClassesControllerCreateUrl(),
   {
     ...options,
     method: 'POST',
@@ -1480,6 +1431,9 @@ export const classesControllerCreate = async (createClassDto: CreateClassDto, op
     body: JSON.stringify(createClassDto)
   }
 );}
+
+
+
 
 export const getClassesControllerCreateMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerCreate>>, TError,{data: BodyType<CreateClassDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
@@ -1492,18 +1446,27 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
+
+
+
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof classesControllerCreate>>, {data: BodyType<CreateClassDto>}> = (props) => {
           const {data} = props ?? {};
+
           return  classesControllerCreate(data,requestOptions)
         }
 
+
+
+
+
+
   return  { mutationFn, ...mutationOptions }}
 
-export type ClassesControllerCreateMutationResult = NonNullable<Awaited<ReturnType<typeof classesControllerCreate>>>
-export type ClassesControllerCreateMutationBody = BodyType<CreateClassDto>
-export type ClassesControllerCreateMutationError = ErrorType<unknown>
+    export type ClassesControllerCreateMutationResult = NonNullable<Awaited<ReturnType<typeof classesControllerCreate>>>
+    export type ClassesControllerCreateMutationBody = BodyType<CreateClassDto>
+    export type ClassesControllerCreateMutationError = ErrorType<unknown>
 
-export const useClassesControllerCreate = <TError = ErrorType<unknown>,
+    export const useClassesControllerCreate = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerCreate>>, TError,{data: BodyType<CreateClassDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof classesControllerCreate>>,
@@ -1513,6 +1476,170 @@ export const useClassesControllerCreate = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getClassesControllerCreateMutationOptions(options), queryClient);
     }
+
+export const getClassesControllerFindOneUrl = (id: string,
+    params: ClassesControllerFindOneParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/classes/${id}?${stringifiedParams}` : `/api/classes/${id}`
+}
+
+export const classesControllerFindOne = async (id: string,
+    params: ClassesControllerFindOneParams, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getClassesControllerFindOneUrl(id,params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getClassesControllerFindOneQueryKey = (id: string,
+    params?: ClassesControllerFindOneParams,) => {
+    return [
+    `/api/classes/${id}`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getClassesControllerFindOneQueryOptions = <TData = Awaited<ReturnType<typeof classesControllerFindOne>>, TError = ErrorType<unknown>>(id: string,
+    params: ClassesControllerFindOneParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof classesControllerFindOne>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getClassesControllerFindOneQueryKey(id,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof classesControllerFindOne>>> = ({ signal }) => classesControllerFindOne(id,params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof classesControllerFindOne>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ClassesControllerFindOneQueryResult = NonNullable<Awaited<ReturnType<typeof classesControllerFindOne>>>
+export type ClassesControllerFindOneQueryError = ErrorType<unknown>
+
+
+export function useClassesControllerFindOne<TData = Awaited<ReturnType<typeof classesControllerFindOne>>, TError = ErrorType<unknown>>(
+ id: string,
+    params: ClassesControllerFindOneParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof classesControllerFindOne>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof classesControllerFindOne>>,
+          TError,
+          Awaited<ReturnType<typeof classesControllerFindOne>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useClassesControllerFindOne<TData = Awaited<ReturnType<typeof classesControllerFindOne>>, TError = ErrorType<unknown>>(
+ id: string,
+    params: ClassesControllerFindOneParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof classesControllerFindOne>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof classesControllerFindOne>>,
+          TError,
+          Awaited<ReturnType<typeof classesControllerFindOne>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useClassesControllerFindOne<TData = Awaited<ReturnType<typeof classesControllerFindOne>>, TError = ErrorType<unknown>>(
+ id: string,
+    params: ClassesControllerFindOneParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof classesControllerFindOne>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useClassesControllerFindOne<TData = Awaited<ReturnType<typeof classesControllerFindOne>>, TError = ErrorType<unknown>>(
+ id: string,
+    params: ClassesControllerFindOneParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof classesControllerFindOne>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getClassesControllerFindOneQueryOptions(id,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getClassesControllerAssignTeacherUrl = (classId: string,) => {
+
+
+
+
+  return `/api/classes/${classId}/teachers`
+}
+
+export const classesControllerAssignTeacher = async (classId: string,
+    assignTeacherDto: AssignTeacherDto, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getClassesControllerAssignTeacherUrl(classId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(assignTeacherDto)
+  }
+);}
+
+
+
+
+export const getClassesControllerAssignTeacherMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerAssignTeacher>>, TError,{classId: string;data: BodyType<AssignTeacherDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof classesControllerAssignTeacher>>, TError,{classId: string;data: BodyType<AssignTeacherDto>}, TContext> => {
+
+const mutationKey = ['classesControllerAssignTeacher'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof classesControllerAssignTeacher>>, {classId: string;data: BodyType<AssignTeacherDto>}> = (props) => {
+          const {classId,data} = props ?? {};
+
+          return  classesControllerAssignTeacher(classId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ClassesControllerAssignTeacherMutationResult = NonNullable<Awaited<ReturnType<typeof classesControllerAssignTeacher>>>
+    export type ClassesControllerAssignTeacherMutationBody = BodyType<AssignTeacherDto>
+    export type ClassesControllerAssignTeacherMutationError = ErrorType<unknown>
 
     export const useClassesControllerAssignTeacher = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerAssignTeacher>>, TError,{classId: string;data: BodyType<AssignTeacherDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
@@ -1525,6 +1652,135 @@ export const useClassesControllerCreate = <TError = ErrorType<unknown>,
       return useMutation(getClassesControllerAssignTeacherMutationOptions(options), queryClient);
     }
 
+export const getClassesControllerUpdateUrl = (classId: string,) => {
+
+
+
+
+  return `/api/classes/${classId}`
+}
+
+export const classesControllerUpdate = async (classId: string,
+    updateClassDto: UpdateClassDto, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getClassesControllerUpdateUrl(classId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(updateClassDto)
+  }
+);}
+
+
+
+
+export const getClassesControllerUpdateMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerUpdate>>, TError,{classId: string;data: BodyType<UpdateClassDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof classesControllerUpdate>>, TError,{classId: string;data: BodyType<UpdateClassDto>}, TContext> => {
+
+const mutationKey = ['classesControllerUpdate'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof classesControllerUpdate>>, {classId: string;data: BodyType<UpdateClassDto>}> = (props) => {
+          const {classId,data} = props ?? {};
+
+          return  classesControllerUpdate(classId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ClassesControllerUpdateMutationResult = NonNullable<Awaited<ReturnType<typeof classesControllerUpdate>>>
+    export type ClassesControllerUpdateMutationBody = BodyType<UpdateClassDto>
+    export type ClassesControllerUpdateMutationError = ErrorType<unknown>
+
+    export const useClassesControllerUpdate = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerUpdate>>, TError,{classId: string;data: BodyType<UpdateClassDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof classesControllerUpdate>>,
+        TError,
+        {classId: string;data: BodyType<UpdateClassDto>},
+        TContext
+      > => {
+      return useMutation(getClassesControllerUpdateMutationOptions(options), queryClient);
+    }
+
+export const getClassesControllerRemoveUrl = (classId: string,) => {
+
+
+
+
+  return `/api/classes/${classId}`
+}
+
+export const classesControllerRemove = async (classId: string, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getClassesControllerRemoveUrl(classId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getClassesControllerRemoveMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerRemove>>, TError,{classId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof classesControllerRemove>>, TError,{classId: string}, TContext> => {
+
+const mutationKey = ['classesControllerRemove'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof classesControllerRemove>>, {classId: string}> = (props) => {
+          const {classId} = props ?? {};
+
+          return  classesControllerRemove(classId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ClassesControllerRemoveMutationResult = NonNullable<Awaited<ReturnType<typeof classesControllerRemove>>>
+
+    export type ClassesControllerRemoveMutationError = ErrorType<unknown>
+
+    export const useClassesControllerRemove = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerRemove>>, TError,{classId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof classesControllerRemove>>,
+        TError,
+        {classId: string},
+        TContext
+      > => {
+      return useMutation(getClassesControllerRemoveMutationOptions(options), queryClient);
+    }
+
 export const getClassesControllerRemoveTeacherUrl = (classId: string,
     teacherId: string,) => {
 
@@ -1535,9 +1791,9 @@ export const getClassesControllerRemoveTeacherUrl = (classId: string,
 }
 
 export const classesControllerRemoveTeacher = async (classId: string,
-    teacherId: string, options?: RequestInit): Promise<SuccessResponseDto> => {
+    teacherId: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SuccessResponseDto>(getClassesControllerRemoveTeacherUrl(classId,teacherId),
+  return customFetch<void>(getClassesControllerRemoveTeacherUrl(classId,teacherId),
   {
     ...options,
     method: 'DELETE'
@@ -1576,13 +1832,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-export type ClassesControllerRemoveTeacherMutationResult = NonNullable<Awaited<ReturnType<typeof classesControllerRemoveTeacher>>>
+    export type ClassesControllerRemoveTeacherMutationResult = NonNullable<Awaited<ReturnType<typeof classesControllerRemoveTeacher>>>
 
-export type ClassesControllerRemoveTeacherMutationError = ErrorType<unknown>
+    export type ClassesControllerRemoveTeacherMutationError = ErrorType<unknown>
 
-export const useClassesControllerRemoveTeacher = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerRemoveTeacher>>, TError,{classId: string;teacherId: string}, TContext>, request?: SecondParameter<typeof customFetch>},
-      queryClient?: QueryClient): UseMutationResult<
+    export const useClassesControllerRemoveTeacher = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerRemoveTeacher>>, TError,{classId: string;teacherId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof classesControllerRemoveTeacher>>,
         TError,
         {classId: string;teacherId: string},
@@ -1591,105 +1847,72 @@ export const useClassesControllerRemoveTeacher = <TError = ErrorType<unknown>,
       return useMutation(getClassesControllerRemoveTeacherMutationOptions(options), queryClient);
     }
 
-export const getClassesControllerUpdateUrl = (classId: string,) => {
-  return `/api/classes/${classId}`
+export const getClassesControllerSetYearStatusUrl = (classId: string,
+    academicYearId: string,) => {
+
+
+
+
+  return `/api/classes/${classId}/year-status/${academicYearId}`
 }
 
-export const classesControllerUpdate = async (classId: string, updateClassDto: UpdateClassDto, options?: RequestInit): Promise<ClassDetailResponseDto> => {
-  return customFetch<ClassDetailResponseDto>(getClassesControllerUpdateUrl(classId),
+export const classesControllerSetYearStatus = async (classId: string,
+    academicYearId: string, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getClassesControllerSetYearStatusUrl(classId,academicYearId),
   {
     ...options,
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(updateClassDto)
+    method: 'PATCH'
+
+
   }
 );}
 
-export const getClassesControllerUpdateMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerUpdate>>, TError,{classId: string;data: BodyType<UpdateClassDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof classesControllerUpdate>>, TError,{classId: string;data: BodyType<UpdateClassDto>}, TContext> => {
 
-const mutationKey = ['classesControllerUpdate'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof classesControllerUpdate>>, {classId: string;data: BodyType<UpdateClassDto>}> = (props) => {
-          const {classId,data} = props ?? {};
-          return  classesControllerUpdate(classId,data,requestOptions)
-        }
-  return  { mutationFn, ...mutationOptions }}
 
-    export type ClassesControllerUpdateMutationResult = NonNullable<Awaited<ReturnType<typeof classesControllerUpdate>>>
-    export type ClassesControllerUpdateMutationBody = BodyType<UpdateClassDto>
-    export type ClassesControllerUpdateMutationError = ErrorType<unknown>
 
-    export const useClassesControllerUpdate = <TError = ErrorType<unknown>,
-    TContext = unknown>(
-      options?: {
-        mutation?: UseMutationOptions<
-          Awaited<ReturnType<typeof classesControllerUpdate>>,
-          TError,
-          { classId: string; data: BodyType<UpdateClassDto> },
-          TContext
-        >;
-        request?: SecondParameter<typeof customFetch>;
-      },
-      queryClient?: QueryClient
-    ): UseMutationResult<
-        Awaited<ReturnType<typeof classesControllerUpdate>>,
-        TError,
-        {classId: string;data: BodyType<UpdateClassDto>},
-        TContext
-      > => {
-      return useMutation(getClassesControllerUpdateMutationOptions(options), queryClient);
-    }
+export const getClassesControllerSetYearStatusMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerSetYearStatus>>, TError,{classId: string;academicYearId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof classesControllerSetYearStatus>>, TError,{classId: string;academicYearId: string}, TContext> => {
 
-export const getClassesControllerRemoveUrl = (classId: string,) => {
-  return `/api/classes/${classId}`
-}
-
-export const classesControllerRemove = async (classId: string, options?: RequestInit): Promise<SuccessResponseDto> => {
-  return customFetch<SuccessResponseDto>(getClassesControllerRemoveUrl(classId),
-  {
-    ...options,
-    method: 'DELETE'
-  }
-);}
-
-export const getClassesControllerRemoveMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerRemove>>, TError,{classId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof classesControllerRemove>>, TError,{classId: string}, TContext> => {
-
-const mutationKey = ['classesControllerRemove'];
+const mutationKey = ['classesControllerSetYearStatus'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof classesControllerRemove>>, {classId: string}> = (props) => {
-          const {classId} = props ?? {};
-          return  classesControllerRemove(classId,requestOptions)
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof classesControllerSetYearStatus>>, {classId: string;academicYearId: string}> = (props) => {
+          const {classId,academicYearId} = props ?? {};
+
+          return  classesControllerSetYearStatus(classId,academicYearId,requestOptions)
         }
+
+
+
+
+
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type ClassesControllerRemoveMutationResult = NonNullable<Awaited<ReturnType<typeof classesControllerRemove>>>
-    export type ClassesControllerRemoveMutationError = ErrorType<unknown>
+    export type ClassesControllerSetYearStatusMutationResult = NonNullable<Awaited<ReturnType<typeof classesControllerSetYearStatus>>>
 
-    export const useClassesControllerRemove = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerRemove>>, TError,{classId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+    export type ClassesControllerSetYearStatusMutationError = ErrorType<unknown>
+
+    export const useClassesControllerSetYearStatus = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classesControllerSetYearStatus>>, TError,{classId: string;academicYearId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof classesControllerRemove>>,
+        Awaited<ReturnType<typeof classesControllerSetYearStatus>>,
         TError,
-        {classId: string},
+        {classId: string;academicYearId: string},
         TContext
       > => {
-      return useMutation(getClassesControllerRemoveMutationOptions(options), queryClient);
+      return useMutation(getClassesControllerSetYearStatusMutationOptions(options), queryClient);
     }
-    
+
 export const getTeachersControllerFindAllUrl = () => {
 
 
@@ -1698,9 +1921,9 @@ export const getTeachersControllerFindAllUrl = () => {
   return `/api/teachers`
 }
 
-export const teachersControllerFindAll = async ( options?: RequestInit): Promise<TeacherListItemDto[]> => {
+export const teachersControllerFindAll = async ( options?: RequestInit): Promise<void> => {
 
-  return customFetch<TeacherListItemDto[]>(getTeachersControllerFindAllUrl(),
+  return customFetch<void>(getTeachersControllerFindAllUrl(),
   {
     ...options,
     method: 'GET'
@@ -1793,9 +2016,9 @@ export const getTeachersControllerCreateUrl = () => {
   return `/api/teachers`
 }
 
-export const teachersControllerCreate = async (createTeacherDto: CreateTeacherDto, options?: RequestInit): Promise<TeacherDetailResponseDto> => {
+export const teachersControllerCreate = async (createTeacherDto: CreateTeacherDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<TeacherDetailResponseDto>(getTeachersControllerCreateUrl(),
+  return customFetch<void>(getTeachersControllerCreateUrl(),
   {
     ...options,
     method: 'POST',
@@ -1857,9 +2080,9 @@ export const getTeachersControllerFindOneUrl = (id: string,) => {
   return `/api/teachers/${id}`
 }
 
-export const teachersControllerFindOne = async (id: string, options?: RequestInit): Promise<TeacherDetailResponseDto> => {
+export const teachersControllerFindOne = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<TeacherDetailResponseDto>(getTeachersControllerFindOneUrl(id),
+  return customFetch<void>(getTeachersControllerFindOneUrl(id),
   {
     ...options,
     method: 'GET'
@@ -1953,9 +2176,9 @@ export const getTeachersControllerUpdateUrl = (id: string,) => {
 }
 
 export const teachersControllerUpdate = async (id: string,
-    updateTeacherDto: UpdateTeacherDto, options?: RequestInit): Promise<TeacherDetailResponseDto> => {
+    updateTeacherDto: UpdateTeacherDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<TeacherDetailResponseDto>(getTeachersControllerUpdateUrl(id),
+  return customFetch<void>(getTeachersControllerUpdateUrl(id),
   {
     ...options,
     method: 'PATCH',
@@ -2017,9 +2240,9 @@ export const getTeachersControllerRemoveUrl = (id: string,) => {
   return `/api/teachers/${id}`
 }
 
-export const teachersControllerRemove = async (id: string, options?: RequestInit): Promise<SuccessResponseDto> => {
+export const teachersControllerRemove = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SuccessResponseDto>(getTeachersControllerRemoveUrl(id),
+  return customFetch<void>(getTeachersControllerRemoveUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -2081,9 +2304,9 @@ export const getSessionsControllerCreateUrl = () => {
   return `/api/sessions`
 }
 
-export const sessionsControllerCreate = async (createSessionDto: CreateSessionDto, options?: RequestInit): Promise<SessionDetailResponseDto> => {
+export const sessionsControllerCreate = async (createSessionDto: CreateSessionDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SessionDetailResponseDto>(getSessionsControllerCreateUrl(),
+  return customFetch<void>(getSessionsControllerCreateUrl(),
   {
     ...options,
     method: 'POST',
@@ -2145,9 +2368,9 @@ export const getSessionsControllerBulkCreateUrl = () => {
   return `/api/sessions/bulk-create`
 }
 
-export const sessionsControllerBulkCreate = async (bulkCreateSessionsDto: BulkCreateSessionsDto, options?: RequestInit): Promise<BulkCreateSessionsResponseDto> => {
+export const sessionsControllerBulkCreate = async (bulkCreateSessionsDto: BulkCreateSessionsDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<BulkCreateSessionsResponseDto>(getSessionsControllerBulkCreateUrl(),
+  return customFetch<void>(getSessionsControllerBulkCreateUrl(),
   {
     ...options,
     method: 'POST',
@@ -2209,9 +2432,9 @@ export const getSessionsControllerFindOneUrl = (id: string,) => {
   return `/api/sessions/${id}`
 }
 
-export const sessionsControllerFindOne = async (id: string, options?: RequestInit): Promise<SessionDetailResponseDto> => {
+export const sessionsControllerFindOne = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SessionDetailResponseDto>(getSessionsControllerFindOneUrl(id),
+  return customFetch<void>(getSessionsControllerFindOneUrl(id),
   {
     ...options,
     method: 'GET'
@@ -2304,9 +2527,9 @@ export const getSessionsControllerRemoveUrl = (id: string,) => {
   return `/api/sessions/${id}`
 }
 
-export const sessionsControllerRemove = async (id: string, options?: RequestInit): Promise<SuccessResponseDto> => {
+export const sessionsControllerRemove = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SuccessResponseDto>(getSessionsControllerRemoveUrl(id),
+  return customFetch<void>(getSessionsControllerRemoveUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -2368,9 +2591,10 @@ export const getSessionsControllerSetHolidayUrl = (id: string,) => {
   return `/api/sessions/${id}/holiday`
 }
 
-export const sessionsControllerSetHoliday = async (id: string, setSessionHolidayDto: BodyType<SetSessionHolidayDto>, options?: RequestInit): Promise<SessionDetailResponseDto> => {
+export const sessionsControllerSetHoliday = async (id: string,
+    setSessionHolidayDto: SetSessionHolidayDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SessionDetailResponseDto>(getSessionsControllerSetHolidayUrl(id),
+  return customFetch<void>(getSessionsControllerSetHolidayUrl(id),
   {
     ...options,
     method: 'PATCH',
@@ -2405,6 +2629,8 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
+
+
   return  { mutationFn, ...mutationOptions }}
 
     export type SessionsControllerSetHolidayMutationResult = NonNullable<Awaited<ReturnType<typeof sessionsControllerSetHoliday>>>
@@ -2430,9 +2656,9 @@ export const getAttendanceControllerBulkSaveUrl = () => {
   return `/api/attendance/bulk`
 }
 
-export const attendanceControllerBulkSave = async (bulkAttendanceDto: BulkAttendanceDto, options?: RequestInit): Promise<BulkAttendanceResponseDto> => {
+export const attendanceControllerBulkSave = async (bulkAttendanceDto: BulkAttendanceDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<BulkAttendanceResponseDto>(getAttendanceControllerBulkSaveUrl(),
+  return customFetch<void>(getAttendanceControllerBulkSaveUrl(),
   {
     ...options,
     method: 'POST',
@@ -2501,9 +2727,9 @@ export const getAttendanceControllerGetByDateUrl = (params: AttendanceController
   return stringifiedParams.length > 0 ? `/api/attendance/by-date?${stringifiedParams}` : `/api/attendance/by-date`
 }
 
-export const attendanceControllerGetByDate = async (params: AttendanceControllerGetByDateParams, options?: RequestInit): Promise<AttendanceByDateResponseDto> => {
+export const attendanceControllerGetByDate = async (params: AttendanceControllerGetByDateParams, options?: RequestInit): Promise<void> => {
 
-  return customFetch<AttendanceByDateResponseDto>(getAttendanceControllerGetByDateUrl(params),
+  return customFetch<void>(getAttendanceControllerGetByDateUrl(params),
   {
     ...options,
     method: 'GET'
@@ -2582,6 +2808,12 @@ export function useAttendanceControllerGetByDate<TData = Awaited<ReturnType<type
   return { ...query, queryKey: queryOptions.queryKey };
 }
 
+
+
+
+
+
+
 export const getAttendanceControllerGetOverviewUrl = (params: AttendanceControllerGetOverviewParams,) => {
   const normalizedParams = new URLSearchParams();
 
@@ -2597,9 +2829,9 @@ export const getAttendanceControllerGetOverviewUrl = (params: AttendanceControll
   return stringifiedParams.length > 0 ? `/api/attendance/overview?${stringifiedParams}` : `/api/attendance/overview`
 }
 
-export const attendanceControllerGetOverview = async (params: AttendanceControllerGetOverviewParams, options?: RequestInit): Promise<AttendanceOverviewResponseDto> => {
+export const attendanceControllerGetOverview = async (params: AttendanceControllerGetOverviewParams, options?: RequestInit): Promise<void> => {
 
-  return customFetch<AttendanceOverviewResponseDto>(getAttendanceControllerGetOverviewUrl(params),
+  return customFetch<void>(getAttendanceControllerGetOverviewUrl(params),
   {
     ...options,
     method: 'GET'
@@ -2692,9 +2924,9 @@ export const getFeedbackControllerCreateUrl = () => {
   return `/api/feedback`
 }
 
-export const feedbackControllerCreate = async (createFeedbackDto: CreateFeedbackDto, options?: RequestInit): Promise<FeedbackResponseDto> => {
+export const feedbackControllerCreate = async (createFeedbackDto: CreateFeedbackDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<FeedbackResponseDto>(getFeedbackControllerCreateUrl(),
+  return customFetch<void>(getFeedbackControllerCreateUrl(),
   {
     ...options,
     method: 'POST',
@@ -2756,9 +2988,9 @@ export const getProgressControllerCreateUrl = () => {
   return `/api/progress`
 }
 
-export const progressControllerCreate = async (createProgressDto: CreateProgressDto, options?: RequestInit): Promise<ProgressResponseDto> => {
+export const progressControllerCreate = async (createProgressDto: CreateProgressDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<ProgressResponseDto>(getProgressControllerCreateUrl(),
+  return customFetch<void>(getProgressControllerCreateUrl(),
   {
     ...options,
     method: 'POST',
@@ -2827,9 +3059,9 @@ export const getProgressControllerFindByStudentUrl = (params: ProgressController
   return stringifiedParams.length > 0 ? `/api/progress?${stringifiedParams}` : `/api/progress`
 }
 
-export const progressControllerFindByStudent = async (params: ProgressControllerFindByStudentParams, options?: RequestInit): Promise<ProgressListResponseDto> => {
+export const progressControllerFindByStudent = async (params: ProgressControllerFindByStudentParams, options?: RequestInit): Promise<void> => {
 
-  return customFetch<ProgressListResponseDto>(getProgressControllerFindByStudentUrl(params),
+  return customFetch<void>(getProgressControllerFindByStudentUrl(params),
   {
     ...options,
     method: 'GET'
@@ -2914,6 +3146,172 @@ export function useProgressControllerFindByStudent<TData = Awaited<ReturnType<ty
 
 
 
+export const getProgressControllerBulkSaveUrl = () => {
+
+
+
+
+  return `/api/progress/bulk`
+}
+
+export const progressControllerBulkSave = async (bulkProgressDto: BulkProgressDto, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getProgressControllerBulkSaveUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(bulkProgressDto)
+  }
+);}
+
+
+
+
+export const getProgressControllerBulkSaveMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof progressControllerBulkSave>>, TError,{data: BodyType<BulkProgressDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof progressControllerBulkSave>>, TError,{data: BodyType<BulkProgressDto>}, TContext> => {
+
+const mutationKey = ['progressControllerBulkSave'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof progressControllerBulkSave>>, {data: BodyType<BulkProgressDto>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  progressControllerBulkSave(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ProgressControllerBulkSaveMutationResult = NonNullable<Awaited<ReturnType<typeof progressControllerBulkSave>>>
+    export type ProgressControllerBulkSaveMutationBody = BodyType<BulkProgressDto>
+    export type ProgressControllerBulkSaveMutationError = ErrorType<unknown>
+
+    export const useProgressControllerBulkSave = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof progressControllerBulkSave>>, TError,{data: BodyType<BulkProgressDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof progressControllerBulkSave>>,
+        TError,
+        {data: BodyType<BulkProgressDto>},
+        TContext
+      > => {
+      return useMutation(getProgressControllerBulkSaveMutationOptions(options), queryClient);
+    }
+
+export const getProgressControllerFindBySessionUrl = (params: ProgressControllerFindBySessionParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/progress/session?${stringifiedParams}` : `/api/progress/session`
+}
+
+export const progressControllerFindBySession = async (params: ProgressControllerFindBySessionParams, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getProgressControllerFindBySessionUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getProgressControllerFindBySessionQueryKey = (params?: ProgressControllerFindBySessionParams,) => {
+    return [
+    `/api/progress/session`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getProgressControllerFindBySessionQueryOptions = <TData = Awaited<ReturnType<typeof progressControllerFindBySession>>, TError = ErrorType<unknown>>(params: ProgressControllerFindBySessionParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof progressControllerFindBySession>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getProgressControllerFindBySessionQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof progressControllerFindBySession>>> = ({ signal }) => progressControllerFindBySession(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof progressControllerFindBySession>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ProgressControllerFindBySessionQueryResult = NonNullable<Awaited<ReturnType<typeof progressControllerFindBySession>>>
+export type ProgressControllerFindBySessionQueryError = ErrorType<unknown>
+
+
+export function useProgressControllerFindBySession<TData = Awaited<ReturnType<typeof progressControllerFindBySession>>, TError = ErrorType<unknown>>(
+ params: ProgressControllerFindBySessionParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof progressControllerFindBySession>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof progressControllerFindBySession>>,
+          TError,
+          Awaited<ReturnType<typeof progressControllerFindBySession>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useProgressControllerFindBySession<TData = Awaited<ReturnType<typeof progressControllerFindBySession>>, TError = ErrorType<unknown>>(
+ params: ProgressControllerFindBySessionParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof progressControllerFindBySession>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof progressControllerFindBySession>>,
+          TError,
+          Awaited<ReturnType<typeof progressControllerFindBySession>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useProgressControllerFindBySession<TData = Awaited<ReturnType<typeof progressControllerFindBySession>>, TError = ErrorType<unknown>>(
+ params: ProgressControllerFindBySessionParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof progressControllerFindBySession>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useProgressControllerFindBySession<TData = Awaited<ReturnType<typeof progressControllerFindBySession>>, TError = ErrorType<unknown>>(
+ params: ProgressControllerFindBySessionParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof progressControllerFindBySession>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getProgressControllerFindBySessionQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
 export const getDashboardControllerGetDashboardUrl = () => {
 
 
@@ -2922,9 +3320,9 @@ export const getDashboardControllerGetDashboardUrl = () => {
   return `/api/dashboard`
 }
 
-export const dashboardControllerGetDashboard = async ( options?: RequestInit): Promise<DashboardResponseDto> => {
+export const dashboardControllerGetDashboard = async ( options?: RequestInit): Promise<void> => {
 
-  return customFetch<DashboardResponseDto>(getDashboardControllerGetDashboardUrl(),
+  return customFetch<void>(getDashboardControllerGetDashboardUrl(),
   {
     ...options,
     method: 'GET'
@@ -3017,9 +3415,9 @@ export const getAcademicYearsControllerFindAllUrl = () => {
   return `/api/academic-years`
 }
 
-export const academicYearsControllerFindAll = async ( options?: RequestInit): Promise<AcademicYearListItemDto[]> => {
+export const academicYearsControllerFindAll = async ( options?: RequestInit): Promise<void> => {
 
-  return customFetch<AcademicYearListItemDto[]>(getAcademicYearsControllerFindAllUrl(),
+  return customFetch<void>(getAcademicYearsControllerFindAllUrl(),
   {
     ...options,
     method: 'GET'
@@ -3112,9 +3510,9 @@ export const getAcademicYearsControllerCreateUrl = () => {
   return `/api/academic-years`
 }
 
-export const academicYearsControllerCreate = async (createAcademicYearDto: CreateAcademicYearDto, options?: RequestInit): Promise<AcademicYearResponseDto> => {
+export const academicYearsControllerCreate = async (createAcademicYearDto: CreateAcademicYearDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<AcademicYearResponseDto>(getAcademicYearsControllerCreateUrl(),
+  return customFetch<void>(getAcademicYearsControllerCreateUrl(),
   {
     ...options,
     method: 'POST',
@@ -3177,9 +3575,9 @@ export const getAcademicYearsControllerUpdateUrl = (id: string,) => {
 }
 
 export const academicYearsControllerUpdate = async (id: string,
-    updateAcademicYearDto: UpdateAcademicYearDto, options?: RequestInit): Promise<AcademicYearResponseDto> => {
+    updateAcademicYearDto: UpdateAcademicYearDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<AcademicYearResponseDto>(getAcademicYearsControllerUpdateUrl(id),
+  return customFetch<void>(getAcademicYearsControllerUpdateUrl(id),
   {
     ...options,
     method: 'PATCH',
@@ -3233,26 +3631,40 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getAcademicYearsControllerUpdateMutationOptions(options), queryClient);
     }
 
-export const getAcademicYearsControllerRemoveUrl = (id: string, force?: boolean,) => {
+export const getAcademicYearsControllerRemoveUrl = (id: string,
+    params: AcademicYearsControllerRemoveParams,) => {
   const normalizedParams = new URLSearchParams();
-  if (force !== undefined) {
-    normalizedParams.append('force', force.toString());
-  }
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
   const stringifiedParams = normalizedParams.toString();
+
   return stringifiedParams.length > 0 ? `/api/academic-years/${id}?${stringifiedParams}` : `/api/academic-years/${id}`
 }
 
-export const academicYearsControllerRemove = async (id: string, force?: boolean, options?: RequestInit): Promise<SuccessResponseDto> => {
-  return customFetch<SuccessResponseDto>(getAcademicYearsControllerRemoveUrl(id,force),
+export const academicYearsControllerRemove = async (id: string,
+    params: AcademicYearsControllerRemoveParams, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getAcademicYearsControllerRemoveUrl(id,params),
   {
     ...options,
     method: 'DELETE'
+
+
   }
 );}
 
+
+
+
 export const getAcademicYearsControllerRemoveMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof academicYearsControllerRemove>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof academicYearsControllerRemove>>, TError,{id: string}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof academicYearsControllerRemove>>, TError,{id: string;params: AcademicYearsControllerRemoveParams}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof academicYearsControllerRemove>>, TError,{id: string;params: AcademicYearsControllerRemoveParams}, TContext> => {
 
 const mutationKey = ['academicYearsControllerRemove'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -3264,10 +3676,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof academicYearsControllerRemove>>, {id: string;force?: boolean}> = (props) => {
-        const {id,force} = props ?? {};
-        return  academicYearsControllerRemove(id,force,requestOptions)
-      }
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof academicYearsControllerRemove>>, {id: string;params: AcademicYearsControllerRemoveParams}> = (props) => {
+          const {id,params} = props ?? {};
+
+          return  academicYearsControllerRemove(id,params,requestOptions)
+        }
 
 
 
@@ -3281,17 +3694,82 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type AcademicYearsControllerRemoveMutationError = ErrorType<unknown>
 
     export const useAcademicYearsControllerRemove = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof academicYearsControllerRemove>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof academicYearsControllerRemove>>, TError,{id: string;params: AcademicYearsControllerRemoveParams}, TContext>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof academicYearsControllerRemove>>,
         TError,
-        {id: string},
+        {id: string;params: AcademicYearsControllerRemoveParams},
         TContext
       > => {
       return useMutation(getAcademicYearsControllerRemoveMutationOptions(options), queryClient);
     }
 
-export const getTermsControllerFindAllUrl = (params?: TermsControllerFindAllParams,) => {
+export const getAcademicYearsControllerRolloverUrl = (id: string,) => {
+
+
+
+
+  return `/api/academic-years/${id}/rollover`
+}
+
+export const academicYearsControllerRollover = async (id: string,
+    rolloverAcademicYearDto: RolloverAcademicYearDto, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getAcademicYearsControllerRolloverUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(rolloverAcademicYearDto)
+  }
+);}
+
+
+
+
+export const getAcademicYearsControllerRolloverMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof academicYearsControllerRollover>>, TError,{id: string;data: BodyType<RolloverAcademicYearDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof academicYearsControllerRollover>>, TError,{id: string;data: BodyType<RolloverAcademicYearDto>}, TContext> => {
+
+const mutationKey = ['academicYearsControllerRollover'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof academicYearsControllerRollover>>, {id: string;data: BodyType<RolloverAcademicYearDto>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  academicYearsControllerRollover(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AcademicYearsControllerRolloverMutationResult = NonNullable<Awaited<ReturnType<typeof academicYearsControllerRollover>>>
+    export type AcademicYearsControllerRolloverMutationBody = BodyType<RolloverAcademicYearDto>
+    export type AcademicYearsControllerRolloverMutationError = ErrorType<unknown>
+
+    export const useAcademicYearsControllerRollover = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof academicYearsControllerRollover>>, TError,{id: string;data: BodyType<RolloverAcademicYearDto>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof academicYearsControllerRollover>>,
+        TError,
+        {id: string;data: BodyType<RolloverAcademicYearDto>},
+        TContext
+      > => {
+      return useMutation(getAcademicYearsControllerRolloverMutationOptions(options), queryClient);
+    }
+
+export const getTermsControllerFindAllUrl = (params: TermsControllerFindAllParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -3306,9 +3784,9 @@ export const getTermsControllerFindAllUrl = (params?: TermsControllerFindAllPara
   return stringifiedParams.length > 0 ? `/api/terms?${stringifiedParams}` : `/api/terms`
 }
 
-export const termsControllerFindAll = async (params?: TermsControllerFindAllParams, options?: RequestInit): Promise<TermListItemDto[]> => {
+export const termsControllerFindAll = async (params: TermsControllerFindAllParams, options?: RequestInit): Promise<void> => {
 
-  return customFetch<TermListItemDto[]>(getTermsControllerFindAllUrl(params),
+  return customFetch<void>(getTermsControllerFindAllUrl(params),
   {
     ...options,
     method: 'GET'
@@ -3328,7 +3806,7 @@ export const getTermsControllerFindAllQueryKey = (params?: TermsControllerFindAl
     }
 
 
-export const getTermsControllerFindAllQueryOptions = <TData = Awaited<ReturnType<typeof termsControllerFindAll>>, TError = ErrorType<unknown>>(params?: TermsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof termsControllerFindAll>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getTermsControllerFindAllQueryOptions = <TData = Awaited<ReturnType<typeof termsControllerFindAll>>, TError = ErrorType<unknown>>(params: TermsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof termsControllerFindAll>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -3351,7 +3829,7 @@ export type TermsControllerFindAllQueryError = ErrorType<unknown>
 
 
 export function useTermsControllerFindAll<TData = Awaited<ReturnType<typeof termsControllerFindAll>>, TError = ErrorType<unknown>>(
- params: undefined |  TermsControllerFindAllParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof termsControllerFindAll>>, TError, TData>> & Pick<
+ params: TermsControllerFindAllParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof termsControllerFindAll>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof termsControllerFindAll>>,
           TError,
@@ -3361,7 +3839,7 @@ export function useTermsControllerFindAll<TData = Awaited<ReturnType<typeof term
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useTermsControllerFindAll<TData = Awaited<ReturnType<typeof termsControllerFindAll>>, TError = ErrorType<unknown>>(
- params?: TermsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof termsControllerFindAll>>, TError, TData>> & Pick<
+ params: TermsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof termsControllerFindAll>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof termsControllerFindAll>>,
           TError,
@@ -3371,12 +3849,12 @@ export function useTermsControllerFindAll<TData = Awaited<ReturnType<typeof term
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useTermsControllerFindAll<TData = Awaited<ReturnType<typeof termsControllerFindAll>>, TError = ErrorType<unknown>>(
- params?: TermsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof termsControllerFindAll>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ params: TermsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof termsControllerFindAll>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useTermsControllerFindAll<TData = Awaited<ReturnType<typeof termsControllerFindAll>>, TError = ErrorType<unknown>>(
- params?: TermsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof termsControllerFindAll>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ params: TermsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof termsControllerFindAll>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -3401,9 +3879,9 @@ export const getTermsControllerCreateUrl = () => {
   return `/api/terms`
 }
 
-export const termsControllerCreate = async (createTermDto: CreateTermDto, options?: RequestInit): Promise<TermResponseDto> => {
+export const termsControllerCreate = async (createTermDto: CreateTermDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<TermResponseDto>(getTermsControllerCreateUrl(),
+  return customFetch<void>(getTermsControllerCreateUrl(),
   {
     ...options,
     method: 'POST',
@@ -3466,9 +3944,9 @@ export const getTermsControllerUpdateUrl = (id: string,) => {
 }
 
 export const termsControllerUpdate = async (id: string,
-    updateTermDto: UpdateTermDto, options?: RequestInit): Promise<TermResponseDto> => {
+    updateTermDto: UpdateTermDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<TermResponseDto>(getTermsControllerUpdateUrl(id),
+  return customFetch<void>(getTermsControllerUpdateUrl(id),
   {
     ...options,
     method: 'PATCH',
@@ -3530,9 +4008,9 @@ export const getTermsControllerRemoveUrl = (id: string,) => {
   return `/api/terms/${id}`
 }
 
-export const termsControllerRemove = async (id: string, options?: RequestInit): Promise<SuccessResponseDto> => {
+export const termsControllerRemove = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SuccessResponseDto>(getTermsControllerRemoveUrl(id),
+  return customFetch<void>(getTermsControllerRemoveUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -3586,7 +4064,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getTermsControllerRemoveMutationOptions(options), queryClient);
     }
 
-export const getMetricsControllerFindAllUrl = (params?: MetricsControllerFindAllParams,) => {
+export const getMetricsControllerFindAllUrl = (params: MetricsControllerFindAllParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -3601,9 +4079,9 @@ export const getMetricsControllerFindAllUrl = (params?: MetricsControllerFindAll
   return stringifiedParams.length > 0 ? `/api/metrics?${stringifiedParams}` : `/api/metrics`
 }
 
-export const metricsControllerFindAll = async (params?: MetricsControllerFindAllParams, options?: RequestInit): Promise<MetricListItemDto[]> => {
+export const metricsControllerFindAll = async (params: MetricsControllerFindAllParams, options?: RequestInit): Promise<void> => {
 
-  return customFetch<MetricListItemDto[]>(getMetricsControllerFindAllUrl(params),
+  return customFetch<void>(getMetricsControllerFindAllUrl(params),
   {
     ...options,
     method: 'GET'
@@ -3623,7 +4101,7 @@ export const getMetricsControllerFindAllQueryKey = (params?: MetricsControllerFi
     }
 
 
-export const getMetricsControllerFindAllQueryOptions = <TData = Awaited<ReturnType<typeof metricsControllerFindAll>>, TError = ErrorType<unknown>>(params?: MetricsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metricsControllerFindAll>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getMetricsControllerFindAllQueryOptions = <TData = Awaited<ReturnType<typeof metricsControllerFindAll>>, TError = ErrorType<unknown>>(params: MetricsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metricsControllerFindAll>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -3646,7 +4124,7 @@ export type MetricsControllerFindAllQueryError = ErrorType<unknown>
 
 
 export function useMetricsControllerFindAll<TData = Awaited<ReturnType<typeof metricsControllerFindAll>>, TError = ErrorType<unknown>>(
- params: undefined |  MetricsControllerFindAllParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof metricsControllerFindAll>>, TError, TData>> & Pick<
+ params: MetricsControllerFindAllParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof metricsControllerFindAll>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof metricsControllerFindAll>>,
           TError,
@@ -3656,7 +4134,7 @@ export function useMetricsControllerFindAll<TData = Awaited<ReturnType<typeof me
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useMetricsControllerFindAll<TData = Awaited<ReturnType<typeof metricsControllerFindAll>>, TError = ErrorType<unknown>>(
- params?: MetricsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metricsControllerFindAll>>, TError, TData>> & Pick<
+ params: MetricsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metricsControllerFindAll>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof metricsControllerFindAll>>,
           TError,
@@ -3666,12 +4144,12 @@ export function useMetricsControllerFindAll<TData = Awaited<ReturnType<typeof me
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useMetricsControllerFindAll<TData = Awaited<ReturnType<typeof metricsControllerFindAll>>, TError = ErrorType<unknown>>(
- params?: MetricsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metricsControllerFindAll>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ params: MetricsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metricsControllerFindAll>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useMetricsControllerFindAll<TData = Awaited<ReturnType<typeof metricsControllerFindAll>>, TError = ErrorType<unknown>>(
- params?: MetricsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metricsControllerFindAll>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ params: MetricsControllerFindAllParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof metricsControllerFindAll>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -3696,9 +4174,9 @@ export const getMetricsControllerCreateUrl = () => {
   return `/api/metrics`
 }
 
-export const metricsControllerCreate = async (createMetricDto: CreateMetricDto, options?: RequestInit): Promise<MetricResponseDto> => {
+export const metricsControllerCreate = async (createMetricDto: CreateMetricDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<MetricResponseDto>(getMetricsControllerCreateUrl(),
+  return customFetch<void>(getMetricsControllerCreateUrl(),
   {
     ...options,
     method: 'POST',
@@ -3760,9 +4238,9 @@ export const getMetricsControllerRemoveUrl = (id: string,) => {
   return `/api/metrics/${id}`
 }
 
-export const metricsControllerRemove = async (id: string, options?: RequestInit): Promise<SuccessResponseDto> => {
+export const metricsControllerRemove = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SuccessResponseDto>(getMetricsControllerRemoveUrl(id),
+  return customFetch<void>(getMetricsControllerRemoveUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -3824,9 +4302,9 @@ export const getReportCardsControllerGenerateUrl = () => {
   return `/api/report-cards/generate`
 }
 
-export const reportCardsControllerGenerate = async (generateReportCardDto: GenerateReportCardDto, options?: RequestInit): Promise<ReportCardResponseDto> => {
+export const reportCardsControllerGenerate = async (generateReportCardDto: GenerateReportCardDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<ReportCardResponseDto>(getReportCardsControllerGenerateUrl(),
+  return customFetch<void>(getReportCardsControllerGenerateUrl(),
   {
     ...options,
     method: 'POST',
@@ -3895,9 +4373,9 @@ export const getReportCardsControllerFindAllUrl = (params: ReportCardsController
   return stringifiedParams.length > 0 ? `/api/report-cards?${stringifiedParams}` : `/api/report-cards`
 }
 
-export const reportCardsControllerFindAll = async (params: ReportCardsControllerFindAllParams, options?: RequestInit): Promise<ReportCardResponseDto[]> => {
+export const reportCardsControllerFindAll = async (params: ReportCardsControllerFindAllParams, options?: RequestInit): Promise<void> => {
 
-  return customFetch<ReportCardResponseDto[]>(getReportCardsControllerFindAllUrl(params),
+  return customFetch<void>(getReportCardsControllerFindAllUrl(params),
   {
     ...options,
     method: 'GET'
@@ -3990,9 +4468,9 @@ export const getReportCardsControllerGetDownloadUrl = (id: string,) => {
   return `/api/report-cards/${id}/download`
 }
 
-export const reportCardsControllerGetDownload = async (id: string, options?: RequestInit): Promise<FileUrlResponseDto> => {
+export const reportCardsControllerGetDownload = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<FileUrlResponseDto>(getReportCardsControllerGetDownloadUrl(id),
+  return customFetch<void>(getReportCardsControllerGetDownloadUrl(id),
   {
     ...options,
     method: 'GET'
@@ -4071,40 +4549,75 @@ export function useReportCardsControllerGetDownload<TData = Awaited<ReturnType<t
   return { ...query, queryKey: queryOptions.queryKey };
 }
 
+
+
+
+
+
+
 export const getReportCardsControllerRemoveUrl = (id: string,) => {
+
+
+
+
   return `/api/report-cards/${id}`
 }
 
-export const reportCardsControllerRemove = async (id: string, options?: RequestInit): Promise<{ id: string }> => {
-  return customFetch<{ id: string }>(getReportCardsControllerRemoveUrl(id),
+export const reportCardsControllerRemove = async (id: string, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getReportCardsControllerRemoveUrl(id),
   {
     ...options,
     method: 'DELETE'
+
+
   }
 );}
 
-export function getReportCardsControllerRemoveMutationOptions<TError = ErrorType<unknown>, TContext = unknown>(options?: { mutation?: UseMutationOptions<Awaited<ReturnType<typeof reportCardsControllerRemove>>, TError, {id: string}, TContext>, request?: SecondParameter<typeof customFetch> }): UseMutationOptions<Awaited<ReturnType<typeof reportCardsControllerRemove>>, TError, {id: string}, TContext> {
-  const mutationKey = ['reportCardsControllerRemove'];
-  const {mutation: mutationOptions, request: requestOptions} = options ?
-        options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-        options
-        : {...options, mutation: {...options.mutation, mutationKey}}
-        : {mutation: { mutationKey, }, request: undefined};
 
-  const mutationFn: MutationFunction<Awaited<ReturnType<typeof reportCardsControllerRemove>>, {id: string}> = (props) => {
-    const {id} = props ?? {};
-    return reportCardsControllerRemove(id, requestOptions);
-  };
 
-  return { mutationFn, ...mutationOptions };
-}
 
-export type ReportCardsControllerRemoveMutationResult = NonNullable<Awaited<ReturnType<typeof reportCardsControllerRemove>>>
-export type ReportCardsControllerRemoveMutationError = ErrorType<unknown>
+export const getReportCardsControllerRemoveMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reportCardsControllerRemove>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof reportCardsControllerRemove>>, TError,{id: string}, TContext> => {
 
-export function useReportCardsControllerRemove<TError = ErrorType<unknown>, TContext = unknown>(options?: { mutation?: UseMutationOptions<Awaited<ReturnType<typeof reportCardsControllerRemove>>, TError, {id: string}, TContext>, request?: SecondParameter<typeof customFetch> }, queryClient?: QueryClient): UseMutationResult<Awaited<ReturnType<typeof reportCardsControllerRemove>>, TError, {id: string}, TContext> {
-  return useMutation(getReportCardsControllerRemoveMutationOptions(options), queryClient);
-}
+const mutationKey = ['reportCardsControllerRemove'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof reportCardsControllerRemove>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  reportCardsControllerRemove(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ReportCardsControllerRemoveMutationResult = NonNullable<Awaited<ReturnType<typeof reportCardsControllerRemove>>>
+
+    export type ReportCardsControllerRemoveMutationError = ErrorType<unknown>
+
+    export const useReportCardsControllerRemove = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reportCardsControllerRemove>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof reportCardsControllerRemove>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getReportCardsControllerRemoveMutationOptions(options), queryClient);
+    }
 
 export const getEventsControllerFindAllUrl = () => {
 
@@ -4114,9 +4627,9 @@ export const getEventsControllerFindAllUrl = () => {
   return `/api/events`
 }
 
-export const eventsControllerFindAll = async ( options?: RequestInit): Promise<EventListItemDto[]> => {
+export const eventsControllerFindAll = async ( options?: RequestInit): Promise<void> => {
 
-  return customFetch<EventListItemDto[]>(getEventsControllerFindAllUrl(),
+  return customFetch<void>(getEventsControllerFindAllUrl(),
   {
     ...options,
     method: 'GET'
@@ -4209,9 +4722,9 @@ export const getEventsControllerCreateUrl = () => {
   return `/api/events`
 }
 
-export const eventsControllerCreate = async (createEventDto: CreateEventDto, options?: RequestInit): Promise<EventListItemDto> => {
+export const eventsControllerCreate = async (createEventDto: CreateEventDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<EventListItemDto>(getEventsControllerCreateUrl(),
+  return customFetch<void>(getEventsControllerCreateUrl(),
   {
     ...options,
     method: 'POST',
@@ -4273,9 +4786,9 @@ export const getEventsControllerFindOneUrl = (id: string,) => {
   return `/api/events/${id}`
 }
 
-export const eventsControllerFindOne = async (id: string, options?: RequestInit): Promise<EventDetailDto> => {
+export const eventsControllerFindOne = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<EventDetailDto>(getEventsControllerFindOneUrl(id),
+  return customFetch<void>(getEventsControllerFindOneUrl(id),
   {
     ...options,
     method: 'GET'
@@ -4369,9 +4882,9 @@ export const getEventsControllerUpdateUrl = (id: string,) => {
 }
 
 export const eventsControllerUpdate = async (id: string,
-    updateEventDto: UpdateEventDto, options?: RequestInit): Promise<EventListItemDto> => {
+    updateEventDto: UpdateEventDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<EventListItemDto>(getEventsControllerUpdateUrl(id),
+  return customFetch<void>(getEventsControllerUpdateUrl(id),
   {
     ...options,
     method: 'PATCH',
@@ -4433,9 +4946,9 @@ export const getEventsControllerRemoveUrl = (id: string,) => {
   return `/api/events/${id}`
 }
 
-export const eventsControllerRemove = async (id: string, options?: RequestInit): Promise<SuccessResponseDto> => {
+export const eventsControllerRemove = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SuccessResponseDto>(getEventsControllerRemoveUrl(id),
+  return customFetch<void>(getEventsControllerRemoveUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -4498,9 +5011,9 @@ export const getEventsControllerCreateGroupUrl = (id: string,) => {
 }
 
 export const eventsControllerCreateGroup = async (id: string,
-    createEventGroupDto: CreateEventGroupDto, options?: RequestInit): Promise<EventGroupDto> => {
+    createEventGroupDto: CreateEventGroupDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<EventGroupDto>(getEventsControllerCreateGroupUrl(id),
+  return customFetch<void>(getEventsControllerCreateGroupUrl(id),
   {
     ...options,
     method: 'POST',
@@ -4562,9 +5075,9 @@ export const getEventsControllerRemoveGroupUrl = (groupId: string,) => {
   return `/api/events/groups/${groupId}`
 }
 
-export const eventsControllerRemoveGroup = async (groupId: string, options?: RequestInit): Promise<SuccessResponseDto> => {
+export const eventsControllerRemoveGroup = async (groupId: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SuccessResponseDto>(getEventsControllerRemoveGroupUrl(groupId),
+  return customFetch<void>(getEventsControllerRemoveGroupUrl(groupId),
   {
     ...options,
     method: 'DELETE'
@@ -4627,9 +5140,9 @@ export const getEventsControllerAddParticipantUrl = (id: string,) => {
 }
 
 export const eventsControllerAddParticipant = async (id: string,
-    addParticipantDto: AddParticipantDto, options?: RequestInit): Promise<SuccessResponseDto> => {
+    addParticipantDto: AddParticipantDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SuccessResponseDto>(getEventsControllerAddParticipantUrl(id),
+  return customFetch<void>(getEventsControllerAddParticipantUrl(id),
   {
     ...options,
     method: 'POST',
@@ -4691,9 +5204,9 @@ export const getEventsControllerRemoveParticipantUrl = (participantId: string,) 
   return `/api/events/participants/${participantId}`
 }
 
-export const eventsControllerRemoveParticipant = async (participantId: string, options?: RequestInit): Promise<SuccessResponseDto> => {
+export const eventsControllerRemoveParticipant = async (participantId: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SuccessResponseDto>(getEventsControllerRemoveParticipantUrl(participantId),
+  return customFetch<void>(getEventsControllerRemoveParticipantUrl(participantId),
   {
     ...options,
     method: 'DELETE'
@@ -4755,9 +5268,9 @@ export const getAwardsControllerFindAllUrl = () => {
   return `/api/awards`
 }
 
-export const awardsControllerFindAll = async ( options?: RequestInit): Promise<AwardListItemDto[]> => {
+export const awardsControllerFindAll = async ( options?: RequestInit): Promise<void> => {
 
-  return customFetch<AwardListItemDto[]>(getAwardsControllerFindAllUrl(),
+  return customFetch<void>(getAwardsControllerFindAllUrl(),
   {
     ...options,
     method: 'GET'
@@ -4850,9 +5363,9 @@ export const getAwardsControllerCreateUrl = () => {
   return `/api/awards`
 }
 
-export const awardsControllerCreate = async (createAwardDto: CreateAwardDto, options?: RequestInit): Promise<AwardListItemDto> => {
+export const awardsControllerCreate = async (createAwardDto: CreateAwardDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<AwardListItemDto>(getAwardsControllerCreateUrl(),
+  return customFetch<void>(getAwardsControllerCreateUrl(),
   {
     ...options,
     method: 'POST',
@@ -4906,7 +5419,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getAwardsControllerCreateMutationOptions(options), queryClient);
     }
 
-export const getAwardsControllerFindIssuancesUrl = (params?: AwardsControllerFindIssuancesParams,) => {
+export const getAwardsControllerFindIssuancesUrl = (params: AwardsControllerFindIssuancesParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -4921,9 +5434,9 @@ export const getAwardsControllerFindIssuancesUrl = (params?: AwardsControllerFin
   return stringifiedParams.length > 0 ? `/api/awards/issuances?${stringifiedParams}` : `/api/awards/issuances`
 }
 
-export const awardsControllerFindIssuances = async (params?: AwardsControllerFindIssuancesParams, options?: RequestInit): Promise<AwardIssuanceDto[]> => {
+export const awardsControllerFindIssuances = async (params: AwardsControllerFindIssuancesParams, options?: RequestInit): Promise<void> => {
 
-  return customFetch<AwardIssuanceDto[]>(getAwardsControllerFindIssuancesUrl(params),
+  return customFetch<void>(getAwardsControllerFindIssuancesUrl(params),
   {
     ...options,
     method: 'GET'
@@ -4943,7 +5456,7 @@ export const getAwardsControllerFindIssuancesQueryKey = (params?: AwardsControll
     }
 
 
-export const getAwardsControllerFindIssuancesQueryOptions = <TData = Awaited<ReturnType<typeof awardsControllerFindIssuances>>, TError = ErrorType<unknown>>(params?: AwardsControllerFindIssuancesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof awardsControllerFindIssuances>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getAwardsControllerFindIssuancesQueryOptions = <TData = Awaited<ReturnType<typeof awardsControllerFindIssuances>>, TError = ErrorType<unknown>>(params: AwardsControllerFindIssuancesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof awardsControllerFindIssuances>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -4966,7 +5479,7 @@ export type AwardsControllerFindIssuancesQueryError = ErrorType<unknown>
 
 
 export function useAwardsControllerFindIssuances<TData = Awaited<ReturnType<typeof awardsControllerFindIssuances>>, TError = ErrorType<unknown>>(
- params: undefined |  AwardsControllerFindIssuancesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof awardsControllerFindIssuances>>, TError, TData>> & Pick<
+ params: AwardsControllerFindIssuancesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof awardsControllerFindIssuances>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof awardsControllerFindIssuances>>,
           TError,
@@ -4976,7 +5489,7 @@ export function useAwardsControllerFindIssuances<TData = Awaited<ReturnType<type
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useAwardsControllerFindIssuances<TData = Awaited<ReturnType<typeof awardsControllerFindIssuances>>, TError = ErrorType<unknown>>(
- params?: AwardsControllerFindIssuancesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof awardsControllerFindIssuances>>, TError, TData>> & Pick<
+ params: AwardsControllerFindIssuancesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof awardsControllerFindIssuances>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof awardsControllerFindIssuances>>,
           TError,
@@ -4986,12 +5499,12 @@ export function useAwardsControllerFindIssuances<TData = Awaited<ReturnType<type
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useAwardsControllerFindIssuances<TData = Awaited<ReturnType<typeof awardsControllerFindIssuances>>, TError = ErrorType<unknown>>(
- params?: AwardsControllerFindIssuancesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof awardsControllerFindIssuances>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ params: AwardsControllerFindIssuancesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof awardsControllerFindIssuances>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useAwardsControllerFindIssuances<TData = Awaited<ReturnType<typeof awardsControllerFindIssuances>>, TError = ErrorType<unknown>>(
- params?: AwardsControllerFindIssuancesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof awardsControllerFindIssuances>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ params: AwardsControllerFindIssuancesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof awardsControllerFindIssuances>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -5016,9 +5529,9 @@ export const getAwardsControllerRemoveUrl = (id: string,) => {
   return `/api/awards/${id}`
 }
 
-export const awardsControllerRemove = async (id: string, options?: RequestInit): Promise<SuccessResponseDto> => {
+export const awardsControllerRemove = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SuccessResponseDto>(getAwardsControllerRemoveUrl(id),
+  return customFetch<void>(getAwardsControllerRemoveUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -5081,9 +5594,9 @@ export const getAwardsControllerUpdateUrl = (id: string,) => {
 }
 
 export const awardsControllerUpdate = async (id: string,
-    updateAwardDto: UpdateAwardDto, options?: RequestInit): Promise<AwardListItemDto> => {
+    updateAwardDto: UpdateAwardDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<AwardListItemDto>(getAwardsControllerUpdateUrl(id),
+  return customFetch<void>(getAwardsControllerUpdateUrl(id),
   {
     ...options,
     method: 'PATCH',
@@ -5145,9 +5658,9 @@ export const getAwardsControllerIssueUrl = () => {
   return `/api/awards/issue`
 }
 
-export const awardsControllerIssue = async (issueAwardDto: IssueAwardDto, options?: RequestInit): Promise<SuccessResponseDto> => {
+export const awardsControllerIssue = async (issueAwardDto: IssueAwardDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SuccessResponseDto>(getAwardsControllerIssueUrl(),
+  return customFetch<void>(getAwardsControllerIssueUrl(),
   {
     ...options,
     method: 'POST',
@@ -5209,9 +5722,9 @@ export const getAwardsControllerRemoveIssuanceUrl = (id: string,) => {
   return `/api/awards/issuances/${id}`
 }
 
-export const awardsControllerRemoveIssuance = async (id: string, options?: RequestInit): Promise<SuccessResponseDto> => {
+export const awardsControllerRemoveIssuance = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SuccessResponseDto>(getAwardsControllerRemoveIssuanceUrl(id),
+  return customFetch<void>(getAwardsControllerRemoveIssuanceUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -5265,7 +5778,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getAwardsControllerRemoveIssuanceMutationOptions(options), queryClient);
     }
 
-export const getGalleryControllerFindAllAlbumsUrl = (params?: GalleryControllerFindAllAlbumsParams,) => {
+export const getGalleryControllerFindAllAlbumsUrl = (params: GalleryControllerFindAllAlbumsParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -5280,9 +5793,9 @@ export const getGalleryControllerFindAllAlbumsUrl = (params?: GalleryControllerF
   return stringifiedParams.length > 0 ? `/api/gallery/albums?${stringifiedParams}` : `/api/gallery/albums`
 }
 
-export const galleryControllerFindAllAlbums = async (params?: GalleryControllerFindAllAlbumsParams, options?: RequestInit): Promise<AlbumListItemDto[]> => {
+export const galleryControllerFindAllAlbums = async (params: GalleryControllerFindAllAlbumsParams, options?: RequestInit): Promise<void> => {
 
-  return customFetch<AlbumListItemDto[]>(getGalleryControllerFindAllAlbumsUrl(params),
+  return customFetch<void>(getGalleryControllerFindAllAlbumsUrl(params),
   {
     ...options,
     method: 'GET'
@@ -5302,7 +5815,7 @@ export const getGalleryControllerFindAllAlbumsQueryKey = (params?: GalleryContro
     }
 
 
-export const getGalleryControllerFindAllAlbumsQueryOptions = <TData = Awaited<ReturnType<typeof galleryControllerFindAllAlbums>>, TError = ErrorType<unknown>>(params?: GalleryControllerFindAllAlbumsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof galleryControllerFindAllAlbums>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGalleryControllerFindAllAlbumsQueryOptions = <TData = Awaited<ReturnType<typeof galleryControllerFindAllAlbums>>, TError = ErrorType<unknown>>(params: GalleryControllerFindAllAlbumsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof galleryControllerFindAllAlbums>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -5325,7 +5838,7 @@ export type GalleryControllerFindAllAlbumsQueryError = ErrorType<unknown>
 
 
 export function useGalleryControllerFindAllAlbums<TData = Awaited<ReturnType<typeof galleryControllerFindAllAlbums>>, TError = ErrorType<unknown>>(
- params: undefined |  GalleryControllerFindAllAlbumsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof galleryControllerFindAllAlbums>>, TError, TData>> & Pick<
+ params: GalleryControllerFindAllAlbumsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof galleryControllerFindAllAlbums>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof galleryControllerFindAllAlbums>>,
           TError,
@@ -5335,7 +5848,7 @@ export function useGalleryControllerFindAllAlbums<TData = Awaited<ReturnType<typ
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGalleryControllerFindAllAlbums<TData = Awaited<ReturnType<typeof galleryControllerFindAllAlbums>>, TError = ErrorType<unknown>>(
- params?: GalleryControllerFindAllAlbumsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof galleryControllerFindAllAlbums>>, TError, TData>> & Pick<
+ params: GalleryControllerFindAllAlbumsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof galleryControllerFindAllAlbums>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof galleryControllerFindAllAlbums>>,
           TError,
@@ -5345,12 +5858,12 @@ export function useGalleryControllerFindAllAlbums<TData = Awaited<ReturnType<typ
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGalleryControllerFindAllAlbums<TData = Awaited<ReturnType<typeof galleryControllerFindAllAlbums>>, TError = ErrorType<unknown>>(
- params?: GalleryControllerFindAllAlbumsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof galleryControllerFindAllAlbums>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ params: GalleryControllerFindAllAlbumsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof galleryControllerFindAllAlbums>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useGalleryControllerFindAllAlbums<TData = Awaited<ReturnType<typeof galleryControllerFindAllAlbums>>, TError = ErrorType<unknown>>(
- params?: GalleryControllerFindAllAlbumsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof galleryControllerFindAllAlbums>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ params: GalleryControllerFindAllAlbumsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof galleryControllerFindAllAlbums>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -5375,9 +5888,9 @@ export const getGalleryControllerCreateAlbumUrl = () => {
   return `/api/gallery/albums`
 }
 
-export const galleryControllerCreateAlbum = async (createAlbumDto: CreateAlbumDto, options?: RequestInit): Promise<AlbumListItemDto> => {
+export const galleryControllerCreateAlbum = async (createAlbumDto: CreateAlbumDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<AlbumListItemDto>(getGalleryControllerCreateAlbumUrl(),
+  return customFetch<void>(getGalleryControllerCreateAlbumUrl(),
   {
     ...options,
     method: 'POST',
@@ -5439,9 +5952,9 @@ export const getGalleryControllerFindAlbumUrl = (id: string,) => {
   return `/api/gallery/albums/${id}`
 }
 
-export const galleryControllerFindAlbum = async (id: string, options?: RequestInit): Promise<AlbumDetailDto> => {
+export const galleryControllerFindAlbum = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<AlbumDetailDto>(getGalleryControllerFindAlbumUrl(id),
+  return customFetch<void>(getGalleryControllerFindAlbumUrl(id),
   {
     ...options,
     method: 'GET'
@@ -5534,9 +6047,9 @@ export const getGalleryControllerRemoveAlbumUrl = (id: string,) => {
   return `/api/gallery/albums/${id}`
 }
 
-export const galleryControllerRemoveAlbum = async (id: string, options?: RequestInit): Promise<SuccessResponseDto> => {
+export const galleryControllerRemoveAlbum = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SuccessResponseDto>(getGalleryControllerRemoveAlbumUrl(id),
+  return customFetch<void>(getGalleryControllerRemoveAlbumUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -5599,9 +6112,9 @@ export const getGalleryControllerAddPhotoUrl = (id: string,) => {
 }
 
 export const galleryControllerAddPhoto = async (id: string,
-    addPhotoDto: AddPhotoDto, options?: RequestInit): Promise<GalleryPhotoDto> => {
+    addPhotoDto: AddPhotoDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<GalleryPhotoDto>(getGalleryControllerAddPhotoUrl(id),
+  return customFetch<void>(getGalleryControllerAddPhotoUrl(id),
   {
     ...options,
     method: 'POST',
@@ -5663,9 +6176,9 @@ export const getGalleryControllerRemovePhotoUrl = (id: string,) => {
   return `/api/gallery/photos/${id}`
 }
 
-export const galleryControllerRemovePhoto = async (id: string, options?: RequestInit): Promise<SuccessResponseDto> => {
+export const galleryControllerRemovePhoto = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SuccessResponseDto>(getGalleryControllerRemovePhotoUrl(id),
+  return customFetch<void>(getGalleryControllerRemovePhotoUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -5727,9 +6240,9 @@ export const getNotificationsControllerListUrl = () => {
   return `/api/notifications`
 }
 
-export const notificationsControllerList = async ( options?: RequestInit): Promise<NotificationDto[]> => {
+export const notificationsControllerList = async ( options?: RequestInit): Promise<void> => {
 
-  return customFetch<NotificationDto[]>(getNotificationsControllerListUrl(),
+  return customFetch<void>(getNotificationsControllerListUrl(),
   {
     ...options,
     method: 'GET'
@@ -5822,9 +6335,9 @@ export const getNotificationsControllerUnreadCountUrl = () => {
   return `/api/notifications/unread-count`
 }
 
-export const notificationsControllerUnreadCount = async ( options?: RequestInit): Promise<UnreadCountDto> => {
+export const notificationsControllerUnreadCount = async ( options?: RequestInit): Promise<void> => {
 
-  return customFetch<UnreadCountDto>(getNotificationsControllerUnreadCountUrl(),
+  return customFetch<void>(getNotificationsControllerUnreadCountUrl(),
   {
     ...options,
     method: 'GET'
@@ -5917,9 +6430,9 @@ export const getNotificationsControllerMarkReadUrl = (id: string,) => {
   return `/api/notifications/${id}/read`
 }
 
-export const notificationsControllerMarkRead = async (id: string, options?: RequestInit): Promise<SuccessResponseDto> => {
+export const notificationsControllerMarkRead = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<SuccessResponseDto>(getNotificationsControllerMarkReadUrl(id),
+  return customFetch<void>(getNotificationsControllerMarkReadUrl(id),
   {
     ...options,
     method: 'PATCH'
@@ -5981,9 +6494,9 @@ export const getNotificationsControllerMarkAllReadUrl = () => {
   return `/api/notifications/read-all`
 }
 
-export const notificationsControllerMarkAllRead = async ( options?: RequestInit): Promise<SuccessResponseDto> => {
+export const notificationsControllerMarkAllRead = async ( options?: RequestInit): Promise<void> => {
 
-  return customFetch<SuccessResponseDto>(getNotificationsControllerMarkAllReadUrl(),
+  return customFetch<void>(getNotificationsControllerMarkAllReadUrl(),
   {
     ...options,
     method: 'POST'
@@ -6045,9 +6558,9 @@ export const getNotificationsControllerListAlertSettingsUrl = () => {
   return `/api/notifications/alert-settings`
 }
 
-export const notificationsControllerListAlertSettings = async ( options?: RequestInit): Promise<AlertSettingDto[]> => {
+export const notificationsControllerListAlertSettings = async ( options?: RequestInit): Promise<void> => {
 
-  return customFetch<AlertSettingDto[]>(getNotificationsControllerListAlertSettingsUrl(),
+  return customFetch<void>(getNotificationsControllerListAlertSettingsUrl(),
   {
     ...options,
     method: 'GET'
@@ -6141,9 +6654,9 @@ export const getNotificationsControllerUpdateAlertSettingUrl = (teacherId: strin
 }
 
 export const notificationsControllerUpdateAlertSetting = async (teacherId: string,
-    updateAlertSettingDto: UpdateAlertSettingDto, options?: RequestInit): Promise<AlertSettingDto> => {
+    updateAlertSettingDto: UpdateAlertSettingDto, options?: RequestInit): Promise<void> => {
 
-  return customFetch<AlertSettingDto>(getNotificationsControllerUpdateAlertSettingUrl(teacherId),
+  return customFetch<void>(getNotificationsControllerUpdateAlertSettingUrl(teacherId),
   {
     ...options,
     method: 'PUT',
@@ -6205,9 +6718,9 @@ export const getAlertsControllerCheckUrl = () => {
   return `/api/alerts/check`
 }
 
-export const alertsControllerCheck = async ( options?: RequestInit): Promise<CheckAlertsResultDto> => {
+export const alertsControllerCheck = async ( options?: RequestInit): Promise<void> => {
 
-  return customFetch<CheckAlertsResultDto>(getAlertsControllerCheckUrl(),
+  return customFetch<void>(getAlertsControllerCheckUrl(),
   {
     ...options,
     method: 'POST'
@@ -6260,3 +6773,4 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getAlertsControllerCheckMutationOptions(options), queryClient);
     }
+

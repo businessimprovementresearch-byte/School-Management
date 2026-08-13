@@ -1,7 +1,3 @@
 // @ts-nocheck
 
-export interface AddParticipantDto {
-  studentId?: string;
-  teacherId?: string;
-  groupId?: string;
-}
+export interface AddParticipantDto { [key: string]: unknown }

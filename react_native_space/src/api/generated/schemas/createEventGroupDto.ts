@@ -1,5 +1,3 @@
 // @ts-nocheck
 
-export interface CreateEventGroupDto {
-  name: string;
-}
+export interface CreateEventGroupDto { [key: string]: unknown }

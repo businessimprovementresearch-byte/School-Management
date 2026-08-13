@@ -1,7 +1,3 @@
 // @ts-nocheck
 
-export interface LoginDto {
-  email: string;
-  /** @minLength 1 */
-  password: string;
-}
+export interface LoginDto { [key: string]: unknown }

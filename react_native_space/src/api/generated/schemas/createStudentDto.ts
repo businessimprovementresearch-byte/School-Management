@@ -1,12 +1,3 @@
 // @ts-nocheck
 
-export interface CreateStudentDto {
-  name: string;
-  nickname?: string;
-  parentName?: string;
-  dob?: string;
-  contactNumber?: string;
-  /** @nullable */
-  photoFileId?: string | null;
-  classIds?: string[];
-}
+export interface CreateStudentDto { [key: string]: unknown }

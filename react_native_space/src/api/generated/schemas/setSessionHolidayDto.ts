@@ -1,4 +1,3 @@
 // @ts-nocheck
-export interface SetSessionHolidayDto {
-  isHoliday: boolean;
-}
+
+export interface SetSessionHolidayDto { [key: string]: unknown }

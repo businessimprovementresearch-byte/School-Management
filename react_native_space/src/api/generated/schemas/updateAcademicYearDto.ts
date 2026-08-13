@@ -1,8 +1,3 @@
 // @ts-nocheck
 
-export interface UpdateAcademicYearDto {
-  name?: string;
-  startDate?: string;
-  endDate?: string;
-  isActive?: boolean;
-}
+export interface UpdateAcademicYearDto { [key: string]: unknown }

@@ -1,6 +1,6 @@
 // @ts-nocheck
 
 export type GalleryControllerFindAllAlbumsParams = {
-classId?: string;
-eventId?: string;
+classId: string;
+eventId: string;
 };

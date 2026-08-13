@@ -1,7 +1,3 @@
 // @ts-nocheck
 
-export interface AddClassHistoryDto {
-  classId: string;
-  academicYearId: string;
-  action: string;
-}
+export interface AddClassHistoryDto { [key: string]: unknown }
