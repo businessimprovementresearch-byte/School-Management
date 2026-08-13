@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { useSessionsControllerFindOne, useSessionsControllerSetHoliday, useAttendanceControllerBulkSave, useFeedbackControllerCreate, useMetricsControllerFindAll, useMetricsControllerCreate, useProgressControllerBulkSave, useProgressControllerFindBySession } from '@/src/api/generated/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
