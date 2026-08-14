@@ -260,7 +260,7 @@ export default function ClassDetailScreen() {
 
         {/* Sessions */}
         <Text style={styles.sectionTitle}>Sessions</Text>
-        {(data?.sessions ?? []).slice(0, 20).map((s) => (
+        {(data?.sessions ?? []).map((s) => (
           <Pressable key={s?.id} style={styles.sessionRow} onPress={() => router.push(`/class/${classId}/session/${s?.id}`)}>
             {s?.isHoliday ? (
               <Ionicons name="sunny" size={16} color={Colors.primary} />
