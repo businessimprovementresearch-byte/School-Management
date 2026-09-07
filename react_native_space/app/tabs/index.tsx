@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -20,6 +20,25 @@ export default function DashboardScreen() {
     await refetch();
     setRefreshing(false);
   };
+
+  // Mendapatkan ID Tahun Ajaran yang sedang aktif
+  const activeYearId = (data as any)?.activeAcademicYear?.id;
+
+  // Filter Sesi Tertunda hanya untuk Tahun Ajaran Aktif
+  const pendingSessions = useMemo(() => {
+    if (!data?.pendingAttendanceSessions) return [];
+    return data.pendingAttendanceSessions.filter((s: any) => 
+      !activeYearId || s?.academicYearId === activeYearId || s?.class?.academicYearId === activeYearId
+    );
+  }, [data?.pendingAttendanceSessions, activeYearId]);
+
+  // Filter Sesi Hari Ini hanya untuk Tahun Ajaran Aktif
+  const todaySessions = useMemo(() => {
+    if (!data?.todaySessions) return [];
+    return data.todaySessions.filter((s: any) => 
+      !activeYearId || s?.academicYearId === activeYearId || s?.class?.academicYearId === activeYearId
+    );
+  }, [data?.todaySessions, activeYearId]);
 
   if (isLoading || !data) return <LoadingScreen />;
 
@@ -43,14 +62,14 @@ export default function DashboardScreen() {
           <StatCard icon="people" label="Students" value={data?.totalStudents ?? 0} color={Colors.primary} />
           <StatCard icon="school" label="Teachers" value={data?.totalTeachers ?? 0} color={Colors.secondary} />
           <StatCard icon="book" label="Classes" value={data?.activeClasses ?? 0} color={Colors.accent} />
-          <StatCard icon="calendar" label="Today" value={data?.todaySessions?.length ?? 0} color={Colors.success} />
+          <StatCard icon="calendar" label="Today" value={todaySessions.length} color={Colors.success} />
         </ScrollView>
 
-        {/* Pending Attendance */}
-        {(data?.pendingAttendanceSessions?.length ?? 0) > 0 ? (
+        {/* Pending Attendance (Hanya Tahun Aktif) */}
+        {pendingSessions.length > 0 ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Pending Attendance</Text>
-            {data?.pendingAttendanceSessions?.map((s) => (
+            {pendingSessions.map((s: any) => (
               <Pressable
                 key={s?.id}
                 style={styles.pendingCard}
@@ -69,38 +88,35 @@ export default function DashboardScreen() {
         ) : null}
 
         {/* Quick Actions */}
-        {isAdmin ? (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Quick Actions</Text>
-            <View style={styles.actionsGrid}>
-              <ActionButton icon="person-add" label="Add Student" onPress={() => router.push('/add-student')} />
-              <ActionButton icon="add-circle" label="Add Session" onPress={() => router.push('/add-session')} />
-              <ActionButton icon="document-text" label="Report Card" onPress={() => router.push('/generate-report')} />
-              <ActionButton icon="checkmark-done-circle" label="Record Attendance" onPress={() => router.push('/tabs/attendance')} />
-            </View>
-          </View>
-        ) : (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Quick Actions</Text>
-            <View style={styles.actionsGrid}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <View style={styles.actionsGrid}>
+            {isAdmin ? (
+              <>
+                <ActionButton icon="person-add" label="Add Student" onPress={() => router.push('/add-student')} />
+                <ActionButton icon="add-circle" label="Add Session" onPress={() => router.push('/add-session')} />
+                <ActionButton icon="document-text" label="Report Card" onPress={() => router.push('/generate-report')} />
+                <ActionButton icon="checkmark-done-circle" label="Record Attendance" onPress={() => router.push('/tabs/attendance')} />
+              </>
+            ) : (
               <ActionButton
                 icon="checkmark-done-circle"
                 label="Record Attendance"
                 onPress={() => {
-                  const nextSession = data?.pendingAttendanceSessions?.[0] ?? data?.todaySessions?.[0];
+                  const nextSession = pendingSessions[0] ?? todaySessions[0];
                   if (nextSession) router.push(`/class/${nextSession.classId}/session/${nextSession.id}`);
                   else router.push('/tabs/attendance');
                 }}
               />
-            </View>
+            )}
           </View>
-        )}
+        </View>
 
-        {/* Today's Sessions */}
-        {(data?.todaySessions?.length ?? 0) > 0 ? (
+        {/* Today's Sessions (Hanya Tahun Aktif) */}
+        {todaySessions.length > 0 ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Today's Sessions</Text>
-            {data?.todaySessions?.map((s) => (
+            {todaySessions.map((s: any) => (
               <Pressable
                 key={s?.id}
                 style={styles.sessionCard}
