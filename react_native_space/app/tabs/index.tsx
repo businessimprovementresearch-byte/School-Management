@@ -5,7 +5,10 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius } from '@/src/theme';
 import { useAuth } from '@/src/context/AuthContext';
-import { useDashboardControllerGetDashboard } from '@/src/api/generated/api';
+import { 
+  useDashboardControllerGetDashboard, 
+  useClassesControllerFindAll 
+} from '@/src/api/generated/api';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { formatDate } from '@/src/lib/dateFormat';
 
@@ -15,14 +18,29 @@ export default function DashboardScreen() {
   const { data, isLoading, refetch } = useDashboardControllerGetDashboard();
   const [refreshing, setRefreshing] = React.useState(false);
 
+  // Ambil ID Tahun Ajaran Aktif dari response dashboard
+  const activeYearId = (data as any)?.activeAcademicYear?.id;
+
+  // Fetch daftar kelas untuk menghitung kelas di tahun ajaran aktif saja
+  const { data: classesData, refetch: refetchClasses } = useClassesControllerFindAll(
+    activeYearId ? ({ academicYearId: activeYearId } as any) : undefined
+  );
+
   const onRefresh = async () => {
     setRefreshing(true);
-    await refetch();
+    await Promise.all([refetch(), refetchClasses()]);
     setRefreshing(false);
   };
 
-  // Mendapatkan ID Tahun Ajaran yang sedang aktif
-  const activeYearId = (data as any)?.activeAcademicYear?.id;
+  // Filter & Hitung Jumlah Kelas Aktif Khusus Tahun Ajaran Berjalan
+  const activeClassesCount = useMemo(() => {
+    if (!classesData || !Array.isArray(classesData)) return 0;
+    return classesData.filter((c: any) => {
+      const isClassActive = c.isActive ?? true;
+      const isCurrentYear = !activeYearId || c.academicYearId === activeYearId;
+      return isClassActive && isCurrentYear;
+    }).length;
+  }, [classesData, activeYearId]);
 
   // Filter Sesi Tertunda hanya untuk Tahun Ajaran Aktif
   const pendingSessions = useMemo(() => {
@@ -61,11 +79,19 @@ export default function DashboardScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsRow}>
           <StatCard icon="people" label="Students" value={data?.totalStudents ?? 0} color={Colors.primary} />
           <StatCard icon="school" label="Teachers" value={data?.totalTeachers ?? 0} color={Colors.secondary} />
-          <StatCard icon="book" label="Classes" value={data?.activeClasses ?? 0} color={Colors.accent} />
+          
+          {/* STATCARD CLASSES: Menggunakan hitungan kelas khusus tahun ajaran aktif */}
+          <StatCard 
+            icon="book" 
+            label="Classes" 
+            value={classesData ? activeClassesCount : (data?.activeClasses ?? 0)} 
+            color={Colors.accent} 
+          />
+          
           <StatCard icon="calendar" label="Today" value={todaySessions.length} color={Colors.success} />
         </ScrollView>
 
-        {/* Pending Attendance (Hanya Tahun Aktif) */}
+        {/* Pending Attendance */}
         {pendingSessions.length > 0 ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Pending Attendance</Text>
@@ -112,7 +138,7 @@ export default function DashboardScreen() {
           </View>
         </View>
 
-        {/* Today's Sessions (Hanya Tahun Aktif) */}
+        {/* Today's Sessions */}
         {todaySessions.length > 0 ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Today's Sessions</Text>
