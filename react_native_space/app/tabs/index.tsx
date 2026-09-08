@@ -371,5 +371,5 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 3, elevation: 1,
   },
   sessionName: { fontSize: 16, fontWeight: '600', color: Colors.textPrimary },
-  statusDot: { width: 10, height: 10, borderRadius: 5 },
+  statusDot: { width: 10, height: 10, borderRadius: 5 }, //gambar
 });
