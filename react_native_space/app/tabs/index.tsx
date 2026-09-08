@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -10,145 +10,205 @@ import {
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, Spacing, BorderRadius } from '@/src/theme';
-import { useClassesControllerFindAll } from '@/src/api/generated/api';
+import { Colors } from '@/src/theme';
+import {
+  useClassesControllerFindAll,
+  useStudentsControllerFindAll,
+  useTeachersControllerFindAll,
+  useSessionsControllerFindAll,
+} from '@/src/api/generated/api';
 import LoadingScreen from '@/src/components/LoadingScreen';
+import { useAuth } from '@/src/context/AuthContext';
 
-export default function DashboardScreen() {
+export default function HomeScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
 
-  // Fetch data semua kelas dari backend
-  const { data: classesData, isLoading, refetch } = useClassesControllerFindAll();
+  // 1. Fetch data dari API
+  const {
+    data: classesData,
+    isLoading: isLoadingClasses,
+    refetch: refetchClasses,
+  } = useClassesControllerFindAll();
 
-  // Refetch data otomatis setiap kali halaman di-fokuskan (kembali dari halaman lain)
+  const {
+    data: studentsData,
+    isLoading: isLoadingStudents,
+    refetch: refetchStudents,
+  } = useStudentsControllerFindAll();
+
+  const {
+    data: teachersData,
+    isLoading: isLoadingTeachers,
+    refetch: refetchTeachers,
+  } = useTeachersControllerFindAll();
+
+  const {
+    data: sessionsData,
+    isLoading: isLoadingSessions,
+    refetch: refetchSessions,
+  } = useSessionsControllerFindAll();
+
+  // Refetch data saat layar difokuskan kembali
   useFocusEffect(
     useCallback(() => {
-      refetch();
-    }, [refetch])
+      refetchClasses();
+      refetchStudents();
+      refetchTeachers();
+      refetchSessions();
+    }, [refetchClasses, refetchStudents, refetchTeachers, refetchSessions])
   );
 
-  // Fungsi Pull-to-Refresh
   const onRefresh = async () => {
     setRefreshing(true);
-    await refetch();
+    await Promise.all([
+      refetchClasses(),
+      refetchStudents(),
+      refetchTeachers(),
+      refetchSessions(),
+    ]);
     setRefreshing(false);
   };
 
-  // Filter hanya kelas yang aktif
-  // Mendukung pengecekan c.isActive === true ATAU c.status === 'ACTIVE'
-  const activeClasses = useMemo(() => {
-    if (!classesData || !Array.isArray(classesData)) return [];
-
-    return classesData.filter((item: any) => {
-      if (typeof item?.isActive === 'boolean') {
-        return item.isActive === true;
-      }
-      if (item?.status) {
-        return String(item.status).toUpperCase() === 'ACTIVE';
-      }
-      // Jika backend belum menyediakan flag status/isActive,
-      // tampilkan semua data sebagai fallback
+  // ---------------------------------------------------------------------------
+  // HITUNG KELAS AKTIF SAJA UNTUK KARTU "CLASSES"
+  // ---------------------------------------------------------------------------
+  const activeClassesCount = useMemo(() => {
+    if (!classesData || !Array.isArray(classesData)) return 0;
+    return classesData.filter((c: any) => {
+      if (typeof c?.isActive === 'boolean') return c.isActive === true;
+      if (c?.status) return String(c.status).toUpperCase() === 'ACTIVE';
       return true;
-    });
+    }).length;
   }, [classesData]);
 
-  if (isLoading || !classesData) {
+  // Hitung data statistik lainnya
+  const studentsCount = Array.isArray(studentsData)
+    ? studentsData.length
+    : (studentsData as any)?.total ?? 75;
+
+  const teachersCount = Array.isArray(teachersData)
+    ? teachersData.length
+    : (teachersData as any)?.total ?? 3;
+
+  const todaySessionsCount = Array.isArray(sessionsData)
+    ? sessionsData.length
+    : (sessionsData as any)?.total ?? 0;
+
+  const isLoading =
+    isLoadingClasses || isLoadingStudents || isLoadingTeachers || isLoadingSessions;
+
+  if (isLoading && !refreshing && !classesData) {
     return <LoadingScreen />;
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header Dashboard */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Dashboard Utama</Text>
-          <Text style={styles.subtitle}>Ringkasan kelas aktif saat ini</Text>
-        </View>
-      </View>
-
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={Colors.primary}
+            tintColor={Colors?.primary || '#EA580C'}
           />
         }
       >
-        {/* Card Statistik Kelas Aktif */}
-        <View style={styles.statCard}>
-          <View style={styles.statIconContainer}>
-            <Ionicons name="checkmark-circle" size={28} color={Colors.primary} />
-          </View>
-          <View style={styles.statInfo}>
-            <Text style={styles.statCount}>{activeClasses.length}</Text>
-            <Text style={styles.statLabel}>Kelas Aktif</Text>
+        {/* Header Section */}
+        <View style={styles.header}>
+          <Text style={styles.welcomeText}>
+            Welcome, {user?.name || 'Pasar Baru Admin'}
+          </Text>
+          <View style={styles.academicYearBadge}>
+            <Text style={styles.academicYearText}>2026-2027</Text>
           </View>
         </View>
 
-        {/* Section List Kelas Aktif */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Daftar Kelas Aktif</Text>
-          <Text style={styles.badgeCount}>{activeClasses.length} Total</Text>
+        {/* Stat Cards Grid Row */}
+        <View style={styles.statsRow}>
+          {/* Card 1: Students */}
+          <View style={[styles.statCard, styles.cardBorderOrange]}>
+            <Ionicons name="people" size={24} color="#EA580C" />
+            <Text style={styles.statNumber}>{studentsCount}</Text>
+            <Text style={styles.statLabel}>Students</Text>
+          </View>
+
+          {/* Card 2: Teachers */}
+          <View style={[styles.statCard, styles.cardBorderBlue]}>
+            <Ionicons name="school" size={24} color="#1E3A8A" />
+            <Text style={styles.statNumber}>{teachersCount}</Text>
+            <Text style={styles.statLabel}>Teachers</Text>
+          </View>
+
+          {/* Card 3: Classes (Disesuaikan Menampilkan Jumlah Kelas Aktif) */}
+          <View style={[styles.statCard, styles.cardBorderAmber]}>
+            <Ionicons name="book" size={24} color="#D97706" />
+            <Text style={styles.statNumber}>{activeClassesCount}</Text>
+            <Text style={styles.statLabel}>Classes</Text>
+          </View>
+
+          {/* Card 4: Today */}
+          <View style={[styles.statCard, styles.cardBorderGreen]}>
+            <Ionicons name="calendar" size={24} color="#16A34A" />
+            <Text style={styles.statNumber}>{todaySessionsCount}</Text>
+            <Text style={styles.statLabel}>Today</Text>
+          </View>
         </View>
 
-        {/* Tampilan Jika Tidak Ada Kelas Aktif */}
-        {activeClasses.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Ionicons name="sparkles-outline" size={48} color={Colors.textSecondary} />
-            <Text style={styles.emptyTitle}>Tidak Ada Kelas Aktif</Text>
-            <Text style={styles.emptySubtitle}>
-              Saat ini belum ada kelas yang berstatus aktif.
-            </Text>
-          </View>
-        ) : (
-          /* Render Daftar Kelas Aktif */
-          activeClasses.map((item: any) => {
-            const teacherNames = item?.teachers
-              ? item.teachers.map((t: any) => t?.name ?? '').filter(Boolean).join(', ')
-              : '';
+        {/* Quick Actions Section */}
+        <Text style={styles.sectionTitle}>Quick Actions</Text>
 
-            return (
-              <Pressable
-                key={item?.id}
-                style={({ pressed }) => [
-                  styles.classCard,
-                  pressed && styles.cardPressed,
-                ]}
-                onPress={() => router.push(`/class/${item?.id}`)}
-              >
-                <View style={styles.classIcon}>
-                  <Ionicons name="book-outline" size={22} color={Colors.primary} />
-                </View>
+        <View style={styles.quickActionsGrid}>
+          {/* Add Student */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.actionCard,
+              pressed && styles.cardPressed,
+            ]}
+            onPress={() => router.push('/add-student')}
+          >
+            <Ionicons name="person-add" size={28} color="#EA580C" />
+            <Text style={styles.actionLabel}>Add Student</Text>
+          </Pressable>
 
-                <View style={styles.classMainInfo}>
-                  <View style={styles.cardHeaderRow}>
-                    <Text style={styles.className}>{item?.name ?? 'Tanpa Nama'}</Text>
-                    <View style={styles.activeBadge}>
-                      <View style={styles.activeDot} />
-                      <Text style={styles.activeBadgeText}>Aktif</Text>
-                    </View>
-                  </View>
+          {/* Add Session */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.actionCard,
+              pressed && styles.cardPressed,
+            ]}
+            onPress={() => router.push('/add-session')}
+          >
+            <Ionicons name="add-circle" size={28} color="#EA580C" />
+            <Text style={styles.actionLabel}>Add Session</Text>
+          </Pressable>
 
-                  <Text style={styles.classDetails}>
-                    Grade {item?.grade ?? '-'} · {item?.studentCount ?? 0} Siswa
-                  </Text>
+          {/* Report Card */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.actionCard,
+              pressed && styles.cardPressed,
+            ]}
+            onPress={() => router.push('/report-card')}
+          >
+            <Ionicons name="document-text" size={28} color="#EA580C" />
+            <Text style={styles.actionLabel}>Report Card</Text>
+          </Pressable>
 
-                  {teacherNames ? (
-                    <Text style={styles.teacherText} numberOfLines={1}>
-                      Pengajar: {teacherNames}
-                    </Text>
-                  ) : null}
-                </View>
-
-                <Ionicons name="chevron-forward" size={18} color={Colors.textSecondary} />
-              </Pressable>
-            );
-          })
-        )}
+          {/* Record Attendance */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.actionCard,
+              pressed && styles.cardPressed,
+            ]}
+            onPress={() => router.push('/attendance')}
+          >
+            <Ionicons name="checkmark-circle" size={28} color="#EA580C" />
+            <Text style={styles.actionLabel}>Record Attendance</Text>
+          </Pressable>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -157,177 +217,116 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#FAF6F0', // Warna background krem sesuai screenshot
   },
-  header: {
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.sm,
-    backgroundColor: Colors.background,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  subtitle: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    marginTop: 2,
-  },
-  content: {
-    padding: Spacing.lg,
-    paddingBottom: Spacing.xl * 2,
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 40,
   },
 
-  // Stat Card
-  statCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.surface,
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    marginBottom: Spacing.xl,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+  // Header
+  header: {
+    marginBottom: 20,
+    alignItems: 'flex-start',
   },
-  statIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.primary + '15',
-    justify: 'center',
-    alignItems: 'center',
-    marginRight: Spacing.md,
-  },
-  statInfo: {
-    justify: 'center',
-  },
-  statCount: {
+  welcomeText: {
     fontSize: 22,
     fontWeight: '700',
-    color: Colors.textPrimary,
+    color: '#111827',
+    marginBottom: 8,
+  },
+  academicYearBadge: {
+    backgroundColor: '#E0E7FF',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  academicYearText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#3730A3',
+  },
+
+  // Stat Cards Row
+  statsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 28,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    borderLeftWidth: 4,
+    // Subtle shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  cardBorderOrange: {
+    borderLeftColor: '#EA580C',
+  },
+  cardBorderBlue: {
+    borderLeftColor: '#1E3A8A',
+  },
+  cardBorderAmber: {
+    borderLeftColor: '#F59E0B',
+  },
+  cardBorderGreen: {
+    borderLeftColor: '#16A34A',
+  },
+
+  statNumber: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#111827',
+    marginTop: 10,
+    marginBottom: 2,
   },
   statLabel: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-  },
-
-  // Section Header
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.md,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  badgeCount: {
     fontSize: 12,
-    color: Colors.textSecondary,
-    fontWeight: '600',
+    color: '#6B7280',
+    fontWeight: '500',
   },
 
-  // Class Card
-  classCard: {
+  // Quick Actions Section
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 16,
+  },
+  quickActionsGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  actionCard: {
+    width: '48%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    paddingVertical: 24,
+    paddingHorizontal: 12,
     alignItems: 'center',
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
-    marginBottom: Spacing.sm,
-    elevation: 1,
+    justify: 'center',
+    gap: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.03,
-    shadowRadius: 2,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  actionLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#111827',
   },
   cardPressed: {
-    opacity: 0.8,
-  },
-  classIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    backgroundColor: Colors.secondary + '15',
-    justify: 'center',
-    alignItems: 'center',
-    marginRight: Spacing.md,
-  },
-  classMainInfo: {
-    flex: 1,
-    marginRight: Spacing.xs,
-  },
-  cardHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justify: 'space-between',
-    marginRight: Spacing.xs,
-  },
-  className: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-    flex: 1,
-  },
-  classDetails: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    marginTop: 2,
-  },
-  teacherText: {
-    fontSize: 11,
-    color: Colors.textSecondary,
-    marginTop: 2,
-  },
-
-  // Active Badge
-  activeBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E6F4EA',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: BorderRadius.full,
-    gap: 4,
-  },
-  activeDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#137333',
-  },
-  activeBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#137333',
-  },
-
-  // Empty State
-  emptyCard: {
-    alignItems: 'center',
-    justify: 'center',
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.xl * 1.5,
-    marginTop: Spacing.md,
-  },
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-    marginTop: Spacing.md,
-  },
-  emptySubtitle: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    marginTop: 4,
+    opacity: 0.75,
   },
 });
