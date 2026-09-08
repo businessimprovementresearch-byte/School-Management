@@ -74,14 +74,24 @@ export default function HomeScreen() {
   // ---------------------------------------------------------------------------
   // HITUNG KELAS AKTIF SAJA UNTUK KARTU "CLASSES"
   // ---------------------------------------------------------------------------
-  const activeClassesCount = useMemo(() => {
-    if (!classesData || !Array.isArray(classesData)) return 0;
-    return classesData.filter((c: any) => {
-      if (typeof c?.isActive === 'boolean') return c.isActive === true;
-      if (c?.status) return String(c.status).toUpperCase() === 'ACTIVE';
-      return true;
-    }).length;
-  }, [classesData]);
+    const activeClassesCount = useMemo(() => {
+      if (!classesData || !Array.isArray(classesData)) return 0;
+
+      return classesData.filter((c: any) => {
+        // 1. Cek dari relasi objek academicYear yang statusnya active
+        if (c?.academicYear?.isActive === true) return true;
+        if (c?.academicYear?.status === 'ACTIVE') return true;
+
+        // 2. Cek jika backend mengirimkan string nama tahun ajaran
+        if (c?.academicYear === '2026-2027' || c?.academicYearName === '2026-2027') return true;
+
+        // 3. Cek flag status kelas itu sendiri
+        if (typeof c?.isActive === 'boolean') return c.isActive === true;
+        if (c?.status) return String(c.status).toUpperCase() === 'ACTIVE';
+
+        return false;
+      }).length;
+    }, [classesData]);
 
   // Hitung data statistik lainnya
   const studentsCount = Array.isArray(studentsData)
