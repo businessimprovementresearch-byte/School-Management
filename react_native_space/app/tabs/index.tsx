@@ -25,7 +25,7 @@ export default function HomeScreen() {
   const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
 
-  // 1. Fetch data dari API
+  // Fetch data dari API
   const {
     data: classesData,
     isLoading: isLoadingClasses,
@@ -50,7 +50,6 @@ export default function HomeScreen() {
     refetch: refetchSessions,
   } = useSessionsControllerFindAll();
 
-  // Refetch data saat layar difokuskan kembali
   useFocusEffect(
     useCallback(() => {
       refetchClasses();
@@ -72,28 +71,33 @@ export default function HomeScreen() {
   };
 
   // ---------------------------------------------------------------------------
-  // HITUNG KELAS AKTIF SAJA UNTUK KARTU "CLASSES"
+  // FILTER KELAS TAHUN AJARAN AKTIF (2026-2027) SAJA
   // ---------------------------------------------------------------------------
-    const activeClassesCount = useMemo(() => {
-      if (!classesData || !Array.isArray(classesData)) return 0;
+  const activeClassesCount = useMemo(() => {
+    if (!classesData || !Array.isArray(classesData)) return 0;
 
-      return classesData.filter((c: any) => {
-        // 1. Cek dari relasi objek academicYear yang statusnya active
-        if (c?.academicYear?.isActive === true) return true;
-        if (c?.academicYear?.status === 'ACTIVE') return true;
+    return classesData.filter((c: any) => {
+      // 1. Pengecekan via objek relasi academicYear
+      if (c?.academicYear && typeof c.academicYear === 'object') {
+        if (typeof c.academicYear.isActive === 'boolean') return c.academicYear.isActive === true;
+        if (c.academicYear.status) return String(c.academicYear.status).toUpperCase() === 'ACTIVE';
+        if (c.academicYear.name) return c.academicYear.name === '2026-2027';
+      }
 
-        // 2. Cek jika backend mengirimkan string nama tahun ajaran
-        if (c?.academicYear === '2026-2027' || c?.academicYearName === '2026-2027') return true;
+      // 2. Pengecekan via field string nama/status tahun ajaran pada kelas
+      if (c?.academicYear === '2026-2027' || c?.academicYearName === '2026-2027') {
+        return true;
+      }
 
-        // 3. Cek flag status kelas itu sendiri
-        if (typeof c?.isActive === 'boolean') return c.isActive === true;
-        if (c?.status) return String(c.status).toUpperCase() === 'ACTIVE';
+      // 3. Fallback: Pengecekan flag status kelas aktif itu sendiri
+      if (typeof c?.isActive === 'boolean') return c.isActive === true;
+      if (c?.status) return String(c.status).toUpperCase() === 'ACTIVE';
 
-        return false;
-      }).length;
-    }, [classesData]);
+      return false;
+    }).length;
+  }, [classesData]);
 
-  // Hitung data statistik lainnya
+  // Statistik Lainnya
   const studentsCount = Array.isArray(studentsData)
     ? studentsData.length
     : (studentsData as any)?.total ?? 75;
@@ -152,9 +156,9 @@ export default function HomeScreen() {
             <Text style={styles.statLabel}>Teachers</Text>
           </View>
 
-          {/* Card 3: Classes (Disesuaikan Menampilkan Jumlah Kelas Aktif) */}
+          {/* Card 3: Classes (Menampilkan 8 Kelas Aktif 2026-2027) */}
           <View style={[styles.statCard, styles.cardBorderAmber]}>
-            <Ionicons name="book" size={24} color="#D97706" />
+            <Ionicons name="book" size={24} color="#F59E0B" />
             <Text style={styles.statNumber}>{activeClassesCount}</Text>
             <Text style={styles.statLabel}>Classes</Text>
           </View>
@@ -227,7 +231,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAF6F0', // Warna background krem sesuai screenshot
+    backgroundColor: '#FAF6F0',
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -271,7 +275,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 12,
     borderLeftWidth: 4,
-    // Subtle shadow
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
