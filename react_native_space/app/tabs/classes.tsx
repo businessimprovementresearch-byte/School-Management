@@ -66,13 +66,13 @@ export default function ClassesScreen() {
     setRefreshing(false);
   };
 
-  // 1. Identifikasi Tahun Ajaran Aktif
+  // 1. Identifikasi Academic Years
   const activeYear = useMemo(() => {
     if (!years || !Array.isArray(years)) return null;
     return years.find((y: any) => y?.isActive === true || String(y?.status).toUpperCase() === 'ACTIVE');
   }, [years]);
 
-  // 2. Filter HANYA Kelas yang Aktif pada Tahun Ajaran Berjalan
+  // 2. Filter HANYA Class yang Aktif pada Tahun Ajaran Berjalan
   const activeClasses = useMemo(() => {
     if (!rawClasses || !Array.isArray(rawClasses)) return [];
 

@@ -28,7 +28,7 @@ export default function AddSessionScreen() {
   const yearId = selectedYearId || (activeYear?.id ?? '');
   const { data: terms } = useTermsControllerFindAll({ academicYearId: yearId }, { query: { enabled: !!yearId } });
 
-  // Filter HANYA Kelas yang Aktif & Berasal dari Tahun Ajaran Terpilih
+  // Filter HANYA Kelas yang Aktif & Berasal dari Academic Years Terpilih
   const filteredClasses = useMemo(() => {
     if (!rawClasses || !Array.isArray(rawClasses)) return [];
 
@@ -80,7 +80,7 @@ export default function AddSessionScreen() {
               style={[styles.chip, yearId === y?.id && styles.chipActive]}
               onPress={() => {
                 setSelectedYearId(y?.id ?? '');
-                setSelectedClassId(''); // Reset pilihan kelas jika tahun ajaran berubah
+                setSelectedClassId(''); // Reset pilihan kelas jika Academic Year berubah
               }}
             >
               <Text style={[styles.chipText, yearId === y?.id && styles.chipTextActive]}>
