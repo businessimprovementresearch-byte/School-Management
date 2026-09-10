@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, ScrollView, StyleSheet, Pressable, Alert, ActivityIndicator, Switch } from 'react-native';
+import { View, Text, TextInput, ScrollView, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,13 +12,11 @@ export default function AddTeacherScreen() {
   const createMutation = useTeachersControllerCreate();
   const { data: classes } = useClassesControllerFindAll();
 
-  const [name, setName] = useState('');
-  const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [dob, setDob] = useState('');
   const [contactNumber, setContactNumber] = useState('');
-  const [isActive, setIsActive] = useState(true);
   const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
 
   const toggleClass = (id: string) => {
@@ -26,23 +24,13 @@ export default function AddTeacherScreen() {
   };
 
   const handleSave = async () => {
-    // Validasi: Hanya Nama yang Wajib
-    if (!name.trim()) {
-      Alert.alert('Error', 'Please enter teacher name');
+    if (!email.trim() || !password.trim() || !name.trim()) {
+      Alert.alert('Error', 'Please fill all required fields');
       return;
     }
     try {
       await createMutation.mutateAsync({
-        data: {
-          name: name.trim(),
-          nickname: nickname.trim() || undefined,
-          email: email.trim() || undefined,
-          password: password.trim() || undefined,
-          dob: dob.trim() || undefined,
-          contactNumber: contactNumber.trim() || undefined,
-          isActive,
-          classIds: selectedClasses,
-        } as any,
+        data: { email: email.trim(), password, name: name.trim(), dob: dob.trim() || undefined, contactNumber: contactNumber.trim() || undefined, classIds: selectedClasses },
       });
       router.back();
     } catch (e) {
@@ -53,103 +41,27 @@ export default function AddTeacherScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.topBar}>
-        <Pressable onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
-        </Pressable>
+        <Pressable onPress={() => router.back()}><Ionicons name="arrow-back" size={24} color={Colors.textPrimary} /></Pressable>
         <Text style={styles.topTitle}>Add Teacher</Text>
         <View style={{ width: 24 }} />
       </View>
       <ScrollView contentContainerStyle={styles.content}>
-        {/* Name (Required) */}
+        <Text style={styles.label}>Email *</Text>
+        <TextInput style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" placeholder="teacher@example.com" placeholderTextColor={Colors.textSecondary + '80'} />
+        <Text style={styles.label}>Password *</Text>
+        <TextInput style={styles.input} value={password} onChangeText={setPassword} secureTextEntry placeholder="Min 6 characters" placeholderTextColor={Colors.textSecondary + '80'} />
         <Text style={styles.label}>Name *</Text>
-        <TextInput
-          style={styles.input}
-          value={name}
-          onChangeText={setName}
-          placeholder="Full name"
-          placeholderTextColor={Colors.textSecondary + '80'}
-        />
-
-        {/* Nickname (Optional) */}
-        <Text style={styles.label}>Nickname (Optional)</Text>
-        <TextInput
-          style={styles.input}
-          value={nickname}
-          onChangeText={setNickname}
-          placeholder="Nickname"
-          placeholderTextColor={Colors.textSecondary + '80'}
-        />
-
-        {/* Email (Optional) */}
-        <Text style={styles.label}>Email (Optional)</Text>
-        <TextInput
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          placeholder="teacher@example.com"
-          placeholderTextColor={Colors.textSecondary + '80'}
-        />
-
-        {/* Password (Optional) */}
-        <Text style={styles.label}>Password (Optional)</Text>
-        <TextInput
-          style={styles.input}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          placeholder="Min 6 characters"
-          placeholderTextColor={Colors.textSecondary + '80'}
-        />
-
-        {/* Date of Birth */}
+        <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Full name" placeholderTextColor={Colors.textSecondary + '80'} />
         <Text style={styles.label}>Date of Birth (YYYY-MM-DD)</Text>
-        <TextInput
-          style={styles.input}
-          value={dob}
-          onChangeText={setDob}
-          placeholder="1990-01-01 (optional)"
-          placeholderTextColor={Colors.textSecondary + '80'}
-        />
-
-        {/* Contact Number */}
+        <TextInput style={styles.input} value={dob} onChangeText={setDob} placeholder="1990-01-01 (optional)" placeholderTextColor={Colors.textSecondary + '80'} />
         <Text style={styles.label}>Contact Number</Text>
-        <TextInput
-          style={styles.input}
-          value={contactNumber}
-          onChangeText={setContactNumber}
-          keyboardType="phone-pad"
-          placeholder="+65 xxxx xxxx (optional)"
-          placeholderTextColor={Colors.textSecondary + '80'}
-        />
+        <TextInput style={styles.input} value={contactNumber} onChangeText={setContactNumber} keyboardType="phone-pad" placeholder="+65 xxxx xxxx (optional)" placeholderTextColor={Colors.textSecondary + '80'} />
 
-        {/* Active/Inactive Switch */}
-        <View style={styles.statusRow}>
-          <View>
-            <Text style={styles.statusLabel}>Teacher Status</Text>
-            <Text style={styles.statusSubLabel}>{isActive ? 'Active' : 'Inactive'}</Text>
-          </View>
-          <Switch
-            value={isActive}
-            onValueChange={setIsActive}
-            trackColor={{ false: Colors.border, true: Colors.primary + '80' }}
-            thumbColor={isActive ? Colors.primary : '#f4f3f4'}
-          />
-        </View>
-
-        {/* Class Assignment */}
         <Text style={[styles.label, { marginTop: Spacing.xl }]}>Assign to Classes</Text>
         <View style={styles.classGrid}>
           {(classes ?? []).map((c) => (
-            <Pressable
-              key={c?.id}
-              style={[styles.classChip, selectedClasses.includes(c?.id ?? '') && styles.classChipSelected]}
-              onPress={() => toggleClass(c?.id ?? '')}
-            >
-              <Text style={[styles.classChipText, selectedClasses.includes(c?.id ?? '') && styles.classChipTextSelected]}>
-                {c?.name ?? ''}
-              </Text>
+            <Pressable key={c?.id} style={[styles.classChip, selectedClasses.includes(c?.id ?? '') && styles.classChipSelected]} onPress={() => toggleClass(c?.id ?? '')}>
+              <Text style={[styles.classChipText, selectedClasses.includes(c?.id ?? '') && styles.classChipTextSelected]}>{c?.name ?? ''}</Text>
             </Pressable>
           ))}
         </View>
@@ -161,7 +73,7 @@ export default function AddTeacherScreen() {
     </SafeAreaView>
   );
 }
-//test
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.lg, paddingVertical: Spacing.md },
@@ -169,9 +81,6 @@ const styles = StyleSheet.create({
   content: { padding: Spacing.lg },
   label: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary, marginBottom: Spacing.xs, marginTop: Spacing.md },
   input: { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: BorderRadius.md, padding: Spacing.md, fontSize: 16, color: Colors.textPrimary },
-  statusRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: Spacing.lg, paddingVertical: Spacing.xs },
-  statusLabel: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
-  statusSubLabel: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
   classGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
   classChip: { backgroundColor: Colors.surface, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, borderRadius: BorderRadius.full, borderWidth: 1, borderColor: Colors.border },
   classChipSelected: { backgroundColor: Colors.primary, borderColor: Colors.primary },
