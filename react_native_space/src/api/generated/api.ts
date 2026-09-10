@@ -4313,6 +4313,46 @@ export const reportCardsControllerGenerate = async (generateReportCardDto: Gener
   }
 );}
 
+// src/api/generated/Api.ts
+
+export interface ReportCardDownloadResponse {
+  url: string;
+}
+
+export const getReportCardsControllerGetDownloadUrl = (id: string): string => {
+  return `/api/report-cards/${id}/download`;
+};
+
+// Custom fetch wrapper example
+async function customFetch<T>(url: string, options?: RequestInit): Promise<T> {
+  const response = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...options?.headers,
+    },
+    ...options,
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export const reportCardsControllerGetDownload = async (
+  id: string,
+  options?: RequestInit
+): Promise<ReportCardDownloadResponse> => {
+  return customFetch<ReportCardDownloadResponse>(
+    getReportCardsControllerGetDownloadUrl(id),
+    {
+      ...options,
+      method: 'GET',
+    }
+  );
+};
+
 
 
 

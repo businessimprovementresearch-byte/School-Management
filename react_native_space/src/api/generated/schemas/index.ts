@@ -44,6 +44,7 @@ export * from './termsControllerFindAllParams';
 export * from './updateAcademicYearDto';
 export * from './updateAlertSettingDto';
 export * from './updateAwardDto';
+export * from './Api';
 export * from './updateClassDto';
 export * from './updateEnrollmentDto';
 export * from './updateEventDto';
