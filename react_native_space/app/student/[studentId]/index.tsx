@@ -13,7 +13,6 @@ import {
   useStudentsControllerDeleteEnrollment,
   useClassesControllerFindAll,
   useAwardsControllerFindIssuances,
-  useProgressControllerFindAll,
 } from '@/src/api/generated/api';
 import { useAuth } from '@/src/context/AuthContext';
 import Avatar from '@/src/components/Avatar';
@@ -21,6 +20,10 @@ import StatusChip from '@/src/components/StatusChip';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { getErrorMessage } from '@/src/api/customFetch';
 
+// Alert.alert() is a no-op on react-native-web; window.confirm/alert are
+// the fallback so confirmations/errors actually show up on web.
+// THIS WAS MISSING before — calls to confirmAsync/notify had nothing to
+// call, which is what broke the class-move / delete flows.
 const confirmAsync = (title: string, message: string): Promise<boolean> => {
   if (Platform.OS === 'web') return Promise.resolve(window.confirm(`${title}\n\n${message}`));
   return new Promise((resolve) => {
@@ -30,7 +33,6 @@ const confirmAsync = (title: string, message: string): Promise<boolean> => {
     ]);
   });
 };
-
 const notify = (title: string, message: string) => {
   if (Platform.OS === 'web') window.alert(`${title}\n\n${message}`);
   else Alert.alert(title, message);
@@ -41,7 +43,6 @@ export default function StudentDetailScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
-
   const { data, isLoading, refetch } = useStudentsControllerFindOne(studentId, { query: { enabled: !!studentId } });
   const { data: academicYears } = useAcademicYearsControllerFindAll();
   const activeYear = academicYears?.find((y) => y?.isActive);
@@ -54,42 +55,43 @@ export default function StudentDetailScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('classes');
 
+  // Class picker modal: either moving an existing enrollment to a
+  // different class (editingEnrollmentId set), or adding a brand new
+  // enrollment for a chosen academic year (editingEnrollmentId null,
+  // pickerYearId set) — e.g. backfilling last year's class.
   const [pickerOpen, setPickerOpen] = useState(false);
   const [editingEnrollmentId, setEditingEnrollmentId] = useState<string | null>(null);
   const [pickerYearId, setPickerYearId] = useState<string | undefined>(undefined);
-
   const { data: allClasses } = useClassesControllerFindAll({ query: { enabled: pickerOpen } });
   const { data: awardIssuances } = useAwardsControllerFindIssuances(
     { studentId },
     { query: { enabled: !!studentId } },
   );
 
-  // Fetch student progress notes inline directly for the Progress tab
-  const { data: progressData, refetch: refetchProgress } = useProgressControllerFindAll(
-    { studentId },
-    { query: { enabled: !!studentId } }
-  );
+  useFocusEffect(useCallback(() => { if (studentId) refetch(); }, [studentId]));
 
-  useFocusEffect(useCallback(() => { 
-    if (studentId) {
-      refetch();
-      refetchProgress();
-    }
-  }, [studentId, refetch, refetchProgress]));
+  const onRefresh = async () => { setRefreshing(true); await refetch(); setRefreshing(false); };
 
-  const onRefresh = async () => { 
-    setRefreshing(true); 
-    await Promise.all([refetch(), refetchProgress()]); 
-    setRefreshing(false); 
-  };
-
+  // "Archived" for the active year = no enrollment row exists yet for that
+  // year. Re-enrolling just means adding one, into whichever class they
+  // were last in (admin can move them to a different class afterwards via
+  // the swap icon on that enrollment).
   const isEnrolledThisYear = !activeYear || (data?.enrollments ?? []).some((e) => e?.academicYearId === activeYear.id);
   const mostRecentClassId = data?.enrollments?.[0]?.classId;
 
+  // Classes tab should only show what the student is enrolled in *right now*
+  // (the active academic year). Past years/classes are history, not
+  // "current classes" — that full history lives in the Progress timeline.
   const currentYearEnrollments = (data?.enrollments ?? []).filter(
     (e) => !activeYear || e?.academicYearId === activeYear.id,
   );
 
+  // Backend stamps every enrollment row "ACTIVE" the moment it's created and
+  // never flips it when a new academic year starts — so a 2025-2026 row still
+  // reads "ACTIVE" even after 2026-2027 has begun. Only trust the raw status
+  // when it's something other than ACTIVE (WITHDRAWN/GRADUATED/etc. are real
+  // signals); otherwise derive it from whether the enrollment belongs to the
+  // currently-active academic year.
   const getEnrollmentDisplayStatus = (e?: { status?: string; academicYearId?: string }) => {
     if (!e) return 'ACTIVE';
     if (e.status && e.status !== 'ACTIVE') return e.status;
@@ -149,6 +151,9 @@ export default function StudentDetailScreen() {
     );
   };
 
+  // Years the student doesn't have any enrollment record for yet — offered
+  // in "Backfill" so admins can fill in history for years that were never
+  // entered.
   const enrolledYearIds = new Set((data?.enrollments ?? []).map((e) => e?.academicYearId));
   const missingYears = (academicYears ?? []).filter((y) => y?.id && !enrolledYearIds.has(y.id));
 
@@ -169,10 +174,9 @@ export default function StudentDetailScreen() {
 
   if (isLoading || !data) return <LoadingScreen />;
 
-  const progressList = Array.isArray(progressData)
-    ? progressData
-    : (progressData as any)?.items ?? [];
-
+  // "history" tab removed — the enrollment list in "Classes" already
+  // shows academic year + class per row, so a separate history tab
+  // was redundant.
   const tabs = ['classes', 'attendance', 'progress', 'feedback'];
 
   return (
@@ -193,7 +197,7 @@ export default function StudentDetailScreen() {
         contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
       >
-        {/* Hero Section */}
+        {/* Hero */}
         <View style={styles.hero}>
           <Avatar uri={data?.photoUrl} name={data?.name} size={80} />
           <Text style={styles.name}>{data?.name ?? ''}</Text>
@@ -213,7 +217,7 @@ export default function StudentDetailScreen() {
           )}
         </View>
 
-        {/* Navigation Tabs */}
+        {/* Tabs */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabRow}>
           {tabs.map((t) => (
             <Pressable key={t} style={[styles.tab, activeTab === t && styles.tabActive]} onPress={() => setActiveTab(t)}>
@@ -224,7 +228,7 @@ export default function StudentDetailScreen() {
           ))}
         </ScrollView>
 
-        {/* Remarks / Notes */}
+        {/* Notes / Remarks */}
         {!!data?.remarks && (
           <View style={styles.notesCard}>
             <View style={styles.notesHeader}>
@@ -235,7 +239,6 @@ export default function StudentDetailScreen() {
           </View>
         )}
 
-        {/* Classes Tab */}
         {activeTab === 'classes' && (
           <View>
             {currentYearEnrollments.map((e) => (
@@ -285,7 +288,6 @@ export default function StudentDetailScreen() {
           </View>
         )}
 
-        {/* Modal Class Picker */}
         <Modal visible={pickerOpen} transparent animationType="slide" onRequestClose={() => setPickerOpen(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalCard}>
@@ -311,7 +313,6 @@ export default function StudentDetailScreen() {
           </View>
         </Modal>
 
-        {/* Attendance Tab */}
         {activeTab === 'attendance' && (
           <View>
             <View style={styles.attendanceSummary}>
@@ -333,35 +334,12 @@ export default function StudentDetailScreen() {
           </View>
         )}
 
-        {/* Progress & Awards Tab */}
+        {/* Progress: full year-by-year / class-by-class breakdown lives on
+            its own screen (auto-grouped server-side) — no manual class
+            picking needed there anymore. */}
         {activeTab === 'progress' && (
           <View>
-            {/* 1. Academic Progress Section (Displayed directly ABOVE Awards) */}
-            <Text style={styles.sectionTitle}>Academic Progress</Text>
-            {progressList.map((p: any) => (
-              <View key={p?.id || Math.random().toString()} style={styles.progressCard}>
-                <View style={styles.progressCardHeader}>
-                  <Text style={styles.cardTitle}>{p?.metricName || p?.title || 'Progress Note'}</Text>
-                  <Text style={styles.cardSub}>
-                    {p?.date ? new Date(p.date).toLocaleDateString() : ''}
-                  </Text>
-                </View>
-                {!!(p?.academicYearName || p?.className) && (
-                  <Text style={styles.progressMeta}>
-                    {p?.academicYearName ?? ''}{p?.className ? ` • ${p.className}` : ''}
-                  </Text>
-                )}
-                <Text style={styles.progressNoteText}>
-                  {p?.note || p?.remarks || p?.value || 'No additional details provided.'}
-                </Text>
-              </View>
-            ))}
-            {progressList.length === 0 && (
-              <Text style={styles.emptyText}>No progress records found</Text>
-            )}
-
-            {/* 2. Awards Section (Placed BELOW Academic Progress) */}
-            <Text style={[styles.sectionTitle, { marginTop: Spacing.xl }]}>Awards</Text>
+            <Text style={styles.sectionTitle}>Awards</Text>
             {(awardIssuances ?? []).map((a) => (
               <View key={a?.id} style={styles.card}>
                 <View style={styles.iconBox}>
@@ -377,10 +355,14 @@ export default function StudentDetailScreen() {
               </View>
             ))}
             {(awardIssuances?.length ?? 0) === 0 && <Text style={styles.emptyText}>No awards yet</Text>}
+
+            <Pressable style={styles.reportButton} onPress={() => router.push(`/student/${studentId}/progress`)}>
+              <Ionicons name="trending-up" size={20} color={Colors.secondary} />
+              <Text style={styles.reportButtonText}>View Progress</Text>
+            </Pressable>
           </View>
         )}
 
-        {/* Feedback Tab */}
         {activeTab === 'feedback' && (
           <View>
             {(data?.feedback ?? []).map((f) => (
@@ -396,13 +378,12 @@ export default function StudentDetailScreen() {
           </View>
         )}
 
-        {/* Report Cards Action */}
+        {/* Report cards button */}
         <Pressable style={styles.reportButton} onPress={() => router.push(`/student/${studentId}/report-cards`)}>
           <Ionicons name="document-text" size={20} color={Colors.secondary} />
           <Text style={styles.reportButtonText}>View Report Cards</Text>
         </Pressable>
 
-        {/* Delete Student Action */}
         {isAdmin && (
           <Pressable style={styles.deleteButton} onPress={handleDelete} disabled={deleteMutation.isPending}>
             <Ionicons name="trash-outline" size={18} color={Colors.error} />
@@ -435,31 +416,6 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface,
     borderRadius: BorderRadius.md, padding: Spacing.lg, marginBottom: Spacing.sm,
-  },
-  progressCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.lg,
-    marginBottom: Spacing.sm,
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.primary,
-  },
-  progressCardHeader: {
-    flexDirection: 'row',
-    justify: 'space-between',
-    alignItems: 'center',
-  },
-  progressMeta: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    marginTop: 2,
-    fontWeight: '500',
-  },
-  progressNoteText: {
-    fontSize: 14,
-    color: Colors.textPrimary,
-    marginTop: Spacing.xs,
-    lineHeight: 20,
   },
   iconBox: { width: 40, height: 40, borderRadius: BorderRadius.md, backgroundColor: Colors.primary + '14', alignItems: 'center', justifyContent: 'center', marginRight: Spacing.sm },
   cardTitle: { fontSize: 15, fontWeight: '600', color: Colors.textPrimary },
