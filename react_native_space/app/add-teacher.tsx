@@ -161,7 +161,7 @@ export default function AddTeacherScreen() {
     </SafeAreaView>
   );
 }
-
+//test
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.lg, paddingVertical: Spacing.md },
