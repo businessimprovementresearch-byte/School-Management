@@ -13,8 +13,7 @@ export default function EditTeacherScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const params = useLocalSearchParams<{ teacherId?: string; id?: string }>();
-  
-  // Mengakomodasi parameter 'teacherId' atau 'id' dari router
+
   const effectiveId = (params.teacherId || params.id || '').toString();
 
   const { data, isLoading } = useTeachersControllerFindOne(effectiveId, {
@@ -40,7 +39,7 @@ export default function EditTeacherScreen() {
       setName(t?.name ?? '');
       setNickname(t?.nickname ?? '');
       setEmail(t?.email ?? '');
-      setPassword(''); // Password dikosongkan secara bawaan demi keamanan
+      setPassword('');
       setDob(t?.dob ? t.dob.split('T')[0] : '');
       setContactNumber(t?.contactNumber ?? t?.phone ?? '');
       setRemarks(t?.remarks ?? '');
@@ -67,8 +66,7 @@ export default function EditTeacherScreen() {
 
   const handleSave = async () => {
     setError('');
-    
-    // Validasi: Hanya Nama yang Wajib
+
     if (!name?.trim()) {
       setError('Name is required');
       return;
@@ -86,7 +84,6 @@ export default function EditTeacherScreen() {
         classIds: selectedClasses,
       };
 
-      // Sertakan password hanya jika diisi/diubah
       if (password.trim()) {
         payload.password = password.trim();
       }
@@ -96,9 +93,7 @@ export default function EditTeacherScreen() {
         data: payload,
       });
 
-      // Refresh cache query agar data langsung terbarui di daftar guru & dashboard
       await queryClient.invalidateQueries();
-
       handleGoBack();
     } catch (e) {
       setError(getErrorMessage(e, 'Failed to update teacher'));
@@ -113,9 +108,18 @@ export default function EditTeacherScreen() {
     );
   }
 
+  // Konfigurasi warna label dan teks input agar selalu terlihat jelas dan berwarna hitam
+  const inputTheme = {
+    colors: {
+      onSurfaceVariant: '#374151', // Warna label judul saat tidak fokus
+      primary: theme.colors.primary, // Warna border & label saat aktif fokus
+      text: '#000000',
+    },
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Top Bar Header */}
+      {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={handleGoBack} hitSlop={16}>
           <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
@@ -130,15 +134,19 @@ export default function EditTeacherScreen() {
         <ScrollView contentContainerStyle={styles.scroll}>
           {!!error && <Text style={styles.error}>{error}</Text>}
 
-          {/* Full Name (Required) */}
+          {/* Name (Required) */}
           <TextInput
             label="Name *"
             value={name}
             onChangeText={setName}
             mode="outlined"
+            textColor="#000000"
+            placeholder="e.g. Gurmukh Singh"
+            placeholderTextColor="#9CA3AF"
             style={styles.input}
-            outlineColor={theme.colors.border}
+            outlineColor="#D1D5DB"
             activeOutlineColor={theme.colors.primary}
+            theme={inputTheme}
           />
 
           {/* Nickname (Optional) */}
@@ -147,9 +155,13 @@ export default function EditTeacherScreen() {
             value={nickname}
             onChangeText={setNickname}
             mode="outlined"
+            textColor="#000000"
+            placeholder="e.g. Gurmukh"
+            placeholderTextColor="#9CA3AF"
             style={styles.input}
-            outlineColor={theme.colors.border}
+            outlineColor="#D1D5DB"
             activeOutlineColor={theme.colors.primary}
+            theme={inputTheme}
           />
 
           {/* Email (Optional) */}
@@ -158,11 +170,15 @@ export default function EditTeacherScreen() {
             value={email}
             onChangeText={setEmail}
             mode="outlined"
+            textColor="#000000"
+            placeholder="e.g. teacher@example.com"
+            placeholderTextColor="#9CA3AF"
             style={styles.input}
-            outlineColor={theme.colors.border}
+            outlineColor="#D1D5DB"
             activeOutlineColor={theme.colors.primary}
             keyboardType="email-address"
             autoCapitalize="none"
+            theme={inputTheme}
           />
 
           {/* Password (Optional) */}
@@ -171,10 +187,14 @@ export default function EditTeacherScreen() {
             value={password}
             onChangeText={setPassword}
             mode="outlined"
+            textColor="#000000"
+            placeholder="Password baru"
+            placeholderTextColor="#9CA3AF"
             style={styles.input}
-            outlineColor={theme.colors.border}
+            outlineColor="#D1D5DB"
             activeOutlineColor={theme.colors.primary}
             secureTextEntry
+            theme={inputTheme}
           />
 
           {/* Date of Birth */}
@@ -183,9 +203,13 @@ export default function EditTeacherScreen() {
             value={dob}
             onChangeText={setDob}
             mode="outlined"
+            textColor="#000000"
+            placeholder="YYYY-MM-DD"
+            placeholderTextColor="#9CA3AF"
             style={styles.input}
-            outlineColor={theme.colors.border}
+            outlineColor="#D1D5DB"
             activeOutlineColor={theme.colors.primary}
+            theme={inputTheme}
           />
 
           {/* Contact Number */}
@@ -194,10 +218,14 @@ export default function EditTeacherScreen() {
             value={contactNumber}
             onChangeText={setContactNumber}
             mode="outlined"
+            textColor="#000000"
+            placeholder="+62xxxxxxx"
+            placeholderTextColor="#9CA3AF"
             style={styles.input}
-            outlineColor={theme.colors.border}
+            outlineColor="#D1D5DB"
             activeOutlineColor={theme.colors.primary}
             keyboardType="phone-pad"
+            theme={inputTheme}
           />
 
           {/* Remarks */}
@@ -206,14 +234,18 @@ export default function EditTeacherScreen() {
             value={remarks}
             onChangeText={setRemarks}
             mode="outlined"
+            textColor="#000000"
+            placeholder="Catatan tambahan"
+            placeholderTextColor="#9CA3AF"
             style={styles.input}
-            outlineColor={theme.colors.border}
+            outlineColor="#D1D5DB"
             activeOutlineColor={theme.colors.primary}
             multiline
             numberOfLines={3}
+            theme={inputTheme}
           />
 
-          {/* Active / Inactive Status Switch */}
+          {/* Status Switch */}
           <View style={styles.statusContainer}>
             <View>
               <Text style={styles.statusTitle}>Teacher Status</Text>
@@ -268,7 +300,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12 },
   headerTitle: { fontSize: 18, fontWeight: '700', color: theme.colors.text },
   scroll: { padding: 16, paddingBottom: 40 },
-  input: { marginBottom: 12, backgroundColor: '#FFF' },
+  input: { marginBottom: 14, backgroundColor: '#FFFFFF', fontSize: 15 },
   error: { color: theme.colors.error, marginBottom: 12, textAlign: 'center' },
   statusContainer: {
     flexDirection: 'row',
@@ -279,25 +311,25 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: theme.colors.border || '#E5E7EB',
+    borderColor: '#E5E7EB',
   },
-  statusTitle: { fontSize: 14, fontWeight: '600', color: theme.colors.text },
+  statusTitle: { fontSize: 14, fontWeight: '600', color: '#111827' },
   statusSubTitle: { fontSize: 12, color: '#6B7280', marginTop: 2 },
-  sectionLabel: { fontSize: 14, fontWeight: '600', color: theme.colors.text, marginTop: 12, marginBottom: 8 },
+  sectionLabel: { fontSize: 14, fontWeight: '600', color: '#111827', marginTop: 12, marginBottom: 8 },
   classGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
   classChip: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: theme.colors.border || '#E5E7EB',
+    borderColor: '#E5E7EB',
   },
   classChipSelected: {
     backgroundColor: theme.colors.primary,
     borderColor: theme.colors.primary,
   },
-  classChipText: { fontSize: 13, color: theme.colors.text, fontWeight: '500' },
-  classChipTextSelected: { color: '#FFF', fontWeight: '700' },
+  classChipText: { fontSize: 13, color: '#374151', fontWeight: '500' },
+  classChipTextSelected: { color: '#FFFFFF', fontWeight: '700' },
   btn: { marginTop: 12, borderRadius: 8, paddingVertical: 4 },
 });
