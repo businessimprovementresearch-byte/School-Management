@@ -183,12 +183,12 @@ export default function EditTeacherScreen() {
 
           {/* Password (Optional) */}
           <TextInput
-            label="Password (Kosongkan jika tidak ingin diubah)"
+            label="Password (Optional)"
             value={password}
             onChangeText={setPassword}
             mode="outlined"
             textColor="#000000"
-            placeholder="Password baru"
+            placeholder="New Password"
             placeholderTextColor="#9CA3AF"
             style={styles.input}
             outlineColor="#D1D5DB"
@@ -235,7 +235,7 @@ export default function EditTeacherScreen() {
             onChangeText={setRemarks}
             mode="outlined"
             textColor="#000000"
-            placeholder="Catatan tambahan"
+            placeholder="Notes"
             placeholderTextColor="#9CA3AF"
             style={styles.input}
             outlineColor="#D1D5DB"
@@ -249,7 +249,7 @@ export default function EditTeacherScreen() {
           <View style={styles.statusContainer}>
             <View>
               <Text style={styles.statusTitle}>Teacher Status</Text>
-              <Text style={styles.statusSubTitle}>{isActive ? 'Active (Guru Aktif)' : 'Inactive (Guru Nonaktif)'}</Text>
+              <Text style={styles.statusSubTitle}>{isActive ? 'Active' : 'Inactive'}</Text>
             </View>
             <Switch
               value={isActive}
