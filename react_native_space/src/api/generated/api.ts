@@ -167,6 +167,8 @@ export const authControllerGetMe = async ( options?: RequestInit): Promise<void>
 
 
 
+
+
 export const getAuthControllerGetMeQueryKey = () => {
     return [
     `/api/auth/me`
@@ -4549,7 +4551,26 @@ export function useReportCardsControllerGetDownload<TData = Awaited<ReturnType<t
   return { ...query, queryKey: queryOptions.queryKey };
 }
 
+export interface ReportCardDownloadResponse {
+  url: string;
+}
 
+export const getReportCardsControllerGetDownloadUrl = (id: string): string => {
+  return `/api/report-cards/${id}/download`;
+};
+
+export const reportCardsControllerGetDownload = async (
+  id: string,
+  options?: RequestInit
+): Promise<ReportCardDownloadResponse> => {
+  return customFetch<ReportCardDownloadResponse>(
+    getReportCardsControllerGetDownloadUrl(id),
+    {
+      ...options,
+      method: 'GET',
+    }
+  );
+};
 
 
 

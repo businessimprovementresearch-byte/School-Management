@@ -50,5 +50,6 @@ export * from './updateEnrollmentDto';
 export * from './updateEventDto';
 export * from './updateStudentDto';
 export * from './updateTeacherDto';
+export * from './Api';
 export * from './updateTermDto';
 export * from './uploadControllerGetFileUrlParams';
