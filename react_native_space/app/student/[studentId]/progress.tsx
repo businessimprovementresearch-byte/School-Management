@@ -12,12 +12,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius } from '@/src/theme';
-// FIX: Gunakan 'api' huruf kecil sesuai nama file di git
 import {
   useProgressControllerFindByStudent,
   useStudentsControllerFindOne,
   useReportCardsControllerFindAll,
-  reportCardsControllerGetDownload,
+  getReportCardsControllerGetDownloadUrl,
 } from '@/src/api/generated/api';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { formatDate } from '@/src/lib/dateFormat';
@@ -46,7 +45,6 @@ export default function StudentProgressScreen() {
 
   const classId = selectedClassId || (enrollments?.[0]?.classId ?? undefined);
 
-  // Query hanya berjalan setelah studentId DAN classId tersedia
   const { data, isLoading } = useProgressControllerFindByStudent(
     { studentId, classId: classId! },
     { query: { enabled: !!studentId && !!classId } }
@@ -65,11 +63,9 @@ export default function StudentProgressScreen() {
 
   const handleDownloadReportCard = async (id: string) => {
     try {
-      const result = await reportCardsControllerGetDownload(id);
-      if (result?.url) {
-        await Linking.openURL(result.url);
-      } else {
-        Alert.alert('Download Error', 'Could not retrieve report card URL.');
+      const url = getReportCardsControllerGetDownloadUrl(id);
+      if (url) {
+        await Linking.openURL(url);
       }
     } catch {
       Alert.alert('Error', 'Failed to download report card. Please try again.');

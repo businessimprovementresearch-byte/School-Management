@@ -4456,16 +4456,6 @@ export function useReportCardsControllerFindAll<TData = Awaited<ReturnType<typeo
   return { ...query, queryKey: queryOptions.queryKey };
 }
 
-
-
-
-
-
-
-export const getReportCardsControllerGetDownloadUrl = (id: string): string => {
-  return `/api/report-cards/${id}/download`;
-};
-
 export const reportCardsControllerGetDownload = async (
   id: string,
   options?: RequestInit
