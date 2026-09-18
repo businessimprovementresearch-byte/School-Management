@@ -15,19 +15,22 @@ export default function DashboardScreen() {
   const { data, isLoading, refetch } = useDashboardControllerGetDashboard();
   const [refreshing, setRefreshing] = React.useState(false);
 
-  // Daftar semua kelas (semua tahun ajaran) — dipakai untuk menghitung
-  // jumlah kelas khusus tahun ajaran aktif, karena `data.activeClasses`
-  // dari backend menghitung total kelas dari SEMUA tahun ajaran.
-  const { data: allClasses, refetch: refetchClasses } = useClassesControllerFindAll();
+  // Mendapatkan ID Tahun Ajaran yang sedang aktif
+  const activeYearId = (data as any)?.activeAcademicYear?.id;
+
+  const {
+    data: classesInActiveYearList,
+    refetch: refetchClasses,
+  } = useClassesControllerFindAll(
+    activeYearId ? { academicYearId: activeYearId } : undefined,
+    { query: { enabled: !!activeYearId } },
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
     await Promise.all([refetch(), refetchClasses()]);
     setRefreshing(false);
   };
-
-  // Mendapatkan ID Tahun Ajaran yang sedang aktif tahun ini saja
-  const activeYearId = (data as any)?.activeAcademicYear?.id;
 
   // Filter Sesi Tertunda hanya untuk Tahun Ajaran Aktif
   const pendingSessions = useMemo(() => {
@@ -45,18 +48,7 @@ export default function DashboardScreen() {
     );
   }, [data?.todaySessions, activeYearId]);
 
-  // Jumlah kelas HANYA untuk Tahun Ajaran Aktif (sama seperti pola filter
-  // yang dipakai di layar Classes: cocokkan academicYearId per kelas).
-  // Fallback ke data.activeClasses selama daftar kelas masih loading /
-  // kalau endpoint classes gagal, supaya angka tidak sempat tampil 0.
-  const classesInActiveYear = useMemo(() => {
-    if (!allClasses || !Array.isArray(allClasses)) return null;
-    if (!activeYearId) return allClasses.length;
-    return allClasses.filter((c: any) => {
-      const classYearId = c?.academicYearId ?? c?.academicYear?.id;
-      return classYearId === activeYearId;
-    }).length;
-  }, [allClasses, activeYearId]);
+  const classesCount = classesInActiveYearList?.length ?? data?.activeClasses ?? 0;
 
   if (isLoading || !data) return <LoadingScreen />;
 
@@ -79,11 +71,11 @@ export default function DashboardScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsRow}>
           <StatCard icon="people" label="Students" value={data?.totalStudents ?? 0} color={Colors.primary} />
           <StatCard icon="school" label="Teachers" value={data?.totalTeachers ?? 0} color={Colors.secondary} />
-          <StatCard icon="book" label="Classes" value={classesInActiveYear ?? data?.activeClasses ?? 0} color={Colors.accent} />
+          <StatCard icon="book" label="Classes" value={classesCount} color={Colors.accent} />
           <StatCard icon="calendar" label="Today" value={todaySessions.length} color={Colors.success} />
         </ScrollView>
 
-        {/* Pending Attendance (Hanya Tahun Aktif) */}
+        {/* Pending Attendance */}
         {pendingSessions.length > 0 ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Pending Attendance</Text>
@@ -130,7 +122,7 @@ export default function DashboardScreen() {
           </View>
         </View>
 
-        {/* Today's Sessions (Hanya Tahun Aktif) */}
+        {/* Today's Sessions */}
         {todaySessions.length > 0 ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Today's Sessions</Text>
