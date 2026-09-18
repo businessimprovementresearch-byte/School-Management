@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Delete, Patch, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
-import { ApiTags, ApiQuery } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { ClassesService } from './classes.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -36,27 +36,6 @@ export class ClassesController {
     }
     return this.classesService.findAll(teacherClassIds);
   }
-
-  @Get()
-  @ApiQuery({ name: 'academicYearId', required: false, type: String })
-  async findAll(
-    @Req() req: Request,
-    @Query('academicYearId') academicYearId?: string,
-  ) {
-    const user = req.user as { userId: string; role: string };
-    let teacherClassIds: string[] | undefined;
-
-    if (user.role === 'TEACHER') {
-      const teacher = await this.prisma.teacher.findUnique({
-        where: { userId: user.userId },
-        include: { assignments: true },
-      });
-      teacherClassIds = teacher?.assignments?.map((a) => a.classId) ?? [];
-    }
-
-    return this.classesService.findAll(teacherClassIds, academicYearId);
-  }
-}
 
   @Get(':id')
   async findOne(

@@ -6,33 +6,32 @@ import { requireAcademicYearId } from '../common/active-academic-year';
 
 @Injectable()
 export class ClassesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private uploadService: UploadService,
+  ) { }
 
-  async findAll(teacherClassIds?: string[], academicYearId?: string) {
+  async findAll(
+    teacherClassIds?: string[],
+    academicYearId?: string,
+  ) {
     const activeYearId =
       academicYearId ??
-      (await this.prisma.academicYear
-        .findFirst({ where: { isActive: true } })
-        .then((y) => y?.id)
-        .catch(() => null));
+      (await requireAcademicYearId(this.prisma).catch(() => null));
 
     const inactiveIds = activeYearId
       ? (
           await this.prisma.classYearStatus.findMany({
-            where: { academicYearId: activeYearId, isActive: false },
-            select: { classId: true },
+            where: {
+              academicYearId: activeYearId,
+              isActive: false,
+            },
+            select: {
+              classId: true,
+            },
           })
         ).map((r) => r.classId)
       : [];
-
-    const usedInYearFilter = activeYearId
-      ? {
-          OR: [
-            { enrollments: { some: { academicYearId: activeYearId } } },
-            { assignments: { some: { academicYearId: activeYearId } } },
-          ],
-        }
-      : {};
 
     const where = {
       ...(teacherClassIds ? { id: { in: teacherClassIds } } : {}),
@@ -44,9 +43,7 @@ export class ClassesService {
             },
           }
         : {}),
-      ...usedInYearFilter,
     };
-
     const classes = await this.prisma.class.findMany({
       where,
       include: {
@@ -61,10 +58,6 @@ export class ClassesService {
       },
       orderBy: { name: 'asc' },
     });
-
-    return classes;
-  }
-}
 
     const mapped = await Promise.all(
       classes.map(async (c) => ({
