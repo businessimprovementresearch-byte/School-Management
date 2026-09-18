@@ -4,9 +4,7 @@ import {
   Text,
   ScrollView,
   StyleSheet,
-  Linking,
   Pressable,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -16,7 +14,6 @@ import {
   useProgressControllerFindByStudent,
   useStudentsControllerFindOne,
   useReportCardsControllerFindAll,
-  getReportCardsControllerGetDownloadUrl,
 } from '@/src/api/generated/api';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { formatDate } from '@/src/lib/dateFormat';
@@ -56,21 +53,6 @@ export default function StudentProgressScreen() {
     { studentId },
     { query: { enabled: !!studentId } }
   );
-
-  const matchingReportCard = (reportCards ?? []).find(
-    (rc) => rc?.academicYearName === selectedEnrollment?.academicYearName
-  );
-
-  const handleDownloadReportCard = async (id: string) => {
-    try {
-      const url = getReportCardsControllerGetDownloadUrl(id);
-      if (url) {
-        await Linking.openURL(url);
-      }
-    } catch {
-      Alert.alert('Error', 'Failed to download report card. Please try again.');
-    }
-  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -164,25 +146,13 @@ export default function StudentProgressScreen() {
 
             {(data?.metrics?.length ?? 0) === 0 && (
               <View style={styles.emptyState}>
-                {matchingReportCard ? (
-                  <Pressable
-                    style={styles.emptyShortcutBtn}
-                    onPress={() => handleDownloadReportCard(matchingReportCard.id)}
-                  >
-                    <Ionicons name="document-text" size={16} color={Colors.secondary} />
-                    <Text style={styles.emptyShortcutText}>
-                      View Report Card for {selectedEnrollment?.academicYearName}
-                    </Text>
-                  </Pressable>
-                ) : (
-                  <Pressable
-                    style={styles.emptyShortcutBtn}
-                    onPress={() => router.push(`/student/${studentId}/report-cards`)}
-                  >
-                    <Ionicons name="document-text" size={16} color={Colors.secondary} />
-                    <Text style={styles.emptyShortcutText}>View All Report Cards</Text>
-                  </Pressable>
-                )}
+                <Pressable
+                  style={styles.emptyShortcutBtn}
+                  onPress={() => router.push(`/student/${studentId}/report-cards`)}
+                >
+                  <Ionicons name="document-text" size={16} color={Colors.secondary} />
+                  <Text style={styles.emptyShortcutText}>View All Report Cards</Text>
+                </Pressable>
               </View>
             )}
           </View>

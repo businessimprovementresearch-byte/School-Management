@@ -4456,20 +4456,6 @@ export function useReportCardsControllerFindAll<TData = Awaited<ReturnType<typeo
   return { ...query, queryKey: queryOptions.queryKey };
 }
 
-export const reportCardsControllerGetDownload = async (
-  id: string,
-  options?: RequestInit
-): Promise<{ url: string }> => {
-  return customFetch<{ url: string }>(
-    getReportCardsControllerGetDownloadUrl(id),
-    {
-      ...options,
-      method: 'GET',
-    }
-  );
-};
-
-
 
 
 
