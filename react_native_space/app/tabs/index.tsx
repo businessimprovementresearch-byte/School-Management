@@ -5,11 +5,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius } from '@/src/theme';
 import { useAuth } from '@/src/context/AuthContext';
-// Pastikan nama file import sesuai (Api vs api)
-import { 
-  useDashboardControllerGetDashboard, 
-  useClassesControllerFindAll 
-} from '@/src/api/generated/Api';
+import { useDashboardControllerGetDashboard, useClassesControllerFindAll } from '@/src/api/generated/api';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { formatDate } from '@/src/lib/dateFormat';
 
@@ -18,55 +14,57 @@ export default function DashboardScreen() {
   const router = useRouter();
   const { data, isLoading, refetch } = useDashboardControllerGetDashboard();
   const { data: classesData, refetch: refetchClasses } = useClassesControllerFindAll();
-  const [refreshing, setRefreshing] = useState(false);
+  const [refreshing, setRefreshing] = React.useState(false);
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    try {
-      await Promise.all([refetch(), refetchClasses()]);
-    } catch {
-      // Mencegah unhandled rejection saat refresh
-    } finally {
-      setRefreshing(false);
-    }
-  };
+const onRefresh = async () => {
+  setRefreshing(true);
+  try {
+    await Promise.all([refetch(), refetchClasses()]);
+  } catch {
+    // Menghindari error silent crash
+  } finally {
+    setRefreshing(false);
+  }
+};
 
-  // Ambil data Tahun Ajaran aktif secara aman
-  const activeAcademicYear = (data as any)?.activeAcademicYear;
-  const activeYearId = activeAcademicYear?.id;
-  const activeYearName = activeAcademicYear?.name;
+  // Mendapatkan ID Tahun Ajaran yang sedang aktif
+  const activeYearId = (data as any)?.activeAcademicYear?.id;
 
-  // Filter Kelas khusus Tahun Ajaran Aktif (Aman dari TypeError di Vercel Build)
-  const activeClassesCount = useMemo(() => {
-    if (!Array.isArray(classesData) || !activeAcademicYear) {
-      return (data as any)?.activeClasses ?? 0;
-    }
+  // Ambil data tahun aktif
+const activeAcademicYear = (data as any)?.activeAcademicYear;
+const activeYearId = activeAcademicYear?.id;
+const activeYearName = activeAcademicYear?.name;
 
-    return classesData.filter((c: any) => {
-      if (!c) return false;
-      const matchesId = activeYearId && (c?.academicYearId === activeYearId || c?.academicYear?.id === activeYearId);
-      const matchesName = activeYearName && (c?.academicYearName === activeYearName || c?.academicYear?.name === activeYearName);
-      return Boolean(matchesId || matchesName);
-    }).length;
-  }, [classesData, activeAcademicYear, activeYearId, activeYearName, data]);
+// TAMBAHKAN LOGIKA FILTER INI:
+const activeClassesCount = useMemo(() => {
+  // Pengecekan Array.isArray mencegah crash di Vercel saat data masih loading
+  if (!Array.isArray(classesData) || !activeAcademicYear) {
+    return (data as any)?.activeClasses ?? 0;
+  }
 
-  // Filter Sesi Tertunda
+  return classesData.filter((c: any) => {
+    if (!c) return false;
+    const matchesId = activeYearId && (c?.academicYearId === activeYearId || c?.academicYear?.id === activeYearId);
+    const matchesName = activeYearName && (c?.academicYearName === activeYearName || c?.academicYear?.name === activeYearName);
+    return Boolean(matchesId || matchesName);
+  }).length;
+}, [classesData, activeAcademicYear, activeYearId, activeYearName, data]);
+
+  // Filter Sesi Tertunda hanya untuk Tahun Ajaran Aktif
   const pendingSessions = useMemo(() => {
-    const sessions = (data as any)?.pendingAttendanceSessions;
-    if (!Array.isArray(sessions)) return [];
-    return sessions.filter((s: any) => 
+    if (!data?.pendingAttendanceSessions) return [];
+    return data.pendingAttendanceSessions.filter((s: any) => 
       !activeYearId || s?.academicYearId === activeYearId || s?.class?.academicYearId === activeYearId
     );
-  }, [data, activeYearId]);
+  }, [data?.pendingAttendanceSessions, activeYearId]);
 
-  // Filter Sesi Hari Ini
+  // Filter Sesi Hari Ini hanya untuk Tahun Ajaran Aktif
   const todaySessions = useMemo(() => {
-    const sessions = (data as any)?.todaySessions;
-    if (!Array.isArray(sessions)) return [];
-    return sessions.filter((s: any) => 
+    if (!data?.todaySessions) return [];
+    return data.todaySessions.filter((s: any) => 
       !activeYearId || s?.academicYearId === activeYearId || s?.class?.academicYearId === activeYearId
     );
-  }, [data, activeYearId]);
+  }, [data?.todaySessions, activeYearId]);
 
   if (isLoading || !data) return <LoadingScreen />;
 
@@ -79,27 +77,27 @@ export default function DashboardScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
       >
         <Text style={styles.welcome}>Welcome, {user?.name ?? 'User'}</Text>
-        {activeYearName ? (
+        {(data as any)?.activeAcademicYear?.name ? (
           <View style={styles.yearBadge}>
-            <Text style={styles.yearBadgeText}>{activeYearName}</Text>
+            <Text style={styles.yearBadgeText}>{(data as any).activeAcademicYear.name}</Text>
           </View>
         ) : null}
 
         {/* Stats */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsRow}>
-          <StatCard icon="people" label="Students" value={(data as any)?.totalStudents ?? 0} color={Colors.primary} />
-          <StatCard icon="school" label="Teachers" value={(data as any)?.totalTeachers ?? 0} color={Colors.secondary} />
+          <StatCard icon="people" label="Students" value={data?.totalStudents ?? 0} color={Colors.primary} />
+          <StatCard icon="school" label="Teachers" value={data?.totalTeachers ?? 0} color={Colors.secondary} />
           <StatCard icon="book" label="Classes" value={activeClassesCount} color={Colors.accent} />
           <StatCard icon="calendar" label="Today" value={todaySessions.length} color={Colors.success} />
         </ScrollView>
 
-        {/* Pending Attendance */}
-        {pendingSessions.length > 0 && (
+        {/* Pending Attendance (Hanya Tahun Aktif) */}
+        {pendingSessions.length > 0 ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Pending Attendance</Text>
-            {pendingSessions.map((s: any, idx: number) => (
+            {pendingSessions.map((s: any) => (
               <Pressable
-                key={s?.id ?? `pending-${idx}`}
+                key={s?.id}
                 style={styles.pendingCard}
                 onPress={() => router.push(`/class/${s?.classId}/session/${s?.id}`)}
               >
@@ -113,7 +111,7 @@ export default function DashboardScreen() {
               </Pressable>
             ))}
           </View>
-        )}
+        ) : null}
 
         {/* Quick Actions */}
         <View style={styles.section}>
@@ -140,13 +138,13 @@ export default function DashboardScreen() {
           </View>
         </View>
 
-        {/* Today's Sessions */}
-        {todaySessions.length > 0 && (
+        {/* Today's Sessions (Hanya Tahun Aktif) */}
+        {todaySessions.length > 0 ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Today's Sessions</Text>
-            {todaySessions.map((s: any, idx: number) => (
+            {todaySessions.map((s: any) => (
               <Pressable
-                key={s?.id ?? `today-${idx}`}
+                key={s?.id}
                 style={styles.sessionCard}
                 onPress={() => router.push(`/class/${s?.classId}/session/${s?.id}`)}
               >
@@ -158,7 +156,7 @@ export default function DashboardScreen() {
               </Pressable>
             ))}
           </View>
-        )}
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
