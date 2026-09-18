@@ -1,11 +1,15 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius } from '@/src/theme';
 import { useAuth } from '@/src/context/AuthContext';
-import { useDashboardControllerGetDashboard, useClassesControllerFindAll } from '@/src/api/generated/api';
+// Pastikan nama file import sesuai (Api vs api)
+import { 
+  useDashboardControllerGetDashboard, 
+  useClassesControllerFindAll 
+} from '@/src/api/generated/Api';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { formatDate } from '@/src/lib/dateFormat';
 
@@ -14,46 +18,55 @@ export default function DashboardScreen() {
   const router = useRouter();
   const { data, isLoading, refetch } = useDashboardControllerGetDashboard();
   const { data: classesData, refetch: refetchClasses } = useClassesControllerFindAll();
-  const [refreshing, setRefreshing] = React.useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([refetch(), refetchClasses()]);
-    setRefreshing(false);
+    try {
+      await Promise.all([refetch(), refetchClasses()]);
+    } catch {
+      // Mencegah unhandled rejection saat refresh
+    } finally {
+      setRefreshing(false);
+    }
   };
 
-  // Mendapatkan ID & Nama Tahun Ajaran yang sedang aktif
+  // Ambil data Tahun Ajaran aktif secara aman
   const activeAcademicYear = (data as any)?.activeAcademicYear;
   const activeYearId = activeAcademicYear?.id;
   const activeYearName = activeAcademicYear?.name;
 
-  // Filter Jumlah Kelas Aktif khusus Tahun Ajaran Aktif (Menghasilkan 8 kelas)
+  // Filter Kelas khusus Tahun Ajaran Aktif (Aman dari TypeError di Vercel Build)
   const activeClassesCount = useMemo(() => {
-    if (!classesData || !activeAcademicYear) return data?.activeClasses ?? 0;
+    if (!Array.isArray(classesData) || !activeAcademicYear) {
+      return (data as any)?.activeClasses ?? 0;
+    }
+
     return classesData.filter((c: any) => {
-      return (
-        (activeYearId && c?.academicYearId === activeYearId) ||
-        (activeYearId && c?.academicYear?.id === activeYearId) ||
-        (activeYearName && c?.academicYearName === activeYearName)
-      );
+      if (!c) return false;
+      const matchesId = activeYearId && (c?.academicYearId === activeYearId || c?.academicYear?.id === activeYearId);
+      const matchesName = activeYearName && (c?.academicYearName === activeYearName || c?.academicYear?.name === activeYearName);
+      return Boolean(matchesId || matchesName);
     }).length;
-  }, [classesData, activeAcademicYear, activeYearId, activeYearName, data?.activeClasses]);
+  }, [classesData, activeAcademicYear, activeYearId, activeYearName, data]);
 
-  // Filter Sesi Tertunda hanya untuk Tahun Ajaran Aktif
+  // Filter Sesi Tertunda
   const pendingSessions = useMemo(() => {
-    if (!data?.pendingAttendanceSessions) return [];
-    return data.pendingAttendanceSessions.filter((s: any) => 
+    const sessions = (data as any)?.pendingAttendanceSessions;
+    if (!Array.isArray(sessions)) return [];
+    return sessions.filter((s: any) => 
       !activeYearId || s?.academicYearId === activeYearId || s?.class?.academicYearId === activeYearId
     );
-  }, [data?.pendingAttendanceSessions, activeYearId]);
+  }, [data, activeYearId]);
 
-  // Filter Sesi Hari Ini hanya untuk Tahun Ajaran Aktif
+  // Filter Sesi Hari Ini
   const todaySessions = useMemo(() => {
-    if (!data?.todaySessions) return [];
-    return data.todaySessions.filter((s: any) => 
+    const sessions = (data as any)?.todaySessions;
+    if (!Array.isArray(sessions)) return [];
+    return sessions.filter((s: any) => 
       !activeYearId || s?.academicYearId === activeYearId || s?.class?.academicYearId === activeYearId
     );
-  }, [data?.todaySessions, activeYearId]);
+  }, [data, activeYearId]);
 
   if (isLoading || !data) return <LoadingScreen />;
 
@@ -74,19 +87,19 @@ export default function DashboardScreen() {
 
         {/* Stats */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsRow}>
-          <StatCard icon="people" label="Students" value={data?.totalStudents ?? 0} color={Colors.primary} />
-          <StatCard icon="school" label="Teachers" value={data?.totalTeachers ?? 0} color={Colors.secondary} />
+          <StatCard icon="people" label="Students" value={(data as any)?.totalStudents ?? 0} color={Colors.primary} />
+          <StatCard icon="school" label="Teachers" value={(data as any)?.totalTeachers ?? 0} color={Colors.secondary} />
           <StatCard icon="book" label="Classes" value={activeClassesCount} color={Colors.accent} />
           <StatCard icon="calendar" label="Today" value={todaySessions.length} color={Colors.success} />
         </ScrollView>
 
-        {/* Pending Attendance (Hanya Tahun Aktif) */}
-        {pendingSessions.length > 0 ? (
+        {/* Pending Attendance */}
+        {pendingSessions.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Pending Attendance</Text>
-            {pendingSessions.map((s: any) => (
+            {pendingSessions.map((s: any, idx: number) => (
               <Pressable
-                key={s?.id}
+                key={s?.id ?? `pending-${idx}`}
                 style={styles.pendingCard}
                 onPress={() => router.push(`/class/${s?.classId}/session/${s?.id}`)}
               >
@@ -100,7 +113,7 @@ export default function DashboardScreen() {
               </Pressable>
             ))}
           </View>
-        ) : null}
+        )}
 
         {/* Quick Actions */}
         <View style={styles.section}>
@@ -127,13 +140,13 @@ export default function DashboardScreen() {
           </View>
         </View>
 
-        {/* Today's Sessions (Hanya Tahun Aktif) */}
-        {todaySessions.length > 0 ? (
+        {/* Today's Sessions */}
+        {todaySessions.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Today's Sessions</Text>
-            {todaySessions.map((s: any) => (
+            {todaySessions.map((s: any, idx: number) => (
               <Pressable
-                key={s?.id}
+                key={s?.id ?? `today-${idx}`}
                 style={styles.sessionCard}
                 onPress={() => router.push(`/class/${s?.classId}/session/${s?.id}`)}
               >
@@ -145,7 +158,7 @@ export default function DashboardScreen() {
               </Pressable>
             ))}
           </View>
-        ) : null}
+        )}
       </ScrollView>
     </SafeAreaView>
   );
