@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius } from '@/src/theme';
 import { useAuth } from '@/src/context/AuthContext';
-import { useDashboardControllerGetDashboard } from '@/src/api/generated/api';
+import { useDashboardControllerGetDashboard, useClassesControllerFindAll } from '@/src/api/generated/api';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { formatDate } from '@/src/lib/dateFormat';
 
@@ -13,16 +13,31 @@ export default function DashboardScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const { data, isLoading, refetch } = useDashboardControllerGetDashboard();
+  const { data: classesData, refetch: refetchClasses } = useClassesControllerFindAll();
   const [refreshing, setRefreshing] = React.useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await refetch();
+    await Promise.all([refetch(), refetchClasses()]);
     setRefreshing(false);
   };
 
-  // Mendapatkan ID Tahun Ajaran yang sedang aktif
-  const activeYearId = (data as any)?.activeAcademicYear?.id;
+  // Mendapatkan ID & Nama Tahun Ajaran yang sedang aktif
+  const activeAcademicYear = (data as any)?.activeAcademicYear;
+  const activeYearId = activeAcademicYear?.id;
+  const activeYearName = activeAcademicYear?.name;
+
+  // Filter Jumlah Kelas Aktif khusus Tahun Ajaran Aktif (Menghasilkan 8 kelas)
+  const activeClassesCount = useMemo(() => {
+    if (!classesData || !activeAcademicYear) return data?.activeClasses ?? 0;
+    return classesData.filter((c: any) => {
+      return (
+        (activeYearId && c?.academicYearId === activeYearId) ||
+        (activeYearId && c?.academicYear?.id === activeYearId) ||
+        (activeYearName && c?.academicYearName === activeYearName)
+      );
+    }).length;
+  }, [classesData, activeAcademicYear, activeYearId, activeYearName, data?.activeClasses]);
 
   // Filter Sesi Tertunda hanya untuk Tahun Ajaran Aktif
   const pendingSessions = useMemo(() => {
@@ -51,9 +66,9 @@ export default function DashboardScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
       >
         <Text style={styles.welcome}>Welcome, {user?.name ?? 'User'}</Text>
-        {(data as any)?.activeAcademicYear?.name ? (
+        {activeYearName ? (
           <View style={styles.yearBadge}>
-            <Text style={styles.yearBadgeText}>{(data as any).activeAcademicYear.name}</Text>
+            <Text style={styles.yearBadgeText}>{activeYearName}</Text>
           </View>
         ) : null}
 
@@ -61,7 +76,7 @@ export default function DashboardScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsRow}>
           <StatCard icon="people" label="Students" value={data?.totalStudents ?? 0} color={Colors.primary} />
           <StatCard icon="school" label="Teachers" value={data?.totalTeachers ?? 0} color={Colors.secondary} />
-          <StatCard icon="book" label="Classes" value={data?.activeClasses ?? 0} color={Colors.accent} />
+          <StatCard icon="book" label="Classes" value={activeClassesCount} color={Colors.accent} />
           <StatCard icon="calendar" label="Today" value={todaySessions.length} color={Colors.success} />
         </ScrollView>
 
