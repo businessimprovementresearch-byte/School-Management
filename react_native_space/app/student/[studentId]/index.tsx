@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl, Alert, Platform, Modal } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl, Alert, Platform, Modal, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,12 +14,14 @@ import {
   useStudentsControllerDeleteEnrollment,
   useClassesControllerFindAll,
   useAwardsControllerFindIssuances,
+  useProgressControllerFindByStudent,
 } from '@/src/api/generated/api';
 import { useAuth } from '@/src/context/AuthContext';
 import Avatar from '@/src/components/Avatar';
 import StatusChip from '@/src/components/StatusChip';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { getErrorMessage } from '@/src/api/customFetch';
+import { formatDate } from '@/src/lib/dateFormat';
 
 const confirmAsync = (title: string, message: string): Promise<boolean> => {
   if (Platform.OS === 'web') return Promise.resolve(window.confirm(`${title}\n\n${message}`));
@@ -61,6 +63,13 @@ export default function StudentDetailScreen() {
   const { data: awardIssuances } = useAwardsControllerFindIssuances(
     { studentId },
     { query: { enabled: !!studentId } },
+  );
+
+  // Get primary active class ID for progress fetch
+  const primaryClassId = data?.enrollments?.[0]?.classId;
+  const { data: progressData, isLoading: isProgressLoading } = useProgressControllerFindByStudent(
+    { studentId, classId: primaryClassId! },
+    { query: { enabled: !!studentId && !!primaryClassId && activeTab === 'progress' } }
   );
 
   useFocusEffect(useCallback(() => { if (studentId) refetch(); }, [studentId]));
@@ -298,7 +307,7 @@ export default function StudentDetailScreen() {
           </View>
         )}
 
-        {/* Class Picker Modal */}
+        {/* Modal Class Picker */}
         <Modal visible={pickerOpen} transparent animationType="slide" onRequestClose={() => setPickerOpen(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalCard}>
@@ -349,6 +358,38 @@ export default function StudentDetailScreen() {
         {/* Progress Tab */}
         {activeTab === 'progress' && (
           <View>
+            {/* Progress Metrics Section */}
+            <Text style={styles.sectionTitle}>Progress Metrics</Text>
+            {isProgressLoading ? (
+              <ActivityIndicator size="small" color={Colors.primary} style={{ marginVertical: Spacing.md }} />
+            ) : (
+              <View style={{ marginBottom: Spacing.sm }}>
+                {(progressData?.metrics ?? []).map((m, mIdx) => (
+                  <View key={m?.metricId ?? mIdx} style={styles.card}>
+                    <Text style={styles.cardTitle}>
+                      {m?.metricName ?? ''}{' '}
+                      <Text style={styles.cardSub}>({m?.metricType ?? ''})</Text>
+                    </Text>
+                    {(m?.entries ?? []).map((e, eIdx) => (
+                      <View key={e?.id ?? eIdx} style={styles.metricEntryRow}>
+                        <Text style={styles.entryDate}>{e?.date ? formatDate(e.date) : ''}</Text>
+                        <Text style={styles.entryValue}>{e?.value ?? 0}</Text>
+                        {e?.notes ? <Text style={styles.entryNotes} numberOfLines={1}>{e.notes}</Text> : null}
+                      </View>
+                    ))}
+                    {(m?.entries?.length ?? 0) === 0 && (
+                      <Text style={styles.emptyTextSmall}>No entries yet</Text>
+                    )}
+                  </View>
+                ))}
+
+                {(progressData?.metrics?.length ?? 0) === 0 && (
+                  <Text style={styles.emptyText}>No progress entries recorded</Text>
+                )}
+              </View>
+            )}
+
+            {/* Awards Section */}
             <Text style={styles.sectionTitle}>Awards</Text>
             {(awardIssuances ?? []).map((a) => (
               <View key={a?.id} style={styles.card}>
@@ -366,9 +407,10 @@ export default function StudentDetailScreen() {
             ))}
             {(awardIssuances?.length ?? 0) === 0 && <Text style={styles.emptyText}>No awards yet</Text>}
 
+            {/* Detailed Progress Redirect Button */}
             <Pressable style={styles.reportButton} onPress={() => router.push(`/student/${studentId}/progress`)}>
               <Ionicons name="trending-up" size={20} color={Colors.secondary} />
-              <Text style={styles.reportButtonText}>View Progress</Text>
+              <Text style={styles.reportButtonText}>View Detailed Progress</Text>
             </Pressable>
           </View>
         )}
@@ -395,7 +437,7 @@ export default function StudentDetailScreen() {
           <Text style={styles.reportButtonText}>View Report Cards</Text>
         </Pressable>
 
-        {/* Toggle Status Active / Inactive Button */}
+        {/* Toggle Status Button */}
         {isAdmin && (
           <Pressable
             style={[styles.statusToggleBtn, isActive ? styles.deactivateBtn : styles.activateBtn]}
@@ -457,21 +499,27 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface,
     borderRadius: BorderRadius.md, padding: Spacing.lg, marginBottom: Spacing.sm,
+    flexWrap: 'wrap',
   },
   iconBox: { width: 40, height: 40, borderRadius: BorderRadius.md, backgroundColor: Colors.primary + '14', alignItems: 'center', justifyContent: 'center', marginRight: Spacing.sm },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: Colors.textPrimary },
-  cardSub: { fontSize: 13, color: Colors.textSecondary, marginTop: 2 },
+  cardTitle: { fontSize: 15, fontWeight: '600', color: Colors.textPrimary, width: '100%' },
+  cardSub: { fontSize: 13, color: Colors.textSecondary, fontWeight: '400' },
+  metricEntryRow: { flexDirection: 'row', alignItems: 'center', width: '100%', marginTop: Spacing.xs, gap: Spacing.md },
+  entryDate: { fontSize: 13, color: Colors.textSecondary, width: 80 },
+  entryValue: { fontSize: 15, fontWeight: '700', color: Colors.primary },
+  entryNotes: { fontSize: 13, color: Colors.textSecondary, flex: 1 },
+  emptyTextSmall: { fontSize: 13, color: Colors.textSecondary, marginTop: Spacing.xs },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary, marginVertical: Spacing.sm },
   attendanceSummary: { flexDirection: 'row', justifyContent: 'space-around', backgroundColor: Colors.surface, borderRadius: BorderRadius.lg, padding: Spacing.lg, marginBottom: Spacing.lg },
   attItem: { alignItems: 'center' },
   attValue: { fontSize: 22, fontWeight: '700', color: Colors.textPrimary },
   attLabel: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
   feedbackContent: { fontSize: 14, color: Colors.textPrimary, marginTop: Spacing.sm, fontStyle: 'italic' },
-  emptyText: { textAlign: 'center', color: Colors.textSecondary, marginVertical: Spacing.xl },
+  emptyText: { textAlign: 'center', color: Colors.textSecondary, marginVertical: Spacing.md },
   reportButton: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     backgroundColor: Colors.secondary + '12', borderRadius: BorderRadius.md,
-    padding: Spacing.lg, marginTop: Spacing.xl, gap: Spacing.sm,
+    padding: Spacing.lg, marginTop: Spacing.md, gap: Spacing.sm,
   },
   reportButtonText: { fontSize: 16, fontWeight: '600', color: Colors.secondary },
   archiveBanner: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: Colors.warning + '14', borderRadius: BorderRadius.md, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, marginTop: Spacing.md, flexWrap: 'wrap', justifyContent: 'center' },
