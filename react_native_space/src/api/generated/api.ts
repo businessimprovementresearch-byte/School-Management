@@ -4462,24 +4462,22 @@ export function useReportCardsControllerFindAll<TData = Awaited<ReturnType<typeo
 
 
 
-export const getReportCardsControllerGetDownloadUrl = (id: string,) => {
+export const getReportCardsControllerGetDownloadUrl = (id: string): string => {
+  return `/api/report-cards/${id}/download`;
+};
 
-
-
-
-  return `/api/report-cards/${id}/download`
-}
-
-export const reportCardsControllerGetDownload = async (id: string, options?: RequestInit): Promise<void> => {
-
-  return customFetch<void>(getReportCardsControllerGetDownloadUrl(id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
+export const reportCardsControllerGetDownload = async (
+  id: string,
+  options?: RequestInit
+): Promise<{ url: string }> => {
+  return customFetch<{ url: string }>(
+    getReportCardsControllerGetDownloadUrl(id),
+    {
+      ...options,
+      method: 'GET',
+    }
+  );
+};
 
 
 

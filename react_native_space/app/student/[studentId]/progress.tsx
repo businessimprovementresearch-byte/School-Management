@@ -12,12 +12,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius } from '@/src/theme';
+// FIX: Gunakan 'api' huruf kecil sesuai nama file di git
 import {
   useProgressControllerFindByStudent,
   useStudentsControllerFindOne,
   useReportCardsControllerFindAll,
   reportCardsControllerGetDownload,
-} from '@/src/api/generated/Api';
+} from '@/src/api/generated/api';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { formatDate } from '@/src/lib/dateFormat';
 
