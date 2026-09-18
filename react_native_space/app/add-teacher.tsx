@@ -40,28 +40,23 @@ export default function AddTeacherScreen() {
   };
 
   const handleSave = async () => {
-    // Validasi Nama
-    if (!name.trim()) {
-      Alert.alert('Error', 'Please enter teacher name');
-      return;
-    }
+    const trimmedName = name.trim();
 
-    // Mencegah penggunaan email admin yang ter-autofill
-    const cleanEmail = email.trim();
-    if (cleanEmail === 'admin@pasarbaru.org') {
-      Alert.alert('Error', 'Cannot use admin email for a new teacher. Please enter a unique teacher email or leave it empty.');
+    // Validasi: Hanya Nama yang Wajib Diisi
+    if (!trimmedName) {
+      Alert.alert('Error', 'Please fill in the required field: Teacher Name');
       return;
     }
 
     try {
-      // Susun payload hanya dengan nilai yang diisi (hindari string kosong "")
+      // Hanya masukkan field yang diisi ke dalam payload (field kosong tidak dikirim)
       const payload: Record<string, any> = {
-        name: name.trim(),
+        name: trimmedName,
         isActive,
       };
 
       if (nickname.trim()) payload.nickname = nickname.trim();
-      if (cleanEmail) payload.email = cleanEmail;
+      if (email.trim()) payload.email = email.trim();
       if (password.trim()) payload.password = password.trim();
       if (dob.trim()) payload.dob = dob.trim();
       if (contactNumber.trim()) payload.contactNumber = contactNumber.trim();
@@ -71,17 +66,18 @@ export default function AddTeacherScreen() {
         data: payload as any,
       });
 
-      // Invalidate query agar daftar guru langsung memuat data terbaru dari server
+      // Refresh seluruh cache React Query agar daftar guru langsung ter-update
       await queryClient.invalidateQueries();
 
-      Alert.alert('Success', 'Teacher created successfully', [
+      // Pesan Sukses Eksplisit
+      Alert.alert('Success', 'Add teacher success', [
         {
           text: 'OK',
           onPress: handleGoBack,
         },
       ]);
     } catch (e) {
-      Alert.alert('Failed to Create Teacher', getErrorMessage(e, 'Failed to create teacher. Check if email is already taken.'));
+      Alert.alert('Error', getErrorMessage(e, 'Failed to add teacher. Please check the entered data.'));
     }
   };
 
@@ -99,13 +95,13 @@ export default function AddTeacherScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        {/* Name (Required) */}
+        {/* Name (Hanya ini yang wajib) */}
         <Text style={styles.label}>Name *</Text>
         <TextInput
           style={styles.input}
           value={name}
           onChangeText={setName}
-          placeholder="Full name"
+          placeholder="Full name (Required)"
           placeholderTextColor={Colors.textSecondary + '80'}
         />
 
@@ -119,7 +115,7 @@ export default function AddTeacherScreen() {
           placeholderTextColor={Colors.textSecondary + '80'}
         />
 
-        {/* Email (Optional) - Nonaktifkan Autofill */}
+        {/* Email (Optional) */}
         <Text style={styles.label}>Email (Optional)</Text>
         <TextInput
           style={styles.input}
@@ -133,7 +129,7 @@ export default function AddTeacherScreen() {
           placeholderTextColor={Colors.textSecondary + '80'}
         />
 
-        {/* Password (Optional) - Nonaktifkan Autofill */}
+        {/* Password (Optional) */}
         <Text style={styles.label}>Password (Optional)</Text>
         <TextInput
           style={styles.input}
@@ -146,24 +142,24 @@ export default function AddTeacherScreen() {
           placeholderTextColor={Colors.textSecondary + '80'}
         />
 
-        {/* Date of Birth */}
-        <Text style={styles.label}>Date of Birth (YYYY-MM-DD)</Text>
+        {/* Date of Birth (Optional) */}
+        <Text style={styles.label}>Date of Birth (Optional, YYYY-MM-DD)</Text>
         <TextInput
           style={styles.input}
           value={dob}
           onChangeText={setDob}
-          placeholder="1990-01-01 (optional)"
+          placeholder="1990-01-01"
           placeholderTextColor={Colors.textSecondary + '80'}
         />
 
-        {/* Contact Number */}
-        <Text style={styles.label}>Contact Number</Text>
+        {/* Contact Number (Optional) */}
+        <Text style={styles.label}>Contact Number (Optional)</Text>
         <TextInput
           style={styles.input}
           value={contactNumber}
           onChangeText={setContactNumber}
           keyboardType="phone-pad"
-          placeholder="+65 xxxx xxxx (optional)"
+          placeholder="+65 xxxx xxxx"
           placeholderTextColor={Colors.textSecondary + '80'}
         />
 
@@ -181,8 +177,8 @@ export default function AddTeacherScreen() {
           />
         </View>
 
-        {/* Class Assignment */}
-        <Text style={[styles.label, { marginTop: Spacing.xl }]}>Assign to Classes</Text>
+        {/* Class Assignment (Optional) */}
+        <Text style={[styles.label, { marginTop: Spacing.xl }]}>Assign to Classes (Optional)</Text>
         <View style={styles.classGrid}>
           {(classes ?? []).map((c) => (
             <Pressable
