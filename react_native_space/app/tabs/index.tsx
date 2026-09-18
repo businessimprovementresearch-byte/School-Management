@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius } from '@/src/theme';
 import { useAuth } from '@/src/context/AuthContext';
-import { useDashboardControllerGetDashboard } from '@/src/api/generated/api';
+import { useDashboardControllerGetDashboard, useClassesControllerFindAll } from '@/src/api/generated/api';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { formatDate } from '@/src/lib/dateFormat';
 
@@ -15,9 +15,14 @@ export default function DashboardScreen() {
   const { data, isLoading, refetch } = useDashboardControllerGetDashboard();
   const [refreshing, setRefreshing] = React.useState(false);
 
+  // Daftar semua kelas (semua tahun ajaran) — dipakai untuk menghitung
+  // jumlah kelas khusus tahun ajaran aktif, karena `data.activeClasses`
+  // dari backend menghitung total kelas dari SEMUA tahun ajaran.
+  const { data: allClasses, refetch: refetchClasses } = useClassesControllerFindAll();
+
   const onRefresh = async () => {
     setRefreshing(true);
-    await refetch();
+    await Promise.all([refetch(), refetchClasses()]);
     setRefreshing(false);
   };
 
@@ -40,6 +45,19 @@ export default function DashboardScreen() {
     );
   }, [data?.todaySessions, activeYearId]);
 
+  // Jumlah kelas HANYA untuk Tahun Ajaran Aktif (sama seperti pola filter
+  // yang dipakai di layar Classes: cocokkan academicYearId per kelas).
+  // Fallback ke data.activeClasses selama daftar kelas masih loading /
+  // kalau endpoint classes gagal, supaya angka tidak sempat tampil 0.
+  const classesInActiveYear = useMemo(() => {
+    if (!allClasses || !Array.isArray(allClasses)) return null;
+    if (!activeYearId) return allClasses.length;
+    return allClasses.filter((c: any) => {
+      const classYearId = c?.academicYearId ?? c?.academicYear?.id;
+      return classYearId === activeYearId;
+    }).length;
+  }, [allClasses, activeYearId]);
+
   if (isLoading || !data) return <LoadingScreen />;
 
   const isAdmin = user?.role === 'ADMIN';
@@ -61,7 +79,7 @@ export default function DashboardScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsRow}>
           <StatCard icon="people" label="Students" value={data?.totalStudents ?? 0} color={Colors.primary} />
           <StatCard icon="school" label="Teachers" value={data?.totalTeachers ?? 0} color={Colors.secondary} />
-          <StatCard icon="book" label="Classes" value={data?.activeClasses ?? 0} color={Colors.accent} />
+          <StatCard icon="book" label="Classes" value={classesInActiveYear ?? data?.activeClasses ?? 0} color={Colors.accent} />
           <StatCard icon="calendar" label="Today" value={todaySessions.length} color={Colors.success} />
         </ScrollView>
 
