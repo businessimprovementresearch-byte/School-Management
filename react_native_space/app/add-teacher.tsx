@@ -40,19 +40,28 @@ export default function AddTeacherScreen() {
   };
 
   const handleSave = async () => {
+    // Validasi Nama
     if (!name.trim()) {
       Alert.alert('Error', 'Please enter teacher name');
       return;
     }
 
+    // Mencegah penggunaan email admin yang ter-autofill
+    const cleanEmail = email.trim();
+    if (cleanEmail === 'admin@pasarbaru.org') {
+      Alert.alert('Error', 'Cannot use admin email for a new teacher. Please enter a unique teacher email or leave it empty.');
+      return;
+    }
+
     try {
+      // Susun payload hanya dengan nilai yang diisi (hindari string kosong "")
       const payload: Record<string, any> = {
         name: name.trim(),
         isActive,
       };
 
       if (nickname.trim()) payload.nickname = nickname.trim();
-      if (email.trim()) payload.email = email.trim();
+      if (cleanEmail) payload.email = cleanEmail;
       if (password.trim()) payload.password = password.trim();
       if (dob.trim()) payload.dob = dob.trim();
       if (contactNumber.trim()) payload.contactNumber = contactNumber.trim();
@@ -62,7 +71,7 @@ export default function AddTeacherScreen() {
         data: payload as any,
       });
 
-      // Force refresh seluruh cache API Teachers & Classes
+      // Invalidate query agar daftar guru langsung memuat data terbaru dari server
       await queryClient.invalidateQueries();
 
       Alert.alert('Success', 'Teacher created successfully', [
@@ -72,12 +81,13 @@ export default function AddTeacherScreen() {
         },
       ]);
     } catch (e) {
-      Alert.alert('Error', getErrorMessage(e, 'Failed to create teacher'));
+      Alert.alert('Failed to Create Teacher', getErrorMessage(e, 'Failed to create teacher. Check if email is already taken.'));
     }
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Top Bar */}
       <View style={styles.topBar}>
         <Pressable onPress={handleGoBack} style={styles.iconBtn}>
           <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
@@ -109,7 +119,7 @@ export default function AddTeacherScreen() {
           placeholderTextColor={Colors.textSecondary + '80'}
         />
 
-        {/* Email (Optional) - Matikan Autofill Browser */}
+        {/* Email (Optional) - Nonaktifkan Autofill */}
         <Text style={styles.label}>Email (Optional)</Text>
         <TextInput
           style={styles.input}
@@ -123,13 +133,14 @@ export default function AddTeacherScreen() {
           placeholderTextColor={Colors.textSecondary + '80'}
         />
 
-        {/* Password (Optional) - Matikan Autofill Browser */}
+        {/* Password (Optional) - Nonaktifkan Autofill */}
         <Text style={styles.label}>Password (Optional)</Text>
         <TextInput
           style={styles.input}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          autoCapitalize="none"
           autoComplete="new-password"
           placeholder="Min 6 characters"
           placeholderTextColor={Colors.textSecondary + '80'}
@@ -156,7 +167,7 @@ export default function AddTeacherScreen() {
           placeholderTextColor={Colors.textSecondary + '80'}
         />
 
-        {/* Active/Inactive Switch */}
+        {/* Teacher Status Switch */}
         <View style={styles.statusRow}>
           <View>
             <Text style={styles.statusLabel}>Teacher Status</Text>
