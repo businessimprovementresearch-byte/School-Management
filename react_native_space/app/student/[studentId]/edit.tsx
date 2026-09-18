@@ -29,6 +29,7 @@ export default function EditStudentScreen() {
   const [dob, setDob] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [remarks, setRemarks] = useState('');
+  const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
     if (data) {
@@ -40,6 +41,7 @@ export default function EditStudentScreen() {
       setDob(data?.dob ? data.dob.split('T')[0] : '');
       setContactNumber(data?.contactNumber ?? '');
       setRemarks(data?.remarks ?? '');
+      setIsActive(data?.isActive ?? true);
     }
   }, [data]);
 
@@ -59,19 +61,26 @@ export default function EditStudentScreen() {
   };
 
   const handleSave = async () => {
+    if (!name.trim()) {
+      notify('Error', 'Name is required');
+      return;
+    }
+
     try {
       await updateMutation.mutateAsync({
         id: studentId,
         data: {
-          name,
-          nickname,
-          parentName,
+          name: name.trim(),
+          nickname: nickname.trim() || undefined,
+          parentName: parentName.trim() || undefined,
           dob: dob.trim() ? dob.trim() : undefined,
-          contactNumber,
-          remarks,
+          contactNumber: contactNumber.trim() || undefined,
+          remarks: remarks.trim() || undefined,
           photoFileId: photoFileId ?? undefined,
+          isActive,
         },
       });
+      notify('Success', 'Student updated successfully');
       router.back();
     } catch (e) {
       notify('Error', getErrorMessage(e, 'Failed to update student'));
@@ -95,16 +104,42 @@ export default function EditStudentScreen() {
           </Pressable>
           <Text style={styles.photoHint}>Tap to change photo</Text>
         </View>
+
+        {/* Status Active / Inactive Switcher */}
+        <Text style={styles.label}>Status</Text>
+        <View style={styles.statusToggleRow}>
+          <Pressable
+            style={[styles.statusOption, isActive && styles.statusOptionActive]}
+            onPress={() => setIsActive(true)}
+          >
+            <Ionicons name="checkmark-circle" size={18} color={isActive ? '#15803D' : Colors.textSecondary} />
+            <Text style={[styles.statusOptionText, isActive && styles.statusOptionTextActive]}>Active</Text>
+          </Pressable>
+
+          <Pressable
+            style={[styles.statusOption, !isActive && styles.statusOptionInactive]}
+            onPress={() => setIsActive(false)}
+          >
+            <Ionicons name="pause-circle" size={18} color={!isActive ? '#B91C1C' : Colors.textSecondary} />
+            <Text style={[styles.statusOptionText, !isActive && styles.statusOptionTextInactive]}>Inactive</Text>
+          </Pressable>
+        </View>
+
         <Text style={styles.label}>Name</Text>
-        <TextInput style={styles.input} value={name} onChangeText={setName} />
+        <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Student name" placeholderTextColor={Colors.textSecondary + '80'} />
+
         <Text style={styles.label}>Nickname</Text>
         <TextInput style={styles.input} value={nickname} onChangeText={setNickname} placeholder="What the student prefers to be called" placeholderTextColor={Colors.textSecondary + '80'} />
+
         <Text style={styles.label}>Parent Name</Text>
-        <TextInput style={styles.input} value={parentName} onChangeText={setParentName} />
+        <TextInput style={styles.input} value={parentName} onChangeText={setParentName} placeholder="Parent/Guardian name" placeholderTextColor={Colors.textSecondary + '80'} />
+
         <Text style={styles.label}>Date of Birth (YYYY-MM-DD)</Text>
-        <TextInput style={styles.input} value={dob} onChangeText={setDob} />
+        <TextInput style={styles.input} value={dob} onChangeText={setDob} placeholder="YYYY-MM-DD" placeholderTextColor={Colors.textSecondary + '80'} />
+
         <Text style={styles.label}>Contact Number</Text>
-        <TextInput style={styles.input} value={contactNumber} onChangeText={setContactNumber} keyboardType="phone-pad" />
+        <TextInput style={styles.input} value={contactNumber} onChangeText={setContactNumber} keyboardType="phone-pad" placeholder="Contact number" placeholderTextColor={Colors.textSecondary + '80'} />
+
         <Text style={styles.label}>Remarks</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
@@ -140,6 +175,24 @@ const styles = StyleSheet.create({
   label: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary, marginBottom: Spacing.xs, marginTop: Spacing.md },
   input: { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: BorderRadius.md, padding: Spacing.md, fontSize: 16, color: Colors.textPrimary },
   textArea: { minHeight: 100, paddingTop: Spacing.md },
+  statusToggleRow: { flexDirection: 'row', gap: Spacing.md, marginBottom: Spacing.xs },
+  statusOption: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    paddingVertical: 12,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: Colors.surface,
+  },
+  statusOptionActive: { backgroundColor: '#DCFCE7', borderColor: '#16A34A' },
+  statusOptionInactive: { backgroundColor: '#FEE2E2', borderColor: '#DC2626' },
+  statusOptionText: { fontSize: 14, fontWeight: '600', color: Colors.textSecondary },
+  statusOptionTextActive: { color: '#15803D' },
+  statusOptionTextInactive: { color: '#B91C1C' },
   saveButton: { backgroundColor: Colors.primary, borderRadius: BorderRadius.md, padding: Spacing.lg, alignItems: 'center', marginTop: Spacing.xxl },
   saveText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });

@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius } from '@/src/theme';
 import {
   useStudentsControllerFindOne,
+  useStudentsControllerUpdate,
   useStudentsControllerRemove,
   useAcademicYearsControllerFindAll,
   useStudentsControllerAddEnrollment,
@@ -20,10 +21,6 @@ import StatusChip from '@/src/components/StatusChip';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { getErrorMessage } from '@/src/api/customFetch';
 
-// Alert.alert() is a no-op on react-native-web; window.confirm/alert are
-// the fallback so confirmations/errors actually show up on web.
-// THIS WAS MISSING before — calls to confirmAsync/notify had nothing to
-// call, which is what broke the class-move / delete flows.
 const confirmAsync = (title: string, message: string): Promise<boolean> => {
   if (Platform.OS === 'web') return Promise.resolve(window.confirm(`${title}\n\n${message}`));
   return new Promise((resolve) => {
@@ -33,6 +30,7 @@ const confirmAsync = (title: string, message: string): Promise<boolean> => {
     ]);
   });
 };
+
 const notify = (title: string, message: string) => {
   if (Platform.OS === 'web') window.alert(`${title}\n\n${message}`);
   else Alert.alert(title, message);
@@ -47,6 +45,7 @@ export default function StudentDetailScreen() {
   const { data: academicYears } = useAcademicYearsControllerFindAll();
   const activeYear = academicYears?.find((y) => y?.isActive);
 
+  const updateStudentMutation = useStudentsControllerUpdate();
   const addEnrollmentMutation = useStudentsControllerAddEnrollment();
   const updateEnrollmentMutation = useStudentsControllerUpdateEnrollment();
   const deleteEnrollmentMutation = useStudentsControllerDeleteEnrollment();
@@ -55,10 +54,6 @@ export default function StudentDetailScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('classes');
 
-  // Class picker modal: either moving an existing enrollment to a
-  // different class (editingEnrollmentId set), or adding a brand new
-  // enrollment for a chosen academic year (editingEnrollmentId null,
-  // pickerYearId set) — e.g. backfilling last year's class.
   const [pickerOpen, setPickerOpen] = useState(false);
   const [editingEnrollmentId, setEditingEnrollmentId] = useState<string | null>(null);
   const [pickerYearId, setPickerYearId] = useState<string | undefined>(undefined);
@@ -72,31 +67,41 @@ export default function StudentDetailScreen() {
 
   const onRefresh = async () => { setRefreshing(true); await refetch(); setRefreshing(false); };
 
-  // "Archived" for the active year = no enrollment row exists yet for that
-  // year. Re-enrolling just means adding one, into whichever class they
-  // were last in (admin can move them to a different class afterwards via
-  // the swap icon on that enrollment).
   const isEnrolledThisYear = !activeYear || (data?.enrollments ?? []).some((e) => e?.academicYearId === activeYear.id);
   const mostRecentClassId = data?.enrollments?.[0]?.classId;
 
-  // Classes tab should only show what the student is enrolled in *right now*
-  // (the active academic year). Past years/classes are history, not
-  // "current classes" — that full history lives in the Progress timeline.
   const currentYearEnrollments = (data?.enrollments ?? []).filter(
     (e) => !activeYear || e?.academicYearId === activeYear.id,
   );
 
-  // Backend stamps every enrollment row "ACTIVE" the moment it's created and
-  // never flips it when a new academic year starts — so a 2025-2026 row still
-  // reads "ACTIVE" even after 2026-2027 has begun. Only trust the raw status
-  // when it's something other than ACTIVE (WITHDRAWN/GRADUATED/etc. are real
-  // signals); otherwise derive it from whether the enrollment belongs to the
-  // currently-active academic year.
   const getEnrollmentDisplayStatus = (e?: { status?: string; academicYearId?: string }) => {
     if (!e) return 'ACTIVE';
     if (e.status && e.status !== 'ACTIVE') return e.status;
     if (!activeYear) return e.status ?? 'ACTIVE';
     return e.academicYearId === activeYear.id ? 'ACTIVE' : 'COMPLETED';
+  };
+
+  const handleToggleStatus = async () => {
+    const isCurrentlyActive = data?.isActive ?? true;
+    const newStatus = !isCurrentlyActive;
+    const actionText = newStatus ? 'Activate' : 'Deactivate';
+
+    const confirmed = await confirmAsync(
+      `${actionText} Student`,
+      `Are you sure you want to ${actionText.toLowerCase()} "${data?.name ?? 'this student'}"?`
+    );
+    if (!confirmed) return;
+
+    updateStudentMutation.mutate(
+      { id: studentId, data: { isActive: newStatus } },
+      {
+        onSuccess: () => {
+          refetch();
+          notify('Success', `Student successfully marked as ${newStatus ? 'Active' : 'Inactive'}.`);
+        },
+        onError: (e) => notify('Error', getErrorMessage(e, `Failed to ${actionText.toLowerCase()} student`)),
+      }
+    );
   };
 
   const handleReEnroll = () => {
@@ -151,9 +156,6 @@ export default function StudentDetailScreen() {
     );
   };
 
-  // Years the student doesn't have any enrollment record for yet — offered
-  // in "Backfill" so admins can fill in history for years that were never
-  // entered.
   const enrolledYearIds = new Set((data?.enrollments ?? []).map((e) => e?.academicYearId));
   const missingYears = (academicYears ?? []).filter((y) => y?.id && !enrolledYearIds.has(y.id));
 
@@ -174,10 +176,8 @@ export default function StudentDetailScreen() {
 
   if (isLoading || !data) return <LoadingScreen />;
 
-  // "history" tab removed — the enrollment list in "Classes" already
-  // shows academic year + class per row, so a separate history tab
-  // was redundant.
   const tabs = ['classes', 'attendance', 'progress', 'feedback'];
+  const isActive = data?.isActive ?? true;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -197,10 +197,19 @@ export default function StudentDetailScreen() {
         contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
       >
-        {/* Hero */}
+        {/* Hero Header */}
         <View style={styles.hero}>
           <Avatar uri={data?.photoUrl} name={data?.name} size={80} />
-          <Text style={styles.name}>{data?.name ?? ''}</Text>
+          
+          <View style={styles.nameRow}>
+            <Text style={styles.name}>{data?.name ?? ''}</Text>
+            <View style={[styles.statusBadge, isActive ? styles.activeBadge : styles.inactiveBadge]}>
+              <Text style={[styles.statusBadgeText, isActive ? styles.activeBadgeText : styles.inactiveBadgeText]}>
+                {isActive ? 'ACTIVE' : 'INACTIVE'}
+              </Text>
+            </View>
+          </View>
+
           {!!data?.nickname && <Text style={styles.nickname}>"{data.nickname}"</Text>}
           <Text style={styles.info}>Age: {data?.age ?? ''} | Parent: {data?.parentName ?? ''}</Text>
           <Text style={styles.info}>{data?.contactNumber ?? ''}</Text>
@@ -239,6 +248,7 @@ export default function StudentDetailScreen() {
           </View>
         )}
 
+        {/* Classes Tab */}
         {activeTab === 'classes' && (
           <View>
             {currentYearEnrollments.map((e) => (
@@ -268,7 +278,7 @@ export default function StudentDetailScreen() {
                 onPress={() => openAddYearPicker(activeYear.id)}
               >
                 <Ionicons name="add" size={14} color={Colors.primary} />
-                <Text style={styles.addYearChipText}>Tambah Kelas Lain ({activeYear.name})</Text>
+                <Text style={styles.addYearChipText}>+ Add Another Class ({activeYear.name})</Text>
               </Pressable>
             )}
 
@@ -288,6 +298,7 @@ export default function StudentDetailScreen() {
           </View>
         )}
 
+        {/* Class Picker Modal */}
         <Modal visible={pickerOpen} transparent animationType="slide" onRequestClose={() => setPickerOpen(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalCard}>
@@ -313,6 +324,7 @@ export default function StudentDetailScreen() {
           </View>
         </Modal>
 
+        {/* Attendance Tab */}
         {activeTab === 'attendance' && (
           <View>
             <View style={styles.attendanceSummary}>
@@ -334,9 +346,7 @@ export default function StudentDetailScreen() {
           </View>
         )}
 
-        {/* Progress: full year-by-year / class-by-class breakdown lives on
-            its own screen (auto-grouped server-side) — no manual class
-            picking needed there anymore. */}
+        {/* Progress Tab */}
         {activeTab === 'progress' && (
           <View>
             <Text style={styles.sectionTitle}>Awards</Text>
@@ -363,6 +373,7 @@ export default function StudentDetailScreen() {
           </View>
         )}
 
+        {/* Feedback Tab */}
         {activeTab === 'feedback' && (
           <View>
             {(data?.feedback ?? []).map((f) => (
@@ -378,12 +389,35 @@ export default function StudentDetailScreen() {
           </View>
         )}
 
-        {/* Report cards button */}
+        {/* Report Cards Button */}
         <Pressable style={styles.reportButton} onPress={() => router.push(`/student/${studentId}/report-cards`)}>
           <Ionicons name="document-text" size={20} color={Colors.secondary} />
           <Text style={styles.reportButtonText}>View Report Cards</Text>
         </Pressable>
 
+        {/* Toggle Status Active / Inactive Button */}
+        {isAdmin && (
+          <Pressable
+            style={[styles.statusToggleBtn, isActive ? styles.deactivateBtn : styles.activateBtn]}
+            onPress={handleToggleStatus}
+            disabled={updateStudentMutation.isPending}
+          >
+            <Ionicons
+              name={isActive ? 'pause-circle-outline' : 'checkmark-circle-outline'}
+              size={18}
+              color={isActive ? '#D97706' : '#16A34A'}
+            />
+            <Text style={[styles.statusToggleText, isActive ? styles.deactivateText : styles.activateText]}>
+              {updateStudentMutation.isPending
+                ? 'Updating...'
+                : isActive
+                ? 'Deactivate Student'
+                : 'Activate Student'}
+            </Text>
+          </Pressable>
+        )}
+
+        {/* Delete Student Button */}
         {isAdmin && (
           <Pressable style={styles.deleteButton} onPress={handleDelete} disabled={deleteMutation.isPending}>
             <Ionicons name="trash-outline" size={18} color={Colors.error} />
@@ -401,7 +435,14 @@ const styles = StyleSheet.create({
   topTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
   content: { padding: Spacing.lg },
   hero: { alignItems: 'center', marginBottom: Spacing.xl },
-  name: { fontSize: 22, fontWeight: '700', color: Colors.textPrimary, marginTop: Spacing.md },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginTop: Spacing.md },
+  name: { fontSize: 22, fontWeight: '700', color: Colors.textPrimary },
+  statusBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: BorderRadius.full },
+  activeBadge: { backgroundColor: '#DCFCE7' },
+  inactiveBadge: { backgroundColor: '#FEE2E2' },
+  statusBadgeText: { fontSize: 11, fontWeight: '700' },
+  activeBadgeText: { color: '#15803D' },
+  inactiveBadgeText: { color: '#B91C1C' },
   nickname: { fontSize: 15, fontStyle: 'italic', color: Colors.textSecondary, marginTop: 2 },
   info: { fontSize: 14, color: Colors.textSecondary, marginTop: 2 },
   tabRow: { marginBottom: Spacing.lg, maxHeight: 40 },
@@ -437,12 +478,22 @@ const styles = StyleSheet.create({
   archiveBannerText: { fontSize: 12, color: Colors.warning, fontWeight: '600' },
   reEnrollBtn: { backgroundColor: Colors.warning, borderRadius: BorderRadius.full, paddingHorizontal: Spacing.md, paddingVertical: 4, marginLeft: 4 },
   reEnrollBtnText: { fontSize: 12, fontWeight: '700', color: '#fff' },
-  deleteButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.error, borderRadius: BorderRadius.md, padding: Spacing.lg, marginTop: Spacing.md, gap: Spacing.sm },
+  statusToggleBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    borderRadius: BorderRadius.md, padding: Spacing.lg, marginTop: Spacing.md, gap: Spacing.sm,
+    borderWidth: 1,
+  },
+  deactivateBtn: { borderColor: '#F59E0B', backgroundColor: '#FEF3C7' + '40' },
+  activateBtn: { borderColor: '#16A34A', backgroundColor: '#DCFCE7' + '40' },
+  statusToggleText: { fontSize: 16, fontWeight: '600' },
+  deactivateText: { color: '#D97706' },
+  activateText: { color: '#16A34A' },
+  deleteButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.error, borderRadius: BorderRadius.md, padding: Spacing.lg, marginTop: Spacing.sm, gap: Spacing.sm },
   deleteButtonText: { fontSize: 16, fontWeight: '600', color: Colors.error },
   cardIconBtn: { padding: 6, marginLeft: 4 },
   addYearSection: { marginTop: Spacing.md, backgroundColor: Colors.surface, borderRadius: BorderRadius.md, padding: Spacing.md },
   addYearLabel: { fontSize: 13, color: Colors.textSecondary, marginBottom: Spacing.sm },
-  addYearChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: Colors.primary + '14', borderRadius: BorderRadius.full, paddingHorizontal: Spacing.md, paddingVertical: 6, marginRight: Spacing.sm },
+  addYearChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: Colors.primary + '14', borderRadius: BorderRadius.full, paddingHorizontal: Spacing.md, paddingVertical: 6, marginRight: Spacing.sm, marginTop: Spacing.xs },
   addYearChipText: { fontSize: 13, fontWeight: '600', color: Colors.primary },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   modalCard: { backgroundColor: Colors.background, borderTopLeftRadius: BorderRadius.lg, borderTopRightRadius: BorderRadius.lg, padding: Spacing.lg, maxHeight: '70%' },
