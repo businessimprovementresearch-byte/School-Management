@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, Linking, Alert, Platform, RefreshControl, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
@@ -69,6 +69,13 @@ export default function ClassDetailScreen() {
   const [editName, setEditName] = useState('');
   const [editGrade, setEditGrade] = useState('');
   const [editDescription, setEditDescription] = useState('');
+
+  // Sort students alphabetically A-Z
+  const sortedStudents = useMemo(() => {
+    return [...(data?.students ?? [])].sort((a, b) =>
+      (a?.name ?? '').localeCompare(b?.name ?? '')
+    );
+  }, [data?.students]);
 
   const openEditModal = () => {
     setEditName(data?.name ?? '');
@@ -173,7 +180,7 @@ export default function ClassDetailScreen() {
 
         {(academicYears?.length ?? 0) > 1 && (
           <>
-            <Text style={styles.sectionTitle}>Tahun Ajaran</Text>
+            <Text style={styles.sectionTitle}>Academic Years</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.yearRow}>
               {(academicYears ?? []).map((y) => (
                 <Pressable
@@ -182,7 +189,7 @@ export default function ClassDetailScreen() {
                   onPress={() => y?.id && router.setParams({ academicYearId: y.id })}
                 >
                   <Text style={[styles.yearChipText, effectiveYearId === y?.id && styles.yearChipTextActive]}>
-                    {y?.name ?? ''}{y?.isActive ? ' (Aktif)' : ''}
+                    {y?.name ?? ''}{y?.isActive ? ' (Active)' : ''}
                   </Text>
                 </Pressable>
               ))}
@@ -249,8 +256,8 @@ export default function ClassDetailScreen() {
         </Modal>
 
         {/* Students */}
-        <Text style={styles.sectionTitle}>Students ({data?.students?.length ?? 0})</Text>
-        {(data?.students ?? []).map((s) => (
+        <Text style={styles.sectionTitle}>Students ({sortedStudents.length})</Text>
+        {sortedStudents.map((s) => (
           <Pressable key={s?.id} style={styles.studentRow} onPress={() => router.push(`/student/${s?.id}`)}>
             <Avatar uri={s?.photoUrl} name={s?.name} size={40} />
             <Text style={styles.studentName}>{s?.name ?? ''}</Text>
@@ -372,7 +379,6 @@ const styles = StyleSheet.create({
   metricRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface, borderRadius: BorderRadius.sm, padding: Spacing.md, marginBottom: 4, gap: Spacing.sm },
   metricName: { flex: 1, fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
   metricType: { fontSize: 12, color: Colors.textSecondary },
-  sessionTerm: { fontSize: 12, color: Colors.textSecondary },
   holidayBadge: { backgroundColor: Colors.primary + '20', borderRadius: BorderRadius.full, paddingHorizontal: 8, paddingVertical: 2 },
   holidayBadgeText: { fontSize: 11, fontWeight: '700', color: Colors.primary },
 });
