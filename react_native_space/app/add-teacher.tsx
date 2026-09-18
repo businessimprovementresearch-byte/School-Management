@@ -27,7 +27,6 @@ export default function AddTeacherScreen() {
     setSelectedClasses((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]));
   };
 
-  // Navigasi Kembali Aman
   const handleGoBack = () => {
     if (router.canGoBack()) {
       router.back();
@@ -36,13 +35,11 @@ export default function AddTeacherScreen() {
     }
   };
 
-  // Navigasi Langsung ke Home / Tab Utama
   const handleGoHome = () => {
     router.replace('/(tabs)');
   };
 
   const handleSave = async () => {
-    // Validasi: Nama Wajib Diisi
     if (!name.trim()) {
       Alert.alert('Error', 'Please enter teacher name');
       return;
@@ -65,10 +62,9 @@ export default function AddTeacherScreen() {
         data: payload as any,
       });
 
-      // 1. Invalidate semua query React Query agar daftar guru & dashboard langsung ter-refresh
+      // Force refresh seluruh cache API Teachers & Classes
       await queryClient.invalidateQueries();
 
-      // 2. Tampilkan pesan sukses dan navigasi kembali secara otomatis
       Alert.alert('Success', 'Teacher created successfully', [
         {
           text: 'OK',
@@ -82,7 +78,6 @@ export default function AddTeacherScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Top Bar dengan Tombol Back & Tombol Home */}
       <View style={styles.topBar}>
         <Pressable onPress={handleGoBack} style={styles.iconBtn}>
           <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
@@ -114,7 +109,7 @@ export default function AddTeacherScreen() {
           placeholderTextColor={Colors.textSecondary + '80'}
         />
 
-        {/* Email (Optional) */}
+        {/* Email (Optional) - Matikan Autofill Browser */}
         <Text style={styles.label}>Email (Optional)</Text>
         <TextInput
           style={styles.input}
@@ -122,17 +117,20 @@ export default function AddTeacherScreen() {
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
+          autoCorrect={false}
+          autoComplete="off"
           placeholder="teacher@example.com"
           placeholderTextColor={Colors.textSecondary + '80'}
         />
 
-        {/* Password (Optional) */}
+        {/* Password (Optional) - Matikan Autofill Browser */}
         <Text style={styles.label}>Password (Optional)</Text>
         <TextInput
           style={styles.input}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          autoComplete="new-password"
           placeholder="Min 6 characters"
           placeholderTextColor={Colors.textSecondary + '80'}
         />
