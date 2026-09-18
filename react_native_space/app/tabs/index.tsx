@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius } from '@/src/theme';
 import { useAuth } from '@/src/context/AuthContext';
-import { useDashboardControllerGetDashboard, useClassesControllerFindAll } from '@/src/api/generated/api';
+import { useDashboardControllerGetDashboard } from '@/src/api/generated/api';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { formatDate } from '@/src/lib/dateFormat';
 
@@ -13,42 +13,16 @@ export default function DashboardScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const { data, isLoading, refetch } = useDashboardControllerGetDashboard();
-  const { data: classesData, refetch: refetchClasses } = useClassesControllerFindAll();
   const [refreshing, setRefreshing] = React.useState(false);
 
-const onRefresh = async () => {
-  setRefreshing(true);
-  try {
-    await Promise.all([refetch(), refetchClasses()]);
-  } catch {
-    // Menghindari error silent crash
-  } finally {
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
     setRefreshing(false);
-  }
-};
+  };
 
-  // Mendapatkan ID Tahun Ajaran yang sedang aktif
+  // Mendapatkan ID Tahun Ajaran yang sedang aktif tahun ini saja
   const activeYearId = (data as any)?.activeAcademicYear?.id;
-
-  // Ambil data tahun aktif
-const activeAcademicYear = (data as any)?.activeAcademicYear;
-const activeYearId = activeAcademicYear?.id;
-const activeYearName = activeAcademicYear?.name;
-
-// TAMBAHKAN LOGIKA FILTER INI:
-const activeClassesCount = useMemo(() => {
-  // Pengecekan Array.isArray mencegah crash di Vercel saat data masih loading
-  if (!Array.isArray(classesData) || !activeAcademicYear) {
-    return (data as any)?.activeClasses ?? 0;
-  }
-
-  return classesData.filter((c: any) => {
-    if (!c) return false;
-    const matchesId = activeYearId && (c?.academicYearId === activeYearId || c?.academicYear?.id === activeYearId);
-    const matchesName = activeYearName && (c?.academicYearName === activeYearName || c?.academicYear?.name === activeYearName);
-    return Boolean(matchesId || matchesName);
-  }).length;
-}, [classesData, activeAcademicYear, activeYearId, activeYearName, data]);
 
   // Filter Sesi Tertunda hanya untuk Tahun Ajaran Aktif
   const pendingSessions = useMemo(() => {
@@ -87,7 +61,7 @@ const activeClassesCount = useMemo(() => {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsRow}>
           <StatCard icon="people" label="Students" value={data?.totalStudents ?? 0} color={Colors.primary} />
           <StatCard icon="school" label="Teachers" value={data?.totalTeachers ?? 0} color={Colors.secondary} />
-          <StatCard icon="book" label="Classes" value={activeClassesCount} color={Colors.accent} />
+          <StatCard icon="book" label="Classes" value={data?.activeClasses ?? 0} color={Colors.accent} />
           <StatCard icon="calendar" label="Today" value={todaySessions.length} color={Colors.success} />
         </ScrollView>
 
