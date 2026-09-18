@@ -3,6 +3,7 @@ import { View, Text, TextInput, ScrollView, StyleSheet, Pressable, Alert, Platfo
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useQueryClient } from '@tanstack/react-query';
 import { Colors, Spacing, BorderRadius } from '@/src/theme';
 import { useStudentsControllerFindOne, useStudentsControllerUpdate } from '@/src/api/generated/api';
 import { getErrorMessage } from '@/src/api/customFetch';
@@ -17,6 +18,8 @@ const notify = (title: string, message: string) => {
 export default function EditStudentScreen() {
   const { studentId = '' } = useLocalSearchParams<{ studentId: string }>();
   const router = useRouter();
+  const queryClient = useQueryClient(); // Digunakan untuk refresh cache seluruh aplikasi
+
   const { data } = useStudentsControllerFindOne(studentId, { query: { enabled: !!studentId } });
   const updateMutation = useStudentsControllerUpdate();
 
@@ -77,9 +80,14 @@ export default function EditStudentScreen() {
           contactNumber: contactNumber.trim() || undefined,
           remarks: remarks.trim() || undefined,
           photoFileId: photoFileId ?? undefined,
-          isActive,
-        },
+          isActive: isActive, // Payload boolean
+          status: isActive ? 'ACTIVE' : 'INACTIVE', // Payload string enum (fallback)
+        } as any,
       });
+
+      // Force refresh seluruh cache API Students & Detail
+      await queryClient.invalidateQueries();
+
       notify('Success', 'Student updated successfully');
       router.back();
     } catch (e) {
@@ -90,7 +98,9 @@ export default function EditStudentScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.topBar}>
-        <Pressable onPress={() => router.back()}><Ionicons name="arrow-back" size={24} color={Colors.textPrimary} /></Pressable>
+        <Pressable onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
+        </Pressable>
         <Text style={styles.topTitle}>Edit Student</Text>
         <View style={{ width: 24 }} />
       </View>
@@ -105,7 +115,7 @@ export default function EditStudentScreen() {
           <Text style={styles.photoHint}>Tap to change photo</Text>
         </View>
 
-        {/* Status Active / Inactive Switcher */}
+        {/* Status Switcher */}
         <Text style={styles.label}>Status</Text>
         <View style={styles.statusToggleRow}>
           <Pressable
