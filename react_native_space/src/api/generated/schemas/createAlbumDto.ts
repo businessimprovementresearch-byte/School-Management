@@ -1,3 +1,8 @@
 // @ts-nocheck
 
-export interface CreateAlbumDto { [key: string]: unknown }
+export interface CreateAlbumDto {
+  title: string;
+  description?: string;
+  classId?: string;
+  eventId?: string;
+}

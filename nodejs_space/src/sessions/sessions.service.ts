@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
 
@@ -9,7 +13,12 @@ export class SessionsService {
     private uploadService: UploadService,
   ) {}
 
-  async create(classId: string, date: string, academicYearId: string, termId?: string | null) {
+  async create(
+    classId: string,
+    date: string,
+    academicYearId: string,
+    termId?: string | null,
+  ) {
     const session = await this.prisma.classSession.create({
       data: {
         classId,
@@ -46,8 +55,12 @@ export class SessionsService {
     });
     if (!session) throw new NotFoundException('Session not found');
 
-    const attendanceMap = new Map(session.studentAttendance.map((a) => [a.studentId, a.status]));
-    const teacherAttMap = new Map(session.teacherAttendance.map((a) => [a.teacherId, a.status]));
+    const attendanceMap = new Map(
+      session.studentAttendance.map((a) => [a.studentId, a.status]),
+    );
+    const teacherAttMap = new Map(
+      session.teacherAttendance.map((a) => [a.teacherId, a.status]),
+    );
 
     return {
       id: session.id,
@@ -66,7 +79,9 @@ export class SessionsService {
           id: e.student.id,
           name: e.student.name,
           photoFileId: e.student.photoFileId,
-          photoUrl: await this.uploadService.getFileUrlByFileId(e.student.photoFileId),
+          photoUrl: await this.uploadService.getFileUrlByFileId(
+            e.student.photoFileId,
+          ),
           attendanceStatus: attendanceMap.get(e.student.id) ?? null,
         })),
       ),
@@ -93,7 +108,9 @@ export class SessionsService {
   }
 
   async setHoliday(id: string, isHoliday: boolean) {
-    const session = await this.prisma.classSession.findUnique({ where: { id } });
+    const session = await this.prisma.classSession.findUnique({
+      where: { id },
+    });
     if (!session) throw new NotFoundException('Session not found');
 
     await this.prisma.classSession.update({
@@ -103,21 +120,54 @@ export class SessionsService {
     return this.findOne(id);
   }
 
-  async bulkCreateForDate(date: string, academicYearId?: string, termId?: string) {
+  async bulkCreateForDate(
+    date: string,
+    academicYearId?: string,
+    termId?: string,
+  ) {
     const day = new Date(date);
-    const startOfDay = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, 0, 0);
-    const endOfDay = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 23, 59, 59, 999);
+    const startOfDay = new Date(
+      day.getFullYear(),
+      day.getMonth(),
+      day.getDate(),
+      0,
+      0,
+      0,
+    );
+    const endOfDay = new Date(
+      day.getFullYear(),
+      day.getMonth(),
+      day.getDate(),
+      23,
+      59,
+      59,
+      999,
+    );
 
     let yearId = academicYearId;
     if (!yearId) {
-      const activeYear = await this.prisma.academicYear.findFirst({ where: { isActive: true } });
+      const activeYear = await this.prisma.academicYear.findFirst({
+        where: { isActive: true },
+      });
       if (!activeYear) {
-        throw new BadRequestException('No active academic year found; specify academicYearId');
+        throw new BadRequestException(
+          'No active academic year found; specify academicYearId',
+        );
       }
       yearId = activeYear.id;
     }
 
+    // Only create sessions for classes that are active for this academic year so
+    // that classes from a previous year never show up when creating sessions.
+    const inactiveClassIds = (
+      await this.prisma.classYearStatus.findMany({
+        where: { academicYearId: yearId, isActive: false },
+        select: { classId: true },
+      })
+    ).map((r) => r.classId);
+
     const classes = await this.prisma.class.findMany({
+      where: inactiveClassIds.length ? { id: { notIn: inactiveClassIds } } : {},
       include: {
         sessions: { where: { date: { gte: startOfDay, lte: endOfDay } } },
       },

@@ -1,3 +1,9 @@
 // @ts-nocheck
 
-export interface CreateSessionDto { [key: string]: unknown }
+export interface CreateSessionDto {
+  classId: string;
+  date: string;
+  academicYearId: string;
+  /** @nullable */
+  termId?: string | null;
+}

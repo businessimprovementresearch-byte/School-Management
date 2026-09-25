@@ -5,7 +5,8 @@ export class SessionStudentDto {
   @ApiProperty() name: string;
   @ApiProperty({ nullable: true, type: String }) photoFileId: string | null;
   @ApiProperty({ nullable: true, type: String }) photoUrl: string | null;
-  @ApiProperty({ nullable: true, type: String }) attendanceStatus: string | null;
+  @ApiProperty({ nullable: true, type: String }) attendanceStatus:
+    string | null;
 }
 
 export class SessionTeacherAttendanceDto {
@@ -36,7 +37,10 @@ export class SessionDetailResponseDto {
   @ApiProperty({ nullable: true, type: String }) termName: string | null;
   @ApiProperty() attendanceSubmitted: boolean;
   @ApiProperty() isHoliday: boolean;
-  @ApiProperty({ type: () => [SessionStudentDto] }) students: SessionStudentDto[];
-  @ApiProperty({ type: () => [SessionTeacherAttendanceDto] }) teacherAttendance: SessionTeacherAttendanceDto[];
-  @ApiProperty({ type: () => [SessionFeedbackDto] }) feedback: SessionFeedbackDto[];
+  @ApiProperty({ type: () => [SessionStudentDto] })
+  students: SessionStudentDto[];
+  @ApiProperty({ type: () => [SessionTeacherAttendanceDto] })
+  teacherAttendance: SessionTeacherAttendanceDto[];
+  @ApiProperty({ type: () => [SessionFeedbackDto] })
+  feedback: SessionFeedbackDto[];
 }

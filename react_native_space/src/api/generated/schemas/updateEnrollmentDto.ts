@@ -1,3 +1,6 @@
 // @ts-nocheck
 
-export interface UpdateEnrollmentDto { [key: string]: unknown }
+export interface UpdateEnrollmentDto {
+  status?: string;
+  classId?: string;
+}

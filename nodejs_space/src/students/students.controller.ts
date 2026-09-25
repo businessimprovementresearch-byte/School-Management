@@ -1,6 +1,16 @@
 import {
-  Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Req,
-  ParseIntPipe, DefaultValuePipe,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Req,
+  ParseIntPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { StudentsService } from './students.service';
@@ -14,7 +24,10 @@ import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
 import { AddClassHistoryDto } from './dto/add-class-history.dto';
 import { StudentListResponseDto } from './dto/student-list-response.dto';
 import { StudentDetailResponseDto } from './dto/student-detail-response.dto';
-import { EnrollmentResponseDto, UpdateEnrollmentResponseDto } from './dto/enrollment-response.dto';
+import {
+  EnrollmentResponseDto,
+  UpdateEnrollmentResponseDto,
+} from './dto/enrollment-response.dto';
 import { ClassHistoryResponseDto } from './dto/class-history-response.dto';
 import { SuccessResponseDto } from '../common/dto/success-response.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -29,7 +42,9 @@ export class StudentsController {
     private prisma: PrismaService,
   ) {}
 
-  private async getTeacherClassIds(req: Request): Promise<string[] | undefined> {
+  private async getTeacherClassIds(
+    req: Request,
+  ): Promise<string[] | undefined> {
     const user = req.user as { userId: string; role: string };
     if (user.role === 'TEACHER') {
       const teacher = await this.prisma.teacher.findUnique({
@@ -51,7 +66,14 @@ export class StudentsController {
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit?: number,
   ): Promise<StudentListResponseDto> {
     const teacherClassIds = await this.getTeacherClassIds(req);
-    return this.studentsService.findAll(search, classId, page, limit, teacherClassIds);
+    return this.studentsService.findAll(
+      search,
+      classId,
+      page,
+      limit,
+      teacherClassIds,
+      includeInactive === 'true',
+    );
   }
 
   @Get('students/:id')
@@ -61,13 +83,18 @@ export class StudentsController {
 
   @Post('students')
   @Roles('ADMIN')
-  async create(@Body() dto: CreateStudentDto): Promise<StudentDetailResponseDto> {
+  async create(
+    @Body() dto: CreateStudentDto,
+  ): Promise<StudentDetailResponseDto> {
     return this.studentsService.create(dto);
   }
 
   @Patch('students/:id')
   @Roles('ADMIN')
-  async update(@Param('id') id: string, @Body() dto: UpdateStudentDto): Promise<StudentDetailResponseDto> {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateStudentDto,
+  ): Promise<StudentDetailResponseDto> {
     return this.studentsService.update(id, dto);
   }
 
@@ -92,7 +119,11 @@ export class StudentsController {
     @Param('studentId') studentId: string,
     @Body() dto: AddEnrollmentDto,
   ): Promise<EnrollmentResponseDto> {
-    return this.studentsService.addEnrollment(studentId, dto.classId, dto.academicYearId);
+    return this.studentsService.addEnrollment(
+      studentId,
+      dto.classId,
+      dto.academicYearId,
+    );
   }
 
   @Patch('enrollments/:id')
@@ -116,6 +147,11 @@ export class StudentsController {
     @Param('studentId') studentId: string,
     @Body() dto: AddClassHistoryDto,
   ): Promise<ClassHistoryResponseDto> {
-    return this.studentsService.addClassHistory(studentId, dto.classId, dto.academicYearId, dto.action);
+    return this.studentsService.addClassHistory(
+      studentId,
+      dto.classId,
+      dto.academicYearId,
+      dto.action,
+    );
   }
 }

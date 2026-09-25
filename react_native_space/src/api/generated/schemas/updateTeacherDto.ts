@@ -1,3 +1,16 @@
 // @ts-nocheck
 
-export interface UpdateTeacherDto { [key: string]: unknown }
+export interface UpdateTeacherDto {
+  name?: string;
+  nickname?: string;
+  email?: string;
+  /** @minLength 6 */
+  password?: string;
+  dob?: string;
+  contactNumber?: string;
+  remarks?: string;
+  /** @nullable */
+  photoFileId?: string | null;
+  isActive?: boolean;
+  classIds?: string[];
+}

@@ -1,3 +1,7 @@
 // @ts-nocheck
 
-export interface BulkCreateSessionsDto { [key: string]: unknown }
+export interface BulkCreateSessionsDto {
+  date: string;
+  academicYearId?: string;
+  termId?: string;
+}

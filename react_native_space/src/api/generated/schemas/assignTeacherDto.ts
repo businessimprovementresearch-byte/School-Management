@@ -1,3 +1,6 @@
 // @ts-nocheck
 
-export interface AssignTeacherDto { [key: string]: unknown }
+export interface AssignTeacherDto {
+  teacherId: string;
+  academicYearId?: string;
+}

@@ -352,6 +352,7 @@ const styles = StyleSheet.create({
   successText: { color: Colors.present, fontSize: 13, marginTop: Spacing.sm, textAlign: 'center' },
   feedbackInput: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface, borderRadius: BorderRadius.md, padding: Spacing.md, gap: Spacing.sm, marginBottom: Spacing.md },
   feedbackTextInput: { flex: 1, fontSize: 15, color: Colors.textPrimary, maxHeight: 80 },
+  input: { borderWidth: 1, borderColor: Colors.divider, borderRadius: BorderRadius.sm, paddingHorizontal: Spacing.md, paddingVertical: 10, fontSize: 15, color: Colors.textPrimary, backgroundColor: Colors.background },
   feedbackCard: { backgroundColor: Colors.surface, borderRadius: BorderRadius.sm, padding: Spacing.md, marginBottom: Spacing.sm },
   feedbackTeacher: { fontSize: 13, fontWeight: '600', color: Colors.secondary },
   feedbackStudent: { fontSize: 12, color: Colors.accent, marginTop: 2 },

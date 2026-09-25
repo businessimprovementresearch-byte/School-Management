@@ -65,6 +65,8 @@ model Teacher {
   id                  String               @id @default(uuid())
   userId              String               @unique
   name                String
+  nickname            String?
+  isActive            Boolean              @default(true)
   dob                 DateTime?
   contactNumber       String?
   remarks             String?              @db.Text

@@ -1,3 +1,7 @@
 // @ts-nocheck
 
-export interface PresignedUploadDto { [key: string]: unknown }
+export interface PresignedUploadDto {
+  fileName: string;
+  contentType: string;
+  isPublic?: boolean;
+}

@@ -1,5 +1,5 @@
 // @ts-nocheck
 
 export type ClassesControllerFindOneParams = {
-academicYearId: string;
+academicYearId?: string;
 };

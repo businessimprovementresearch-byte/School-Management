@@ -8,25 +8,23 @@ export class ProgressEntryItemDto {
   @ApiProperty({ nullable: true, type: String }) notes: string | null;
 }
 
-export class ProgressMetricListDto {
+export class ProgressMetricInfoDto {
   @ApiProperty() metricId: string;
   @ApiProperty() metricName: string;
   @ApiProperty() metricType: string;
-  @ApiProperty({ type: () => [ProgressEntryItemDto] }) entries: ProgressEntryItemDto[];
-}
-
-export class ProgressClassGroupDto {
   @ApiProperty() classId: string;
   @ApiProperty() className: string;
-  @ApiProperty({ type: () => [ProgressMetricListDto] }) metrics: ProgressMetricListDto[];
+  @ApiProperty({ type: () => [ProgressEntryItemDto] })
+  entries: ProgressEntryItemDto[];
 }
 
-export class ProgressYearGroupDto {
-  @ApiProperty() academicYearId: string;
-  @ApiProperty() academicYearName: string;
-  @ApiProperty({ type: () => [ProgressClassGroupDto] }) classes: ProgressClassGroupDto[];
+export class SessionProgressEntryDto {
+  @ApiProperty() studentId: string;
+  @ApiProperty() value: number;
+  @ApiProperty({ nullable: true, type: String }) notes: string | null;
 }
 
 export class ProgressListResponseDto {
-  @ApiProperty({ type: () => [ProgressYearGroupDto] }) years: ProgressYearGroupDto[];
+  @ApiProperty({ type: () => [ProgressMetricInfoDto] })
+  metrics: ProgressMetricInfoDto[];
 }

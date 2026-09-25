@@ -15,12 +15,12 @@ import { theme } from '@/src/theme';
 import { getErrorMessage } from '@/src/api/customFetch';
 import { formatDate } from '@/src/lib/dateFormat';
 
-const confirmAsync = (title: string, message: string): Promise<boolean> => {
+const confirmAsync = (title: string, message: string, confirmLabel = 'Delete'): Promise<boolean> => {
   if (Platform.OS === 'web') return Promise.resolve(window.confirm(`${title}\n\n${message}`));
   return new Promise((resolve) => {
     Alert.alert(title, message, [
       { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-      { text: 'Delete', style: 'destructive', onPress: () => resolve(true) },
+      { text: confirmLabel, style: 'destructive', onPress: () => resolve(true) },
     ]);
   });
 };
@@ -93,7 +93,7 @@ export default function AcademicYearsScreen() {
 
   const doRemove = (item: AcademicYearListItemDto, force: boolean) => {
     removeMutation.mutate(
-      { id: item?.id ?? '', force },
+      { id: item?.id ?? '', params: { force: String(force) } },
       {
         onSuccess: () => refetch(),
         onError: async (e) => {

@@ -1,4 +1,13 @@
-import { Controller, Post, Get, Patch, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { SessionsService } from './sessions.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -18,14 +27,27 @@ export class SessionsController {
   constructor(private sessionsService: SessionsService) {}
 
   @Post()
-  async create(@Body() dto: CreateSessionDto): Promise<SessionDetailResponseDto> {
-    return this.sessionsService.create(dto.classId, dto.date, dto.academicYearId, dto.termId);
+  async create(
+    @Body() dto: CreateSessionDto,
+  ): Promise<SessionDetailResponseDto> {
+    return this.sessionsService.create(
+      dto.classId,
+      dto.date,
+      dto.academicYearId,
+      dto.termId,
+    );
   }
 
   @Post('bulk-create')
   @Roles('ADMIN')
-  async bulkCreate(@Body() dto: BulkCreateSessionsDto): Promise<BulkCreateSessionsResponseDto> {
-    return this.sessionsService.bulkCreateForDate(dto.date, dto.academicYearId, dto.termId);
+  async bulkCreate(
+    @Body() dto: BulkCreateSessionsDto,
+  ): Promise<BulkCreateSessionsResponseDto> {
+    return this.sessionsService.bulkCreateForDate(
+      dto.date,
+      dto.academicYearId,
+      dto.termId,
+    );
   }
 
   @Get(':id')

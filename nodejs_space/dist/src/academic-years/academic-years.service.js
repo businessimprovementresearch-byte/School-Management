@@ -1,0 +1,144 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AcademicYearsService = void 0;
+const common_1 = require("@nestjs/common");
+const prisma_service_1 = require("../prisma/prisma.service");
+let AcademicYearsService = class AcademicYearsService {
+    prisma;
+    constructor(prisma) {
+        this.prisma = prisma;
+    }
+    async findAll() {
+        const years = await this.prisma.academicYear.findMany({ orderBy: { startDate: 'desc' } });
+        return years.map((y) => ({
+            id: y.id,
+            name: y.name,
+            startDate: y.startDate.toISOString(),
+            endDate: y.endDate.toISOString(),
+            isActive: y.isActive,
+            createdAt: y.createdAt.toISOString(),
+        }));
+    }
+    async create(data) {
+        const year = await this.prisma.academicYear.create({
+            data: {
+                name: data.name,
+                startDate: new Date(data.startDate),
+                endDate: new Date(data.endDate),
+            },
+        });
+        const existingClasses = await this.prisma.class.findMany({ select: { id: true } });
+        if (existingClasses.length > 0) {
+            await this.prisma.classYearStatus.createMany({
+                data: existingClasses.map((c) => ({
+                    classId: c.id,
+                    academicYearId: year.id,
+                    isActive: false,
+                })),
+            });
+        }
+        return {
+            id: year.id,
+            name: year.name,
+            startDate: year.startDate.toISOString(),
+            endDate: year.endDate.toISOString(),
+            isActive: year.isActive,
+        };
+    }
+    async update(id, data) {
+        if (data.isActive === true) {
+            await this.prisma.academicYear.updateMany({ data: { isActive: false } });
+        }
+        const year = await this.prisma.academicYear.update({
+            where: { id },
+            data: {
+                ...(data.name !== undefined ? { name: data.name } : {}),
+                ...(data.startDate !== undefined ? { startDate: new Date(data.startDate) } : {}),
+                ...(data.endDate !== undefined ? { endDate: new Date(data.endDate) } : {}),
+                ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
+            },
+        });
+        return {
+            id: year.id,
+            name: year.name,
+            startDate: year.startDate.toISOString(),
+            endDate: year.endDate.toISOString(),
+            isActive: year.isActive,
+        };
+    }
+    async remove(id, force = false) {
+        const year = await this.prisma.academicYear.findUnique({
+            where: { id },
+            include: { _count: { select: { terms: true, sessions: true, reportCards: true, history: true } } },
+        });
+        if (!year)
+            throw new common_1.NotFoundException('Academic year not found');
+        if (year.isActive) {
+            throw new common_1.ConflictException('Cannot delete the active academic year. Activate another year first.');
+        }
+        const usageCount = year._count.terms + year._count.sessions + year._count.reportCards + year._count.history;
+        if (usageCount > 0 && !force) {
+            throw new common_1.ConflictException(`Cannot delete "${year.name}": it still has ${year._count.terms} term(s), ${year._count.sessions} session(s), ${year._count.reportCards} report card(s) and ${year._count.history} class history record(s) linked to it. Remove those first.`);
+        }
+        await this.prisma.academicYear.delete({ where: { id } });
+        return { success: true };
+    }
+    async rollover(toAcademicYearId, data) {
+        const toYear = await this.prisma.academicYear.findUnique({ where: { id: toAcademicYearId } });
+        if (!toYear)
+            throw new common_1.NotFoundException('Target academic year not found');
+        const fromYearId = data.fromAcademicYearId ?? (await this.prisma.academicYear.findFirst({ where: { isActive: true } }))?.id;
+        if (!fromYearId)
+            throw new common_1.ConflictException('No source academic year to roll over from.');
+        if (fromYearId === toAcademicYearId)
+            throw new common_1.ConflictException('Source and target academic year must be different.');
+        const excludeStudents = new Set(data.excludeStudentIds ?? []);
+        const excludeTeachers = new Set(data.excludeTeacherIds ?? []);
+        const [enrollments, assignments] = await Promise.all([
+            this.prisma.classEnrollment.findMany({ where: { academicYearId: fromYearId, status: 'ACTIVE' } }),
+            this.prisma.teacherAssignment.findMany({ where: { academicYearId: fromYearId } }),
+        ]);
+        let studentsEnrolled = 0, studentsArchived = 0;
+        for (const e of enrollments) {
+            if (excludeStudents.has(e.studentId)) {
+                studentsArchived++;
+                continue;
+            }
+            await this.prisma.classEnrollment.upsert({
+                where: { studentId_classId_academicYearId: { studentId: e.studentId, classId: e.classId, academicYearId: toAcademicYearId } },
+                create: { studentId: e.studentId, classId: e.classId, academicYearId: toAcademicYearId },
+                update: {},
+            });
+            studentsEnrolled++;
+        }
+        let teachersAssigned = 0, teachersArchived = 0;
+        for (const a of assignments) {
+            if (excludeTeachers.has(a.teacherId)) {
+                teachersArchived++;
+                continue;
+            }
+            await this.prisma.teacherAssignment.upsert({
+                where: { teacherId_classId_academicYearId: { teacherId: a.teacherId, classId: a.classId, academicYearId: toAcademicYearId } },
+                create: { teacherId: a.teacherId, classId: a.classId, academicYearId: toAcademicYearId },
+                update: {},
+            });
+            teachersAssigned++;
+        }
+        return { fromAcademicYearId: fromYearId, toAcademicYearId, studentsEnrolled, studentsArchived, teachersAssigned, teachersArchived };
+    }
+};
+exports.AcademicYearsService = AcademicYearsService;
+exports.AcademicYearsService = AcademicYearsService = __decorate([
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+], AcademicYearsService);
+//# sourceMappingURL=academic-years.service.js.map

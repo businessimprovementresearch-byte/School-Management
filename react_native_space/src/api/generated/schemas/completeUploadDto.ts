@@ -1,3 +1,8 @@
 // @ts-nocheck
 
-export interface CompleteUploadDto { [key: string]: unknown }
+export interface CompleteUploadDto {
+  cloud_storage_path: string;
+  fileName: string;
+  contentType: string;
+  fileSize?: number;
+}

@@ -45,7 +45,7 @@ export default function EditTeacherScreen() {
       setRemarks(t?.remarks ?? '');
       setIsActive(t?.isActive ?? true);
 
-      const initialClasses = t?.classes?.map((c: any) => c.id) || t?.classIds || [];
+      const initialClasses = t?.assignedClassIds ?? t?.assignedClasses?.map((c: any) => c.id) ?? t?.classIds ?? [];
       setSelectedClasses(initialClasses);
     }
   }, [data]);
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justify: 'space-between',
+    justifyContent: 'space-between',
     paddingVertical: 12,
     paddingHorizontal: 4,
     marginVertical: 8,

@@ -1,15 +1,30 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, EnrollmentStatus, HistoryAction } from '@prisma/client';
 import { requireAcademicYearId } from '../common/active-academic-year';
+
+interface MetricProgressEntry {
+  date: string;
+  value: number;
+  notes: string | null;
+}
+
+interface MetricProgressGroup {
+  metricId: string;
+  metricName: string;
+  metricType: string;
+  classId: string;
+  className: string;
+  entries: MetricProgressEntry[];
+}
 
 @Injectable()
 export class StudentsService {
   constructor(
     private prisma: PrismaService,
     private uploadService: UploadService,
-  ) { }
+  ) {}
 
   private calculateAge(dob: Date | null): number | null {
     if (!dob) return null;
@@ -26,10 +41,15 @@ export class StudentsService {
     page = 1,
     limit = 20,
     teacherClassIds?: string[],
-    includeInactive = false
+    includeInactive = false,
   ) {
     const where: Prisma.StudentWhereInput = {};
-    const activeYearId = await requireAcademicYearId(this.prisma).catch(() => null);
+    const activeYearId = await requireAcademicYearId(this.prisma).catch(
+      () => null,
+    );
+    if (!includeInactive) {
+      where.isActive = true;
+    }
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -38,10 +58,22 @@ export class StudentsService {
       ];
     }
     if (classId) {
-      where.enrollments = { some: { classId, status: 'ACTIVE', ...(activeYearId ? { academicYearId: activeYearId } : {}) } };
+      where.enrollments = {
+        some: {
+          classId,
+          status: 'ACTIVE',
+          ...(activeYearId ? { academicYearId: activeYearId } : {}),
+        },
+      };
     }
     if (teacherClassIds) {
-      where.enrollments = { some: { classId: { in: teacherClassIds }, status: 'ACTIVE', ...(activeYearId ? { academicYearId: activeYearId } : {}) } };
+      where.enrollments = {
+        some: {
+          classId: { in: teacherClassIds },
+          status: 'ACTIVE',
+          ...(activeYearId ? { academicYearId: activeYearId } : {}),
+        },
+      };
     }
 
     const [items, total] = await Promise.all([
@@ -50,7 +82,9 @@ export class StudentsService {
         include: {
           enrollments: {
             include: { class: true },
-            where: activeYearId ? { status: 'ACTIVE', academicYearId: activeYearId } : { status: 'ACTIVE' },
+            where: activeYearId
+              ? { status: 'ACTIVE', academicYearId: activeYearId }
+              : { status: 'ACTIVE' },
           },
         },
         skip: (page - 1) * limit,
@@ -89,17 +123,24 @@ export class StudentsService {
   }
 
   async findOne(id: string) {
-  const activeYearId = await requireAcademicYearId(this.prisma).catch(() => null);
+    const activeYearId = await requireAcademicYearId(this.prisma).catch(
+      () => null,
+    );
 
-  const student = await this.prisma.student.findUnique({
-    where: { id },
-    include: {
-      enrollments: { include: { class: true, academicYear: true }, orderBy: { academicYear: { startDate: 'desc' } } },
-      attendance: {
-        where: activeYearId ? { classSession: { academicYearId: activeYearId } } : undefined,
-        include: { classSession: { include: { class: true } } },
-        orderBy: { classSession: { date: 'desc' } },
-      },
+    const student = await this.prisma.student.findUnique({
+      where: { id },
+      include: {
+        enrollments: {
+          include: { class: true, academicYear: true },
+          orderBy: { academicYear: { startDate: 'desc' } },
+        },
+        attendance: {
+          where: activeYearId
+            ? { classSession: { academicYearId: activeYearId } }
+            : undefined,
+          include: { classSession: { include: { class: true } } },
+          orderBy: { classSession: { date: 'desc' } },
+        },
         progress: {
           include: {
             progressMetric: { include: { class: true } },
@@ -124,20 +165,36 @@ export class StudentsService {
     });
     if (!student) throw new NotFoundException('Student not found');
 
-    const photoUrl = await this.uploadService.getFileUrlByFileId(student.photoFileId);
+    const photoUrl = await this.uploadService.getFileUrlByFileId(
+      student.photoFileId,
+    );
 
     // Attendance summary
     const totalSessions = student.attendance.length;
-    const present = student.attendance.filter((a) => a.status === 'PRESENT').length;
-    const absent = student.attendance.filter((a) => a.status === 'ABSENT').length;
-    const unsure = student.attendance.filter((a) => a.status === 'UNSURE').length;
+    const present = student.attendance.filter(
+      (a) => a.status === 'PRESENT',
+    ).length;
+    const absent = student.attendance.filter(
+      (a) => a.status === 'ABSENT',
+    ).length;
+    const unsure = student.attendance.filter(
+      (a) => a.status === 'UNSURE',
+    ).length;
 
     // Per-class breakdown
-    const classMap = new Map<string, { classId: string; className: string; present: number; total: number }>();
+    const classMap = new Map<
+      string,
+      { classId: string; className: string; present: number; total: number }
+    >();
     for (const a of student.attendance) {
       const cid = a.classSession.classId;
       if (!classMap.has(cid)) {
-        classMap.set(cid, { classId: cid, className: a.classSession.class.name, present: 0, total: 0 });
+        classMap.set(cid, {
+          classId: cid,
+          className: a.classSession.class.name,
+          present: 0,
+          total: 0,
+        });
       }
       const entry = classMap.get(cid)!;
       entry.total++;
@@ -145,7 +202,7 @@ export class StudentsService {
     }
 
     // Progress
-    const metricMap = new Map<string, any>();
+    const metricMap = new Map<string, MetricProgressGroup>();
     for (const p of student.progress) {
       const mid = p.progressMetricId;
       if (!metricMap.has(mid)) {
@@ -158,7 +215,7 @@ export class StudentsService {
           entries: [],
         });
       }
-      metricMap.get(mid).entries.push({
+      metricMap.get(mid)!.entries.push({
         date: p.classSession.date.toISOString(),
         value: p.value,
         notes: p.notes,
@@ -170,6 +227,7 @@ export class StudentsService {
       studentIdNumber: student.studentIdNumber,
       name: student.name,
       nickname: student.nickname,
+      isActive: student.isActive,
       parentName: student.parentName,
       dob: student.dob ? student.dob.toISOString() : null,
       age: this.calculateAge(student.dob),
@@ -196,9 +254,7 @@ export class StudentsService {
         late: 0,
         excused: 0,
         percentage:
-          totalSessions > 0
-            ? Math.round((present / totalSessions) * 100)
-            : 0,
+          totalSessions > 0 ? Math.round((present / totalSessions) * 100) : 0,
         perClass: Array.from(classMap.values()).map((c) => ({
           classId: c.classId,
           className: c.className,
@@ -259,7 +315,12 @@ export class StudentsService {
         remarks: data.remarks ?? null,
         photoFileId: data.photoFileId ?? null,
         enrollments: data.classIds?.length
-          ? { create: data.classIds.map((cid) => ({ classId: cid, academicYearId: academicYearId! })) }
+          ? {
+              create: data.classIds.map((cid) => ({
+                classId: cid,
+                academicYearId: academicYearId!,
+              })),
+            }
           : undefined,
       },
     });
@@ -278,20 +339,32 @@ export class StudentsService {
       studentContactNumber?: string;
       remarks?: string;
       photoFileId?: string | null;
+      isActive?: boolean;
     },
   ) {
     await this.prisma.student.update({
       where: { id },
       data: {
-        ...(data.studentIdNumber !== undefined ? { studentIdNumber: data.studentIdNumber } : {}),
+        ...(data.studentIdNumber !== undefined
+          ? { studentIdNumber: data.studentIdNumber }
+          : {}),
         ...(data.name !== undefined ? { name: data.name } : {}),
         ...(data.nickname !== undefined ? { nickname: data.nickname } : {}),
-        ...(data.parentName !== undefined ? { parentName: data.parentName } : {}),
+        ...(data.parentName !== undefined
+          ? { parentName: data.parentName }
+          : {}),
         ...(data.dob !== undefined ? { dob: new Date(data.dob) } : {}),
-        ...(data.contactNumber !== undefined ? { contactNumber: data.contactNumber } : {}),
-        ...(data.studentContactNumber !== undefined ? { studentContactNumber: data.studentContactNumber } : {}),
+        ...(data.contactNumber !== undefined
+          ? { contactNumber: data.contactNumber }
+          : {}),
+        ...(data.studentContactNumber !== undefined
+          ? { studentContactNumber: data.studentContactNumber }
+          : {}),
         ...(data.remarks !== undefined ? { remarks: data.remarks } : {}),
-        ...(data.photoFileId !== undefined ? { photoFileId: data.photoFileId } : {}),
+        ...(data.photoFileId !== undefined
+          ? { photoFileId: data.photoFileId }
+          : {}),
+        ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
       },
     });
     return this.findOne(id);
@@ -303,16 +376,26 @@ export class StudentsService {
   }
 
   // Enrollments
-  async addEnrollment(studentId: string, classId: string, academicYearId?: string) {
+  async addEnrollment(
+    studentId: string,
+    classId: string,
+    academicYearId?: string,
+  ) {
     const yearId = await requireAcademicYearId(this.prisma, academicYearId);
     const existing = await this.prisma.classEnrollment.findUnique({
       where: {
-        studentId_classId_academicYearId: { studentId, classId, academicYearId: yearId },
+        studentId_classId_academicYearId: {
+          studentId,
+          classId,
+          academicYearId: yearId,
+        },
       },
     });
-    const enrollment = existing ?? await this.prisma.classEnrollment.create({
-      data: { studentId, classId, academicYearId: yearId },
-    });
+    const enrollment =
+      existing ??
+      (await this.prisma.classEnrollment.create({
+        data: { studentId, classId, academicYearId: yearId },
+      }));
     if (!existing) {
       await this.prisma.studentClassHistory.create({
         data: {
@@ -333,12 +416,19 @@ export class StudentsService {
     };
   }
 
-  async updateEnrollment(enrollmentId: string, data: { status?: string; classId?: string }) {
-    const existing = await this.prisma.classEnrollment.findUnique({ where: { id: enrollmentId } });
+  async updateEnrollment(
+    enrollmentId: string,
+    data: { status?: string; classId?: string },
+  ) {
+    const existing = await this.prisma.classEnrollment.findUnique({
+      where: { id: enrollmentId },
+    });
     const enrollment = await this.prisma.classEnrollment.update({
       where: { id: enrollmentId },
       data: {
-        ...(data.status ? { status: data.status as any } : {}),
+        ...(data.status
+          ? { status: data.status as unknown as EnrollmentStatus }
+          : {}),
         ...(data.classId ? { classId: data.classId } : {}),
       },
       include: { class: true, academicYear: true },
@@ -369,9 +459,19 @@ export class StudentsService {
   }
 
   // Class History
-  async addClassHistory(studentId: string, classId: string, academicYearId: string, action: string) {
+  async addClassHistory(
+    studentId: string,
+    classId: string,
+    academicYearId: string,
+    action: string,
+  ) {
     const entry = await this.prisma.studentClassHistory.create({
-      data: { studentId, classId, academicYearId, action: action as any },
+      data: {
+        studentId,
+        classId,
+        academicYearId,
+        action: action as unknown as HistoryAction,
+      },
       include: { class: true, academicYear: true },
     });
     return {

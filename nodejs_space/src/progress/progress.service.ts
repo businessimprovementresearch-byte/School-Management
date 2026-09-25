@@ -1,15 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
-  ProgressYearGroupDto,
-  ProgressMetricListDto,
+  ProgressMetricInfoDto,
+  ProgressEntryItemDto,
 } from './dto/progress-list-response.dto';
 
 @Injectable()
 export class ProgressService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
-  async create(data: { studentId: string; progressMetricId: string; classSessionId: string; value: number; notes?: string | null }) {
+  async create(data: {
+    studentId: string;
+    progressMetricId: string;
+    classSessionId: string;
+    value: number;
+    notes?: string | null;
+  }) {
     const entry = await this.prisma.studentProgress.create({
       data: {
         studentId: data.studentId,
@@ -30,7 +36,11 @@ export class ProgressService {
     };
   }
 
-  async bulkSave(classSessionId: string, progressMetricId: string, entries: { studentId: string; value: number; notes?: string | null }[]) {
+  async bulkSave(
+    classSessionId: string,
+    progressMetricId: string,
+    entries: { studentId: string; value: number; notes?: string | null }[],
+  ) {
     let savedCount = 0;
     for (const e of entries) {
       const existing = await this.prisma.studentProgress.findFirst({
@@ -43,7 +53,13 @@ export class ProgressService {
         });
       } else {
         await this.prisma.studentProgress.create({
-          data: { studentId: e.studentId, progressMetricId, classSessionId, value: e.value, notes: e.notes ?? null },
+          data: {
+            studentId: e.studentId,
+            progressMetricId,
+            classSessionId,
+            value: e.value,
+            notes: e.notes ?? null,
+          },
         });
       }
       savedCount++;
@@ -55,12 +71,19 @@ export class ProgressService {
     const entries = await this.prisma.studentProgress.findMany({
       where: { classSessionId, progressMetricId },
     });
-    return entries.map((e) => ({ studentId: e.studentId, value: e.value, notes: e.notes }));
+    return entries.map((e) => ({
+      studentId: e.studentId,
+      value: e.value,
+      notes: e.notes,
+    }));
   }
 
-  async findByStudent(studentId: string) {
+  async findByStudent(studentId: string, classId?: string) {
     const entries = await this.prisma.studentProgress.findMany({
-      where: { studentId },
+      where: {
+        studentId,
+        ...(classId ? { progressMetric: { classId } } : {}),
+      },
       include: {
         progressMetric: { include: { class: true } },
         classSession: { include: { academicYear: true } },
@@ -68,42 +91,43 @@ export class ProgressService {
       orderBy: { classSession: { date: 'asc' } },
     });
 
-    const yearMap = new Map<string, any>();
-    for (const e of entries) {
-      const yearId = e.classSession.academicYearId;
-      if (!yearMap.has(yearId)) {
-        yearMap.set(yearId, {
-          academicYearId: yearId,
-          academicYearName: e.classSession.academicYear.name,
-          startDate: e.classSession.academicYear.startDate,
-          classes: new Map<string, any>(),
+    const metricMap = new Map<
+      string,
+      {
+        metricId: string;
+        metricName: string;
+        metricType: string;
+        classId: string;
+        className: string;
+        entries: ProgressEntryItemDto[];
+      }
+    >();
+
+    for (const p of entries) {
+      const mid = p.progressMetricId;
+      if (!metricMap.has(mid)) {
+        metricMap.set(mid, {
+          metricId: mid,
+          metricName: p.progressMetric.name,
+          metricType: p.progressMetric.type,
+          classId: p.progressMetric.classId,
+          className: p.progressMetric.class.name,
+          entries: [],
         });
       }
-      const yearEntry = yearMap.get(yearId);
-      const classId = e.progressMetric.classId;
-      if (!yearEntry.classes.has(classId)) {
-        yearEntry.classes.set(classId, { classId, className: e.progressMetric.class.name, metrics: new Map<string, any>() });
-      }
-      const classEntry = yearEntry.classes.get(classId);
-      const mid = e.progressMetricId;
-      if (!classEntry.metrics.has(mid)) {
-        classEntry.metrics.set(mid, { metricId: mid, metricName: e.progressMetric.name, metricType: e.progressMetric.type, entries: [] });
-      }
-      classEntry.metrics.get(mid).entries.push({
-        id: e.id, date: e.classSession.date.toISOString(), sessionId: e.classSessionId, value: e.value, notes: e.notes,
+      metricMap.get(mid)!.entries.push({
+        id: p.id,
+        date: p.classSession.date.toISOString(),
+        sessionId: p.classSessionId,
+        value: p.value,
+        notes: p.notes,
       });
     }
 
-    const years: ProgressYearGroupDto[] = Array.from(yearMap.values()).map((y: any) => ({
-      academicYearId: y.academicYearId,
-      academicYearName: y.academicYearName,
-      classes: Array.from(y.classes.values()).map((c: any) => ({
-        classId: c.classId,
-        className: c.className,
-        metrics: Array.from(c.metrics.values()) as ProgressMetricListDto[],
-      })),
-    }));
+    const metrics: ProgressMetricInfoDto[] = Array.from(metricMap.values());
 
-    return { years };
+    return {
+      metrics,
+    };
   }
 }

@@ -1,3 +1,6 @@
 // @ts-nocheck
 
-export interface AddPhotoDto { [key: string]: unknown }
+export interface AddPhotoDto {
+  fileId: string;
+  caption?: string;
+}

@@ -1,3 +1,7 @@
 // @ts-nocheck
 
-export interface RolloverAcademicYearDto { [key: string]: unknown }
+export interface RolloverAcademicYearDto {
+  fromAcademicYearId?: string;
+  excludeStudentIds?: string[];
+  excludeTeacherIds?: string[];
+}

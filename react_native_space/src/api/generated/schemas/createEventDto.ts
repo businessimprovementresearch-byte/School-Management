@@ -1,3 +1,8 @@
 // @ts-nocheck
 
-export interface CreateEventDto { [key: string]: unknown }
+export interface CreateEventDto {
+  name: string;
+  description?: string;
+  date: string;
+  location?: string;
+}

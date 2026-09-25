@@ -1,3 +1,7 @@
 // @ts-nocheck
 
-export interface CreateAcademicYearDto { [key: string]: unknown }
+export interface CreateAcademicYearDto {
+  name: string;
+  startDate: string;
+  endDate: string;
+}

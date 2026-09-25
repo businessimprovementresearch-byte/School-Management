@@ -1,3 +1,6 @@
 // @ts-nocheck
 
-export interface AddEnrollmentDto { [key: string]: unknown }
+export interface AddEnrollmentDto {
+  classId: string;
+  academicYearId?: string;
+}

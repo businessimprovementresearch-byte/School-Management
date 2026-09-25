@@ -1,35 +1,15 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+// @ts-nocheck
 
-export class UpdateStudentDto {
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
-
-  @IsOptional()
-  @IsString()
-  status?: string;
-
-  @IsOptional()
-  @IsString()
+export interface UpdateStudentDto {
+  studentIdNumber?: string;
   name?: string;
-
-  @IsOptional()
-  @IsString()
+  nickname?: string;
   parentName?: string;
-
-  @IsOptional()
-  @IsString()
   dob?: string;
-
-  @IsOptional()
-  @IsString()
   contactNumber?: string;
-
-  @IsOptional()
-  @IsString()
+  studentContactNumber?: string;
   remarks?: string;
-
-  @IsOptional()
-  @IsString()
-  photoFileId?: string;
+  /** @nullable */
+  photoFileId?: string | null;
+  isActive?: boolean;
 }

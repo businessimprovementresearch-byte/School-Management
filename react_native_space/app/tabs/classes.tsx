@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justify: 'space-between',
+    justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.md,
     paddingBottom: Spacing.sm,
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 12,
     backgroundColor: Colors.secondary + '12',
-    justify: 'center',
+    justifyContent: 'center',
     alignItems: 'center',
     marginRight: Spacing.md,
   },

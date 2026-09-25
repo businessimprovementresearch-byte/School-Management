@@ -1,3 +1,8 @@
 // @ts-nocheck
 
-export interface UpdateTermDto { [key: string]: unknown }
+export interface UpdateTermDto {
+  name?: string;
+  startDate?: string;
+  endDate?: string;
+  academicYearId?: string;
+}

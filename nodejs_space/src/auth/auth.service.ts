@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
@@ -19,6 +23,11 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('Invalid credentials');
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
+    if (user.teacher && !user.teacher.isActive) {
+      throw new UnauthorizedException(
+        'Account is inactive. Contact your administrator.',
+      );
+    }
     const payload = { sub: user.id, email: user.email, role: user.role };
     const token = this.jwtService.sign(payload);
     return {
@@ -50,7 +59,12 @@ export class AuthService {
     };
   }
 
-  async signup(email: string, password: string, name: string, currentUserRole: UserRole) {
+  async signup(
+    email: string,
+    password: string,
+    name: string,
+    currentUserRole: UserRole,
+  ) {
     if (currentUserRole !== UserRole.ADMIN) {
       throw new ForbiddenException('Only admins can create accounts');
     }

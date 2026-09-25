@@ -1,3 +1,9 @@
 // @ts-nocheck
 
-export interface CreateMetricDto { [key: string]: unknown }
+export interface CreateMetricDto {
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  classId: string;
+  type: string;
+}

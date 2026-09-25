@@ -47,7 +47,7 @@ export default function ClassDetailScreen() {
 
   const { data, isLoading, refetch } = useClassesControllerFindOne(
     classId,
-    effectiveYearId,
+    effectiveYearId ? { academicYearId: effectiveYearId } : undefined,
     { query: { enabled: !!classId && !!effectiveYearId } },
   );
   const [refreshing, setRefreshing] = useState(false);
@@ -57,7 +57,7 @@ export default function ClassDetailScreen() {
   const [teacherPickerOpen, setTeacherPickerOpen] = useState(false);
   const { data: allTeachers } = useTeachersControllerFindAll({ query: { enabled: teacherPickerOpen } });
   const assignedTeacherIds = new Set((data?.teachers ?? []).map((t) => t?.id));
-  const availableTeachers = (allTeachers ?? []).filter((t) => t?.id && !assignedTeacherIds.has(t.id));
+  const availableTeachers = (allTeachers ?? []).filter((t) => t?.id && t?.isActive !== false && !assignedTeacherIds.has(t.id));
 
   const assignTeacherMutation = useClassesControllerAssignTeacher();
   const removeTeacherMutation = useClassesControllerRemoveTeacher();

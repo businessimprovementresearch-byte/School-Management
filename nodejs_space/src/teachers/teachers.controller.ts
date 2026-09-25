@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { TeachersService } from './teachers.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -29,13 +38,27 @@ export class TeachersController {
 
   @Post()
   @Roles('ADMIN')
-  async create(@Body() dto: CreateTeacherDto): Promise<TeacherDetailResponseDto> {
+  async create(
+    @Body() dto: CreateTeacherDto,
+  ): Promise<TeacherDetailResponseDto> {
     return this.teachersService.create(dto);
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() dto: UpdateTeacherDto): Promise<TeacherDetailResponseDto> {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateTeacherDto,
+  ): Promise<TeacherDetailResponseDto> {
     return this.teachersService.update(id, dto);
+  }
+
+  @Patch(':id/active')
+  @Roles('ADMIN')
+  async setActive(
+    @Param('id') id: string,
+    @Body() dto: { isActive: boolean },
+  ): Promise<TeacherDetailResponseDto> {
+    return this.teachersService.setActive(id, dto.isActive);
   }
 
   @Delete(':id')

@@ -1,211 +1,350 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, ScrollView, StyleSheet, Pressable, Alert, ActivityIndicator, Switch } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useQueryClient } from '@tanstack/react-query';
-import { Colors, Spacing, BorderRadius } from '@/src/theme';
-import { useTeachersControllerCreate, useClassesControllerFindAll } from '@/src/api/generated/api';
-import { getErrorMessage } from '@/src/api/customFetch';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { UploadService } from '../upload/upload.service';
+import { Prisma, UserRole } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
+import { requireAcademicYearId } from '../common/active-academic-year';
 
-export default function AddTeacherScreen() {
-  const router = useRouter();
-  const queryClient = useQueryClient();
-  const createMutation = useTeachersControllerCreate();
-  const { data: classes } = useClassesControllerFindAll();
+@Injectable()
+export class TeachersService {
+  constructor(
+    private prisma: PrismaService,
+    private uploadService: UploadService,
+  ) {}
 
-  const [name, setName] = useState('');
-  const [nickname, setNickname] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [dob, setDob] = useState('');
-  const [contactNumber, setContactNumber] = useState('');
-  const [isActive, setIsActive] = useState(true);
-  const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
+  private calculateAge(dob: Date | null): number | null {
+    if (!dob) return null;
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+    return age;
+  }
 
-  const toggleClass = (id: string) => {
-    setSelectedClasses((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]));
-  };
+  private async safeFileUrl(fileId: string | null) {
+    return this.uploadService.getFileUrlByFileId(fileId);
+  }
 
-  const handleGoBack = () => {
-    if (router.canGoBack()) router.back();
-    else router.replace('/(tabs)');
-  };
+  async findAll() {
+    const teachers = await this.prisma.teacher.findMany({
+      include: {
+        user: true,
+        assignments: { include: { class: true } },
+      },
+      orderBy: { name: 'asc' },
+    });
 
-  const handleSave = async () => {
-    const trimmedName = name.trim();
+    return Promise.all(
+      teachers.map(async (t) => ({
+        id: t.id,
+        userId: t.userId,
+        name: t.name,
+        nickname: t.nickname,
+        email: t.user.email,
+        isActive: t.isActive,
+        dob: t.dob ? t.dob.toISOString() : null,
+        age: this.calculateAge(t.dob),
+        contactNumber: t.contactNumber,
+        remarks: t.remarks,
+        photoFileId: t.photoFileId,
+        photoUrl: await this.safeFileUrl(t.photoFileId),
+        assignedClasses: t.assignments.map((a) => ({
+          id: a.class.id,
+          name: a.class.name,
+          grade: a.class.grade,
+        })),
+      })),
+    );
+  }
 
-    // Validasi Sisi Frontend: Hanya Nama yang Wajib
-    if (!trimmedName) {
-      Alert.alert('Validation Error', 'Please enter Teacher Name');
-      return;
-    }
+  async findOne(id: string) {
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        assignments: { include: { class: true, academicYear: true } },
+        attendance: { include: { classSession: true } },
+      },
+    });
+    if (!teacher) throw new NotFoundException('Teacher not found');
 
-    try {
-      // Susun payload: Hanya masukkan field yang benar-benar terisi
-      const payload: Record<string, any> = {
-        name: trimmedName,
-        isActive,
-      };
+    const totalSessions = teacher.attendance.length;
+    const present = teacher.attendance.filter(
+      (a) => a.status === 'PRESENT',
+    ).length;
+    const absent = teacher.attendance.filter(
+      (a) => a.status === 'ABSENT',
+    ).length;
 
-      if (nickname.trim()) payload.nickname = nickname.trim();
-      if (email.trim()) payload.email = email.trim();
-      if (password.trim()) payload.password = password.trim();
-      if (dob.trim()) payload.dob = dob.trim();
-      if (contactNumber.trim()) payload.contactNumber = contactNumber.trim();
-      if (selectedClasses.length > 0) payload.classIds = selectedClasses;
-
-      await createMutation.mutateAsync({
-        data: payload as any,
+    const yearMap = new Map<
+      string,
+      {
+        academicYearId: string;
+        academicYearName: string;
+        startDate: Date;
+        classes: any[];
+      }
+    >();
+    for (const a of teacher.assignments) {
+      const yearId = a.academicYearId;
+      if (!yearMap.has(yearId)) {
+        yearMap.set(yearId, {
+          academicYearId: yearId,
+          academicYearName: a.academicYear.name,
+          startDate: a.academicYear.startDate,
+          classes: [],
+        });
+      }
+      yearMap.get(yearId)!.classes.push({
+        id: a.class.id,
+        name: a.class.name,
+        grade: a.class.grade,
       });
-
-      await queryClient.invalidateQueries();
-
-      Alert.alert('Success', 'Add teacher success', [
-        { text: 'OK', onPress: handleGoBack },
-      ]);
-    } catch (e) {
-      // Tampilkan error mendetail dari Backend jika ada kegagalan
-      const serverError = getErrorMessage(e, 'Failed to add teacher');
-      Alert.alert('Backend Error', serverError);
     }
-  };
+    const teachingHistory = Array.from(yearMap.values())
+      .sort((a, b) => b.startDate.getTime() - a.startDate.getTime())
+      .map((y) => ({
+        academicYearId: y.academicYearId,
+        academicYearName: y.academicYearName,
+        classes: y.classes,
+      }));
 
-  return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.topBar}>
-        <Pressable onPress={handleGoBack} style={styles.iconBtn}>
-          <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
-        </Pressable>
-        <Text style={styles.topTitle}>Add Teacher</Text>
-        <Pressable onPress={() => router.replace('/(tabs)')} style={styles.iconBtn}>
-          <Ionicons name="home-outline" size={22} color={Colors.primary} />
-        </Pressable>
-      </View>
+    return {
+      id: teacher.id,
+      userId: teacher.userId,
+      name: teacher.name,
+      nickname: teacher.nickname,
+      email: teacher.user.email,
+      isActive: teacher.isActive,
+      dob: teacher.dob ? teacher.dob.toISOString() : null,
+      age: this.calculateAge(teacher.dob),
+      contactNumber: teacher.contactNumber,
+      remarks: teacher.remarks,
+      photoFileId: teacher.photoFileId,
+      photoUrl: await this.safeFileUrl(teacher.photoFileId),
+      assignedClasses: teacher.assignments.map((a) => ({
+        id: a.class.id,
+        name: a.class.name,
+        grade: a.class.grade,
+      })),
+      assignedClassIds: teacher.assignments.map((a) => a.class.id),
+      teachingHistory,
+      attendanceSummary: {
+        totalSessions,
+        present,
+        absent,
+        percentage:
+          totalSessions > 0 ? Math.round((present / totalSessions) * 100) : 0,
+      },
+      createdAt: teacher.createdAt.toISOString(),
+    };
+  }
 
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Name (HANYA INI YANG WAJIB) */}
-        <Text style={styles.label}>Name *</Text>
-        <TextInput
-          style={styles.input}
-          value={name}
-          onChangeText={setName}
-          placeholder="Full name (Required)"
-          placeholderTextColor={Colors.textSecondary + '80'}
-        />
+  async create(data: {
+    name: string;
+    nickname?: string | null;
+    email?: string | null;
+    password?: string | null;
+    dob?: string | null;
+    contactNumber?: string | null;
+    remarks?: string | null;
+    photoFileId?: string | null;
+    isActive?: boolean;
+    classIds?: string[];
+  }) {
+    let email = data.email?.trim() || undefined;
+    let password = data.password?.trim() || undefined;
 
-        {/* Nickname */}
-        <Text style={styles.label}>Nickname (Optional)</Text>
-        <TextInput
-          style={styles.input}
-          value={nickname}
-          onChangeText={setNickname}
-          placeholder="Nickname"
-          placeholderTextColor={Colors.textSecondary + '80'}
-        />
+    if (!email) {
+      const base = (data.name || 'teacher')
+        .toLowerCase()
+        .replace(/\s+/g, '.')
+        .replace(/[^a-z0-9.]/g, '');
+      const candidate = `${base}.${Date.now()}@noemail.local`;
+      email = candidate;
+    }
+    if (!password) {
+      password = `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
+    }
 
-        {/* Email */}
-        <Text style={styles.label}>Email (Optional)</Text>
-        <TextInput
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCorrect={false}
-          autoComplete="off"
-          placeholder="teacher@example.com"
-          placeholderTextColor={Colors.textSecondary + '80'}
-        />
+    const existing = await this.prisma.user.findUnique({ where: { email } });
+    if (existing) {
+      throw new ConflictException('Email already in use');
+    }
 
-        {/* Password */}
-        <Text style={styles.label}>Password (Optional)</Text>
-        <TextInput
-          style={styles.input}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          autoCapitalize="none"
-          autoComplete="new-password"
-          placeholder="Min 6 characters"
-          placeholderTextColor={Colors.textSecondary + '80'}
-        />
+    const hashed = await bcrypt.hash(password, 10);
+    const user = await this.prisma.user.create({
+      data: {
+        email,
+        password: hashed,
+        name: data.name,
+        role: UserRole.TEACHER,
+      },
+    });
 
-        {/* Date of Birth */}
-        <Text style={styles.label}>Date of Birth (Optional, YYYY-MM-DD)</Text>
-        <TextInput
-          style={styles.input}
-          value={dob}
-          onChangeText={setDob}
-          placeholder="1990-01-01"
-          placeholderTextColor={Colors.textSecondary + '80'}
-        />
+    const academicYearId = data.classIds?.length
+      ? await requireAcademicYearId(this.prisma)
+      : undefined;
+    const teacher = await this.prisma.teacher.create({
+      data: {
+        userId: user.id,
+        name: data.name,
+        nickname: data.nickname ?? null,
+        isActive: data.isActive ?? true,
+        dob: data.dob ? new Date(data.dob) : null,
+        contactNumber: data.contactNumber ?? null,
+        remarks: data.remarks ?? null,
+        photoFileId: data.photoFileId ?? null,
+        assignments: data.classIds?.length
+          ? {
+              create: data.classIds.map((cid) => ({
+                classId: cid,
+                academicYearId: academicYearId!,
+              })),
+            }
+          : undefined,
+      },
+    });
+    return this.findOne(teacher.id);
+  }
 
-        {/* Contact Number */}
-        <Text style={styles.label}>Contact Number (Optional)</Text>
-        <TextInput
-          style={styles.input}
-          value={contactNumber}
-          onChangeText={setContactNumber}
-          keyboardType="phone-pad"
-          placeholder="+65 xxxx xxxx"
-          placeholderTextColor={Colors.textSecondary + '80'}
-        />
+  async update(
+    id: string,
+    data: {
+      name?: string;
+      nickname?: string | null;
+      email?: string | null;
+      password?: string | null;
+      dob?: string | null;
+      contactNumber?: string | null;
+      remarks?: string | null;
+      photoFileId?: string | null;
+      isActive?: boolean;
+      classIds?: string[];
+    },
+  ) {
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { id },
+      include: { user: true, assignments: true },
+    });
+    if (!teacher) throw new NotFoundException('Teacher not found');
 
-        {/* Teacher Status Switch */}
-        <View style={styles.statusRow}>
-          <View>
-            <Text style={styles.statusLabel}>Teacher Status</Text>
-            <Text style={styles.statusSubLabel}>{isActive ? 'Active' : 'Inactive'}</Text>
-          </View>
-          <Switch
-            value={isActive}
-            onValueChange={setIsActive}
-            trackColor={{ false: Colors.border, true: Colors.primary + '80' }}
-            thumbColor={isActive ? Colors.primary : '#f4f3f4'}
-          />
-        </View>
+    const dataToUpdate: Prisma.TeacherUncheckedUpdateInput = {};
+    if (data.name !== undefined) dataToUpdate.name = data.name;
+    if (data.nickname !== undefined) dataToUpdate.nickname = data.nickname;
+    if (data.isActive !== undefined) dataToUpdate.isActive = data.isActive;
+    if (data.dob !== undefined)
+      dataToUpdate.dob = data.dob ? new Date(data.dob) : null;
+    if (data.contactNumber !== undefined)
+      dataToUpdate.contactNumber = data.contactNumber;
+    if (data.remarks !== undefined) dataToUpdate.remarks = data.remarks;
+    if (data.photoFileId !== undefined)
+      dataToUpdate.photoFileId = data.photoFileId;
 
-        {/* Class Assignment */}
-        <Text style={[styles.label, { marginTop: Spacing.xl }]}>Assign to Classes (Optional)</Text>
-        <View style={styles.classGrid}>
-          {(classes ?? []).map((c) => (
-            <Pressable
-              key={c?.id}
-              style={[styles.classChip, selectedClasses.includes(c?.id ?? '') && styles.classChipSelected]}
-              onPress={() => toggleClass(c?.id ?? '')}
-            >
-              <Text style={[styles.classChipText, selectedClasses.includes(c?.id ?? '') && styles.classChipTextSelected]}>
-                {c?.name ?? ''}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
+    await this.prisma.teacher.update({ where: { id }, data: dataToUpdate });
 
-        <Pressable style={styles.saveButton} onPress={handleSave} disabled={createMutation.isPending}>
-          {createMutation.isPending ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>Create Teacher</Text>}
-        </Pressable>
-      </ScrollView>
-    </SafeAreaView>
-  );
+    // Login credentials editing (Email / Username + Password)
+    const userData: Prisma.UserUpdateInput = {};
+    if (data.email && data.email !== teacher.user.email) {
+      const existing = await this.prisma.user.findUnique({
+        where: { email: data.email },
+      });
+      if (existing && existing.id !== teacher.userId) {
+        throw new ConflictException('Email already in use');
+      }
+      userData.email = data.email;
+    }
+    if (data.password) {
+      userData.password = await bcrypt.hash(data.password, 10);
+    }
+    if (Object.keys(userData).length > 0) {
+      await this.prisma.user.update({
+        where: { id: teacher.userId },
+        data: userData,
+      });
+    }
+
+    // Sync class assignments for the active academic year when classIds is provided
+    if (data.classIds !== undefined) {
+      const academicYearId = await requireAcademicYearId(this.prisma);
+      const newIds = new Set(data.classIds);
+      const current = teacher.assignments.filter(
+        (a) => a.academicYearId === academicYearId,
+      );
+      // remove assignments no longer selected
+      const toRemove = current.filter((a) => !newIds.has(a.classId));
+      if (toRemove.length > 0) {
+        await this.prisma.teacherAssignment.deleteMany({
+          where: { id: { in: toRemove.map((a) => a.id) } },
+        });
+      }
+      // add newly selected
+      const toAdd = [...newIds].filter(
+        (cid) => !current.some((a) => a.classId === cid),
+      );
+      if (toAdd.length > 0) {
+        await this.prisma.teacherAssignment.createMany({
+          data: toAdd.map((classId) => ({
+            teacherId: id,
+            classId,
+            academicYearId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+    }
+
+    return this.findOne(id);
+  }
+
+  async setActive(id: string, isActive: boolean) {
+    const teacher = await this.prisma.teacher.findUnique({ where: { id } });
+    if (!teacher) throw new NotFoundException('Teacher not found');
+    await this.prisma.teacher.update({ where: { id }, data: { isActive } });
+    return this.findOne(id);
+  }
+
+  async remove(id: string) {
+    const teacher = await this.prisma.teacher.findUnique({ where: { id } });
+    if (!teacher) throw new NotFoundException('Teacher not found');
+    await this.prisma.teacher.delete({ where: { id } });
+    await this.prisma.user.delete({ where: { id: teacher.userId } });
+    return { success: true };
+  }
+
+  async findAvailableByClass(classId: string, academicYearId?: string) {
+    const yearId = await requireAcademicYearId(
+      this.prisma,
+      academicYearId,
+    ).catch(() => null);
+    const assignedIds = yearId
+      ? (
+          await this.prisma.teacherAssignment.findMany({
+            where: { classId, academicYearId: yearId },
+            select: { teacherId: true },
+          })
+        ).map((a) => a.teacherId)
+      : [];
+    const teachers = await this.prisma.teacher.findMany({
+      where: {
+        isActive: true,
+        ...(assignedIds.length ? { id: { notIn: assignedIds } } : {}),
+      },
+      include: { user: true },
+      orderBy: { name: 'asc' },
+    });
+    return teachers.map((t) => ({
+      id: t.id,
+      userId: t.userId,
+      name: t.name,
+      nickname: t.nickname,
+      isActive: t.isActive,
+      photoFileId: t.photoFileId,
+      photoUrl: null as string | null,
+    }));
+  }
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
-  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.lg, paddingVertical: Spacing.md },
-  iconBtn: { padding: Spacing.xs },
-  topTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
-  content: { padding: Spacing.lg, paddingBottom: Spacing.xxl * 2 },
-  label: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary, marginBottom: Spacing.xs, marginTop: Spacing.md },
-  input: { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: BorderRadius.md, padding: Spacing.md, fontSize: 16, color: Colors.textPrimary },
-  statusRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: Spacing.lg, paddingVertical: Spacing.xs },
-  statusLabel: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
-  statusSubLabel: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
-  classGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
-  classChip: { backgroundColor: Colors.surface, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, borderRadius: BorderRadius.full, borderWidth: 1, borderColor: Colors.border },
-  classChipSelected: { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  classChipText: { fontSize: 13, color: Colors.textSecondary, fontWeight: '600' },
-  classChipTextSelected: { color: '#fff' },
-  saveButton: { backgroundColor: Colors.primary, borderRadius: BorderRadius.md, padding: Spacing.lg, alignItems: 'center', marginTop: Spacing.xxl },
-  saveText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-});

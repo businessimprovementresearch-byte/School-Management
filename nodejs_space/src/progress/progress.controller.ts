@@ -4,6 +4,7 @@ import { ProgressService } from './progress.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ProgressResponseDto } from './dto/progress-response.dto';
 import { ProgressListResponseDto } from './dto/progress-list-response.dto';
+import { SessionProgressEntryDto } from './dto/progress-list-response.dto';
 import { CreateProgressDto } from './dto/create-progress.dto';
 import { BulkProgressDto } from './dto/bulk-progress.dto';
 
@@ -20,19 +21,26 @@ export class ProgressController {
 
   @Post('bulk')
   async bulkSave(@Body() dto: BulkProgressDto) {
-    return this.progressService.bulkSave(dto.classSessionId, dto.progressMetricId, dto.entries);
+    return this.progressService.bulkSave(
+      dto.classSessionId,
+      dto.progressMetricId,
+      dto.entries,
+    );
   }
 
   @Get('session')
   async findBySession(
     @Query('classSessionId') classSessionId: string,
     @Query('progressMetricId') progressMetricId: string,
-  ) {
+  ): Promise<SessionProgressEntryDto[]> {
     return this.progressService.findBySession(classSessionId, progressMetricId);
   }
 
   @Get()
-  async findByStudent(@Query('studentId') studentId: string): Promise<ProgressListResponseDto> {
-    return this.progressService.findByStudent(studentId);
+  async findByStudent(
+    @Query('studentId') studentId: string,
+    @Query('classId') classId?: string,
+  ): Promise<ProgressListResponseDto> {
+    return this.progressService.findByStudent(studentId, classId);
   }
 }

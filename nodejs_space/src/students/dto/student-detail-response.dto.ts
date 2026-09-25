@@ -26,7 +26,8 @@ export class AttendanceSummaryDto {
   @ApiProperty() late: number;
   @ApiProperty() excused: number;
   @ApiProperty() percentage: number;
-  @ApiProperty({ type: () => [PerClassAttendanceDto] }) perClass: PerClassAttendanceDto[];
+  @ApiProperty({ type: () => [PerClassAttendanceDto] })
+  perClass: PerClassAttendanceDto[];
 }
 
 export class RecentAttendanceDto {
@@ -71,6 +72,7 @@ export class StudentDetailResponseDto {
   @ApiProperty() id: string;
   @ApiProperty() name: string;
   @ApiProperty({ nullable: true, type: String }) nickname: string | null;
+  @ApiProperty() isActive: boolean;
   @ApiProperty({ nullable: true, type: String }) parentName: string | null;
   @ApiProperty({ nullable: true, type: String }) dob: string | null;
   @ApiProperty({ nullable: true, type: Number }) age: number | null;
@@ -78,13 +80,18 @@ export class StudentDetailResponseDto {
   @ApiProperty({ nullable: true, type: String }) remarks: string | null;
   @ApiProperty({ nullable: true, type: String }) photoFileId: string | null;
   @ApiProperty({ nullable: true, type: String }) photoUrl: string | null;
-  @ApiProperty({ type: () => [EnrollmentInfoDto] }) enrollments: EnrollmentInfoDto[];
-  @ApiProperty({ type: () => AttendanceSummaryDto }) attendanceSummary: AttendanceSummaryDto;
-  @ApiProperty({ type: () => [RecentAttendanceDto] }) recentAttendance: RecentAttendanceDto[];
+  @ApiProperty({ type: () => [EnrollmentInfoDto] })
+  enrollments: EnrollmentInfoDto[];
+  @ApiProperty({ type: () => AttendanceSummaryDto })
+  attendanceSummary: AttendanceSummaryDto;
+  @ApiProperty({ type: () => [RecentAttendanceDto] })
+  recentAttendance: RecentAttendanceDto[];
   @ApiProperty({ type: () => [ProgressInfoDto] }) progress: ProgressInfoDto[];
   @ApiProperty({ type: () => [FeedbackInfoDto] }) feedback: FeedbackInfoDto[];
-  @ApiProperty({ type: () => [ClassHistoryInfoDto] }) classHistory: ClassHistoryInfoDto[];
+  @ApiProperty({ type: () => [ClassHistoryInfoDto] })
+  classHistory: ClassHistoryInfoDto[];
   @ApiProperty() createdAt: string;
-  @ApiProperty({ nullable: true, type: String }) studentContactNumber: string | null;
+  @ApiProperty({ nullable: true, type: String }) studentContactNumber:
+    string | null;
   @ApiProperty({ nullable: true, type: String }) studentIdNumber: string | null;
 }
