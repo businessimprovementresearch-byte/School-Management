@@ -1,169 +1,211 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { UploadService } from '../upload/upload.service';
-import * as bcrypt from 'bcryptjs';
-import { UserRole } from '@prisma/client';
-import { requireAcademicYearId } from '../common/active-academic-year';
+import React, { useState } from 'react';
+import { View, Text, TextInput, ScrollView, StyleSheet, Pressable, Alert, ActivityIndicator, Switch } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useQueryClient } from '@tanstack/react-query';
+import { Colors, Spacing, BorderRadius } from '@/src/theme';
+import { useTeachersControllerCreate, useClassesControllerFindAll } from '@/src/api/generated/api';
+import { getErrorMessage } from '@/src/api/customFetch';
 
-@Injectable()
-export class TeachersService {
-  constructor(
-    private prisma: PrismaService,
-    private uploadService: UploadService,
-  ) { }
+export default function AddTeacherScreen() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const createMutation = useTeachersControllerCreate();
+  const { data: classes } = useClassesControllerFindAll();
 
-  private calculateAge(dob: Date | null): number | null {
-    if (!dob) return null;
-    else {
-      const today = new Date();
-      let age = today.getFullYear() - dob.getFullYear();
-      const m = today.getMonth() - dob.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
-      return age;
+  const [name, setName] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [dob, setDob] = useState('');
+  const [contactNumber, setContactNumber] = useState('');
+  const [isActive, setIsActive] = useState(true);
+  const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
+
+  const toggleClass = (id: string) => {
+    setSelectedClasses((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]));
+  };
+
+  const handleGoBack = () => {
+    if (router.canGoBack()) router.back();
+    else router.replace('/(tabs)');
+  };
+
+  const handleSave = async () => {
+    const trimmedName = name.trim();
+
+    // Validasi Sisi Frontend: Hanya Nama yang Wajib
+    if (!trimmedName) {
+      Alert.alert('Validation Error', 'Please enter Teacher Name');
+      return;
     }
-  }
 
-  async findAll() {
-    const teachers = await this.prisma.teacher.findMany({
-      include: {
-        user: true,
-        assignments: { include: { class: true } },
-      },
-      orderBy: { name: 'asc' },
-    });
-    return Promise.all(
-      teachers.map(async (t) => ({
-        id: t.id,
-        userId: t.userId,
-        name: t.name,
-        dob: t.dob ? t.dob.toISOString() : null,
-        age: this.calculateAge(t.dob),
-        contactNumber: t.contactNumber,
-        remarks: t.remarks,
-        photoFileId: t.photoFileId,
-        photoUrl: await this.uploadService.getFileUrlByFileId(t.photoFileId),
-        assignedClasses: t.assignments.map((a) => ({
-          id: a.class.id,
-          name: a.class.name,
-          grade: a.class.grade,
-        })),
-      })),
-    );
-  }
+    try {
+      // Susun payload: Hanya masukkan field yang benar-benar terisi
+      const payload: Record<string, any> = {
+        name: trimmedName,
+        isActive,
+      };
 
-  async findOne(id: string) {
-    const teacher = await this.prisma.teacher.findUnique({
-      where: { id },
-      include: {
-        user: true,
-        assignments: { include: { class: true, academicYear: true } },
-        attendance: { include: { classSession: true } },
-      },
-    });
-    if (!teacher) throw new NotFoundException('Teacher not found');
+      if (nickname.trim()) payload.nickname = nickname.trim();
+      if (email.trim()) payload.email = email.trim();
+      if (password.trim()) payload.password = password.trim();
+      if (dob.trim()) payload.dob = dob.trim();
+      if (contactNumber.trim()) payload.contactNumber = contactNumber.trim();
+      if (selectedClasses.length > 0) payload.classIds = selectedClasses;
 
-    const totalSessions = teacher.attendance.length;
-    const present = teacher.attendance.filter((a) => a.status === 'PRESENT').length;
-    const absent = teacher.attendance.filter((a) => a.status === 'ABSENT').length;
-    const yearMap = new Map<string, { academicYearId: string; academicYearName: string; startDate: Date; classes: any[] }>();
-    for (const a of teacher.assignments) {
-      const yearId = a.academicYearId;
-      if (!yearMap.has(yearId)) {
-        yearMap.set(yearId, { academicYearId: yearId, academicYearName: a.academicYear.name, startDate: a.academicYear.startDate, classes: [] });
-      }
-      yearMap.get(yearId)!.classes.push({ id: a.class.id, name: a.class.name, grade: a.class.grade });
+      await createMutation.mutateAsync({
+        data: payload as any,
+      });
+
+      await queryClient.invalidateQueries();
+
+      Alert.alert('Success', 'Add teacher success', [
+        { text: 'OK', onPress: handleGoBack },
+      ]);
+    } catch (e) {
+      // Tampilkan error mendetail dari Backend jika ada kegagalan
+      const serverError = getErrorMessage(e, 'Failed to add teacher');
+      Alert.alert('Backend Error', serverError);
     }
-    const teachingHistory = Array.from(yearMap.values())
-      .sort((a, b) => b.startDate.getTime() - a.startDate.getTime())
-      .map((y) => ({ academicYearId: y.academicYearId, academicYearName: y.academicYearName, classes: y.classes }));
+  };
 
-    return {
-      id: teacher.id,
-      userId: teacher.userId,
-      name: teacher.name,
-      dob: teacher.dob ? teacher.dob.toISOString() : null,
-      age: this.calculateAge(teacher.dob),
-      contactNumber: teacher.contactNumber,
-      remarks: teacher.remarks,
-      photoFileId: teacher.photoFileId,
-      photoUrl: await this.uploadService.getFileUrlByFileId(teacher.photoFileId),
-      assignedClasses: teacher.assignments.map((a) => ({
-        id: a.class.id,
-        name: a.class.name,
-        grade: a.class.grade,
-      })),
-      teachingHistory,
-      attendanceSummary: {
-        totalSessions,
-        present,
-        absent,
-        percentage: totalSessions > 0 ? Math.round((present / totalSessions) * 100) : 0,
-      },
-      createdAt: teacher.createdAt.toISOString(),
-    };
-  }
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.topBar}>
+        <Pressable onPress={handleGoBack} style={styles.iconBtn}>
+          <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
+        </Pressable>
+        <Text style={styles.topTitle}>Add Teacher</Text>
+        <Pressable onPress={() => router.replace('/(tabs)')} style={styles.iconBtn}>
+          <Ionicons name="home-outline" size={22} color={Colors.primary} />
+        </Pressable>
+      </View>
 
-  async create(data: {
-    email: string;
-    password: string;
-    name: string;
-    dob?: string | null;
-    contactNumber?: string | null;
-    remarks?: string;
-    photoFileId?: string | null;
-    classIds?: string[];
-  }) {
-    const hashed = await bcrypt.hash(data.password, 10);
-    const user = await this.prisma.user.create({
-      data: {
-        email: data.email,
-        password: hashed,
-        name: data.name,
-        role: UserRole.TEACHER,
-      },
-    });
-    const academicYearId = data.classIds?.length ? await requireAcademicYearId(this.prisma) : undefined;
-    const teacher = await this.prisma.teacher.create({
-      data: {
-        userId: user.id,
-        name: data.name,
-        dob: data.dob ? new Date(data.dob) : null,
-        contactNumber: data.contactNumber ?? null,
-        remarks: data.remarks ?? null,
-        photoFileId: data.photoFileId ?? null,
-        assignments: data.classIds?.length
-          ? { create: data.classIds.map((cid) => ({ classId: cid, academicYearId: academicYearId! })) }
-          : undefined,
-      },
-    });
-    return this.findOne(teacher.id);
-  }
+      <ScrollView contentContainerStyle={styles.content}>
+        {/* Name (HANYA INI YANG WAJIB) */}
+        <Text style={styles.label}>Name *</Text>
+        <TextInput
+          style={styles.input}
+          value={name}
+          onChangeText={setName}
+          placeholder="Full name (Required)"
+          placeholderTextColor={Colors.textSecondary + '80'}
+        />
 
-  async update(id: string, data: {
-    name?: string;
-    dob?: string;
-    contactNumber?: string;
-    remarks?: string;
-    photoFileId?: string | null;
-  }) {
-    await this.prisma.teacher.update({
-      where: { id },
-      data: {
-        ...(data.name !== undefined ? { name: data.name } : {}),
-        ...(data.dob !== undefined ? { dob: new Date(data.dob) } : {}),
-        ...(data.contactNumber !== undefined ? { contactNumber: data.contactNumber } : {}),
-        ...(data.remarks !== undefined ? { remarks: data.remarks } : {}),
-        ...(data.photoFileId !== undefined ? { photoFileId: data.photoFileId } : {}),
-      },
-    });
-    return this.findOne(id);
-  }
+        {/* Nickname */}
+        <Text style={styles.label}>Nickname (Optional)</Text>
+        <TextInput
+          style={styles.input}
+          value={nickname}
+          onChangeText={setNickname}
+          placeholder="Nickname"
+          placeholderTextColor={Colors.textSecondary + '80'}
+        />
 
-  async remove(id: string) {
-    const teacher = await this.prisma.teacher.findUnique({ where: { id } });
-    if (!teacher) throw new NotFoundException('Teacher not found');
-    await this.prisma.teacher.delete({ where: { id } });
-    await this.prisma.user.delete({ where: { id: teacher.userId } });
-    return { success: true };
-  }
+        {/* Email */}
+        <Text style={styles.label}>Email (Optional)</Text>
+        <TextInput
+          style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+          autoComplete="off"
+          placeholder="teacher@example.com"
+          placeholderTextColor={Colors.textSecondary + '80'}
+        />
+
+        {/* Password */}
+        <Text style={styles.label}>Password (Optional)</Text>
+        <TextInput
+          style={styles.input}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          autoCapitalize="none"
+          autoComplete="new-password"
+          placeholder="Min 6 characters"
+          placeholderTextColor={Colors.textSecondary + '80'}
+        />
+
+        {/* Date of Birth */}
+        <Text style={styles.label}>Date of Birth (Optional, YYYY-MM-DD)</Text>
+        <TextInput
+          style={styles.input}
+          value={dob}
+          onChangeText={setDob}
+          placeholder="1990-01-01"
+          placeholderTextColor={Colors.textSecondary + '80'}
+        />
+
+        {/* Contact Number */}
+        <Text style={styles.label}>Contact Number (Optional)</Text>
+        <TextInput
+          style={styles.input}
+          value={contactNumber}
+          onChangeText={setContactNumber}
+          keyboardType="phone-pad"
+          placeholder="+65 xxxx xxxx"
+          placeholderTextColor={Colors.textSecondary + '80'}
+        />
+
+        {/* Teacher Status Switch */}
+        <View style={styles.statusRow}>
+          <View>
+            <Text style={styles.statusLabel}>Teacher Status</Text>
+            <Text style={styles.statusSubLabel}>{isActive ? 'Active' : 'Inactive'}</Text>
+          </View>
+          <Switch
+            value={isActive}
+            onValueChange={setIsActive}
+            trackColor={{ false: Colors.border, true: Colors.primary + '80' }}
+            thumbColor={isActive ? Colors.primary : '#f4f3f4'}
+          />
+        </View>
+
+        {/* Class Assignment */}
+        <Text style={[styles.label, { marginTop: Spacing.xl }]}>Assign to Classes (Optional)</Text>
+        <View style={styles.classGrid}>
+          {(classes ?? []).map((c) => (
+            <Pressable
+              key={c?.id}
+              style={[styles.classChip, selectedClasses.includes(c?.id ?? '') && styles.classChipSelected]}
+              onPress={() => toggleClass(c?.id ?? '')}
+            >
+              <Text style={[styles.classChipText, selectedClasses.includes(c?.id ?? '') && styles.classChipTextSelected]}>
+                {c?.name ?? ''}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        <Pressable style={styles.saveButton} onPress={handleSave} disabled={createMutation.isPending}>
+          {createMutation.isPending ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>Create Teacher</Text>}
+        </Pressable>
+      </ScrollView>
+    </SafeAreaView>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: Colors.background },
+  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.lg, paddingVertical: Spacing.md },
+  iconBtn: { padding: Spacing.xs },
+  topTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
+  content: { padding: Spacing.lg, paddingBottom: Spacing.xxl * 2 },
+  label: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary, marginBottom: Spacing.xs, marginTop: Spacing.md },
+  input: { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: BorderRadius.md, padding: Spacing.md, fontSize: 16, color: Colors.textPrimary },
+  statusRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: Spacing.lg, paddingVertical: Spacing.xs },
+  statusLabel: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
+  statusSubLabel: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
+  classGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
+  classChip: { backgroundColor: Colors.surface, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, borderRadius: BorderRadius.full, borderWidth: 1, borderColor: Colors.border },
+  classChipSelected: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  classChipText: { fontSize: 13, color: Colors.textSecondary, fontWeight: '600' },
+  classChipTextSelected: { color: '#fff' },
+  saveButton: { backgroundColor: Colors.primary, borderRadius: BorderRadius.md, padding: Spacing.lg, alignItems: 'center', marginTop: Spacing.xxl },
+  saveText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+});
