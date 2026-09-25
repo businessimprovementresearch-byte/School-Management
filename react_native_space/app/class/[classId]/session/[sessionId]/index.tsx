@@ -102,7 +102,7 @@ export default function SessionDetailScreen() {
   const toggleStudentAtt = (id: string, status: AttStatus) => {
     setStudentAtt((prev) => ({ ...prev, [id]: status }));
   };
-
+//handle
   const handleSaveAttendance = async () => {
     setSaving(true);
     setAttError('');
