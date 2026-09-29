@@ -29,6 +29,9 @@ export default function TeachersListScreen() {
       <Avatar name={item?.name ?? ''} uri={item?.photoUrl} size={48} />
       <View style={styles.cardContent}>
         <Text style={styles.name}>{item?.name ?? 'Unknown'}</Text>
+        <Text style={styles.teacherName}>
+  {teacher.nickname ? `${teacher.nickname} (${teacher.name})` : teacher.name}
+</Text>
         <Text style={styles.sub}>{item?.contactNumber ?? ''}</Text>
         <View style={styles.classRow}>
           {(item?.assignedClasses ?? []).slice(0, 3).map(c => (

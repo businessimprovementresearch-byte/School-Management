@@ -1,335 +1,117 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, StyleSheet, Pressable, KeyboardAvoidingView, Platform, Switch } from 'react-native';
-import { Text, TextInput, Button, ActivityIndicator } from 'react-native-paper';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useQueryClient } from '@tanstack/react-query';
-import { useTeachersControllerFindOne, useTeachersControllerUpdate, useClassesControllerFindAll } from '@/src/api/generated/api';
-import { Ionicons } from '@expo/vector-icons';
-import { theme } from '@/src/theme';
-import { getErrorMessage } from '@/src/api/customFetch';
+import { View, Text, TextInput, Switch, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { customFetch } from '../../../src/api/customFetch';
 
 export default function EditTeacherScreen() {
+  const { teacherId } = useLocalSearchParams<{ teacherId: string }>();
   const router = useRouter();
-  const queryClient = useQueryClient();
-  const params = useLocalSearchParams<{ teacherId?: string; id?: string }>();
-
-  const effectiveId = (params.teacherId || params.id || '').toString();
-
-  const { data, isLoading } = useTeachersControllerFindOne(effectiveId, {
-    query: { enabled: !!effectiveId },
-  });
-  const { data: classes } = useClassesControllerFindAll();
-  const updateMutation = useTeachersControllerUpdate();
 
   const [name, setName] = useState('');
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [dob, setDob] = useState('');
   const [contactNumber, setContactNumber] = useState('');
+  const [dob, setDob] = useState('');
   const [remarks, setRemarks] = useState('');
   const [isActive, setIsActive] = useState(true);
-  const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (data) {
-      const t = data as any;
-      setName(t?.name ?? '');
-      setNickname(t?.nickname ?? '');
-      setEmail(t?.email ?? '');
-      setPassword('');
-      setDob(t?.dob ? t.dob.split('T')[0] : '');
-      setContactNumber(t?.contactNumber ?? t?.phone ?? '');
-      setRemarks(t?.remarks ?? '');
-      setIsActive(t?.isActive ?? true);
-
-      const initialClasses = t?.assignedClassIds ?? t?.assignedClasses?.map((c: any) => c.id) ?? t?.classIds ?? [];
-      setSelectedClasses(initialClasses);
+    if (teacherId) {
+      customFetch(`/api/teachers/${teacherId}`)
+        .then((data) => {
+          setName(data.name || '');
+          setNickname(data.nickname || '');
+          setEmail(data.email || '');
+          setContactNumber(data.contactNumber || '');
+          setDob(data.dob ? data.dob.split('T')[0] : '');
+          setRemarks(data.remarks || '');
+          setIsActive(data.isActive ?? true);
+        })
+        .catch((err) => Alert.alert('Error', 'Gagal memuat data guru'));
     }
-  }, [data]);
-
-  const toggleClass = (classId: string) => {
-    setSelectedClasses((prev) =>
-      prev.includes(classId) ? prev.filter((id) => id !== classId) : [...prev, classId]
-    );
-  };
-
-  const handleGoBack = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace('/(tabs)');
-    }
-  };
+  }, [teacherId]);
 
   const handleSave = async () => {
-    setError('');
-
-    if (!name?.trim()) {
-      setError('Name is required');
+    if (!name.trim()) {
+      Alert.alert('Validasi', 'Nama lengkap wajib diisi');
       return;
     }
 
+    setLoading(true);
     try {
       const payload: any = {
-        name: name.trim(),
-        nickname: nickname.trim() || undefined,
-        email: email.trim() || undefined,
-        dob: dob.trim() || undefined,
-        contactNumber: contactNumber.trim() || undefined,
-        remarks: remarks.trim() || undefined,
+        name,
+        nickname: nickname || null,
+        email: email || undefined,
+        contactNumber: contactNumber || null,
+        dob: dob || null,
+        remarks: remarks || null,
         isActive,
-        classIds: selectedClasses,
       };
 
-      if (password.trim()) {
-        payload.password = password.trim();
+      if (password.trim().length > 0) {
+        payload.password = password;
       }
 
-      await updateMutation.mutateAsync({
-        id: effectiveId,
-        data: payload,
+      await customFetch(`/api/teachers/${teacherId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
       });
 
-      await queryClient.invalidateQueries();
-      handleGoBack();
-    } catch (e) {
-      setError(getErrorMessage(e, 'Failed to update teacher'));
+      Alert.alert('Sukses', 'Data guru berhasil diperbarui');
+      router.back();
+    } catch (err: any) {
+      Alert.alert('Gagal', err.message || 'Terjadi kesalahan saat menyimpan');
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <ActivityIndicator style={{ marginTop: 60 }} color={theme.colors.primary} />
-      </SafeAreaView>
-    );
-  }
-
-  // Konfigurasi warna label dan teks input agar selalu terlihat jelas dan berwarna hitam
-  const inputTheme = {
-    colors: {
-      onSurfaceVariant: '#374151', // Warna label judul saat tidak fokus
-      primary: theme.colors.primary, // Warna border & label saat aktif fokus
-      text: '#000000',
-    },
-  };
-
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={handleGoBack} hitSlop={16}>
-          <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
-        </Pressable>
-        <Text style={styles.headerTitle}>Edit Teacher</Text>
-        <Pressable onPress={() => router.replace('/(tabs)')} hitSlop={16}>
-          <Ionicons name="home-outline" size={22} color={theme.colors.primary} />
-        </Pressable>
+    <ScrollView style={styles.container}>
+      <Text style={styles.title}>Edit Profile Guru</Text>
+
+      <Text style={styles.label}>Nama Lengkap *</Text>
+      <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Nama Guru" />
+
+      <Text style={styles.label}>Nama Panggilan (Nickname)</Text>
+      <TextInput style={styles.input} value={nickname} onChangeText={setNickname} placeholder="Contoh: Pak Budi" />
+
+      <Text style={styles.label}>Email (Detail Login)</Text>
+      <TextInput style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+
+      <Text style={styles.label}>Password Baru (Kosongkan jika tidak diubah)</Text>
+      <TextInput style={styles.input} value={password} onChangeText={setPassword} secureTextEntry placeholder="******" />
+
+      <Text style={styles.label}>Nomor Telepon (Opsional)</Text>
+      <TextInput style={styles.input} value={contactNumber} onChangeText={setContactNumber} keyboardType="phone-pad" />
+
+      <Text style={styles.label}>Tanggal Lahir (YYYY-MM-DD) (Opsional)</Text>
+      <TextInput style={styles.input} value={dob} onChangeText={setDob} placeholder="1990-01-01" />
+
+      <Text style={styles.label}>Catatan / Remarks (Opsional)</Text>
+      <TextInput style={styles.input} value={remarks} onChangeText={setRemarks} multiline numberOfLines={3} />
+
+      <View style={styles.switchRow}>
+        <Text style={styles.label}>Status Akun Aktif</Text>
+        <Switch value={isActive} onValueChange={setIsActive} />
       </View>
 
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.scroll}>
-          {!!error && <Text style={styles.error}>{error}</Text>}
-
-          {/* Name (Required) */}
-          <TextInput
-            label="Name *"
-            value={name}
-            onChangeText={setName}
-            mode="outlined"
-            textColor="#000000"
-            placeholder="e.g. Gurmukh Singh"
-            placeholderTextColor="#9CA3AF"
-            style={styles.input}
-            outlineColor="#D1D5DB"
-            activeOutlineColor={theme.colors.primary}
-            theme={inputTheme}
-          />
-
-          {/* Nickname (Optional) */}
-          <TextInput
-            label="Nickname (Optional)"
-            value={nickname}
-            onChangeText={setNickname}
-            mode="outlined"
-            textColor="#000000"
-            placeholder="e.g. Gurmukh"
-            placeholderTextColor="#9CA3AF"
-            style={styles.input}
-            outlineColor="#D1D5DB"
-            activeOutlineColor={theme.colors.primary}
-            theme={inputTheme}
-          />
-
-          {/* Email (Optional) */}
-          <TextInput
-            label="Email (Optional)"
-            value={email}
-            onChangeText={setEmail}
-            mode="outlined"
-            textColor="#000000"
-            placeholder="e.g. teacher@example.com"
-            placeholderTextColor="#9CA3AF"
-            style={styles.input}
-            outlineColor="#D1D5DB"
-            activeOutlineColor={theme.colors.primary}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            theme={inputTheme}
-          />
-
-          {/* Password (Optional) */}
-          <TextInput
-            label="Password (Optional)"
-            value={password}
-            onChangeText={setPassword}
-            mode="outlined"
-            textColor="#000000"
-            placeholder="New Password"
-            placeholderTextColor="#9CA3AF"
-            style={styles.input}
-            outlineColor="#D1D5DB"
-            activeOutlineColor={theme.colors.primary}
-            secureTextEntry
-            theme={inputTheme}
-          />
-
-          {/* Date of Birth */}
-          <TextInput
-            label="Date of Birth (YYYY-MM-DD)"
-            value={dob}
-            onChangeText={setDob}
-            mode="outlined"
-            textColor="#000000"
-            placeholder="YYYY-MM-DD"
-            placeholderTextColor="#9CA3AF"
-            style={styles.input}
-            outlineColor="#D1D5DB"
-            activeOutlineColor={theme.colors.primary}
-            theme={inputTheme}
-          />
-
-          {/* Contact Number */}
-          <TextInput
-            label="Contact Number"
-            value={contactNumber}
-            onChangeText={setContactNumber}
-            mode="outlined"
-            textColor="#000000"
-            placeholder="+62xxxxxxx"
-            placeholderTextColor="#9CA3AF"
-            style={styles.input}
-            outlineColor="#D1D5DB"
-            activeOutlineColor={theme.colors.primary}
-            keyboardType="phone-pad"
-            theme={inputTheme}
-          />
-
-          {/* Remarks */}
-          <TextInput
-            label="Remarks / Special Comments"
-            value={remarks}
-            onChangeText={setRemarks}
-            mode="outlined"
-            textColor="#000000"
-            placeholder="Notes"
-            placeholderTextColor="#9CA3AF"
-            style={styles.input}
-            outlineColor="#D1D5DB"
-            activeOutlineColor={theme.colors.primary}
-            multiline
-            numberOfLines={3}
-            theme={inputTheme}
-          />
-
-          {/* Status Switch */}
-          <View style={styles.statusContainer}>
-            <View>
-              <Text style={styles.statusTitle}>Teacher Status</Text>
-              <Text style={styles.statusSubTitle}>{isActive ? 'Active' : 'Inactive'}</Text>
-            </View>
-            <Switch
-              value={isActive}
-              onValueChange={setIsActive}
-              trackColor={{ false: '#D1D5DB', true: theme.colors.primary + '80' }}
-              thumbColor={isActive ? theme.colors.primary : '#F4F3F4'}
-            />
-          </View>
-
-          {/* Assign to Classes */}
-          <Text style={styles.sectionLabel}>Assign to Classes</Text>
-          <View style={styles.classGrid}>
-            {(classes ?? []).map((c) => {
-              const isSelected = selectedClasses.includes(c?.id ?? '');
-              return (
-                <Pressable
-                  key={c?.id}
-                  style={[styles.classChip, isSelected && styles.classChipSelected]}
-                  onPress={() => toggleClass(c?.id ?? '')}
-                >
-                  <Text style={[styles.classChipText, isSelected && styles.classChipTextSelected]}>
-                    {c?.name ?? ''}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-
-          {/* Save Button */}
-          <Button
-            mode="contained"
-            onPress={handleSave}
-            loading={updateMutation?.isPending}
-            disabled={updateMutation?.isPending}
-            style={styles.btn}
-            buttonColor={theme.colors.primary}
-          >
-            Save Changes
-          </Button>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={loading}>
+        <Text style={styles.saveButtonText}>{loading ? 'Saving...' : 'Simpan Perubahan'}</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: theme.colors.text },
-  scroll: { padding: 16, paddingBottom: 40 },
-  input: { marginBottom: 14, backgroundColor: '#FFFFFF', fontSize: 15 },
-  error: { color: theme.colors.error, marginBottom: 12, textAlign: 'center' },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 4,
-    marginVertical: 8,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  statusTitle: { fontSize: 14, fontWeight: '600', color: '#111827' },
-  statusSubTitle: { fontSize: 12, color: '#6B7280', marginTop: 2 },
-  sectionLabel: { fontSize: 14, fontWeight: '600', color: '#111827', marginTop: 12, marginBottom: 8 },
-  classGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
-  classChip: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  classChipSelected: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  classChipText: { fontSize: 13, color: '#374151', fontWeight: '500' },
-  classChipTextSelected: { color: '#FFFFFF', fontWeight: '700' },
-  btn: { marginTop: 12, borderRadius: 8, paddingVertical: 4 },
+  container: { flex: 1, padding: 16, backgroundColor: '#FFF' },
+  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 16 },
+  label: { fontSize: 14, fontWeight: '600', marginTop: 12, marginBottom: 4 },
+  input: { borderWidth: 1, borderColor: '#CCC', borderRadius: 8, padding: 10, fontSize: 15 },
+  switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 },
+  saveButton: { backgroundColor: '#FF6B00', padding: 14, borderRadius: 8, alignItems: 'center', marginTop: 24, marginBottom: 40 },
+  saveButtonText: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
 });
