@@ -22,6 +22,9 @@ export class AuthService {
     });
     if (!user) throw new UnauthorizedException('Invalid credentials');
     const valid = await bcrypt.compare(password, user.password);
+    if (user.teacher && !user.teacher.isActive) {
+  throw new UnauthorizedException('Akun Anda dalam status nonaktif. Silakan hubungi admin.');
+}
     if (!valid) throw new UnauthorizedException('Invalid credentials');
     if (user.teacher && !user.teacher.isActive) {
       throw new UnauthorizedException(

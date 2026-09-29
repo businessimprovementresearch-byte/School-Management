@@ -65,9 +65,11 @@ model Teacher {
   id                  String               @id @default(uuid())
   userId              String               @unique
   name                String
+  nickname            String?
+  isActive            Boolean              @default(true)
   dob                 DateTime?
   contactNumber       String?
-  remarks             String?                @db.Text
+  remarks             String?              @db.Text
   photoFileId         String?
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
