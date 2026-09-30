@@ -22,13 +22,20 @@ export default function TeacherDetailScreen() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
 
-  const { data, isLoading, refetch } = useTeachersControllerFindOne(teacherId, { query: { enabled: !!teacherId } });
+  // Alias result `data` menjadi `teacher` untuk mencegah ReferenceError "teacher is not defined"
+  const { data: teacher, isLoading, refetch } = useTeachersControllerFindOne(teacherId, {
+    query: { enabled: !!teacherId },
+  });
   const deleteMutation = useTeachersControllerRemove();
   const updateMutation = useTeachersControllerUpdate();
 
-  useFocusEffect(React.useCallback(() => { if (teacherId) refetch(); }, [teacherId]));
+  useFocusEffect(
+    React.useCallback(() => {
+      if (teacherId) refetch();
+    }, [teacherId, refetch])
+  );
 
-  const isActive = data?.isActive ?? true;
+  const isActive = teacher?.isActive ?? true;
 
   const handleToggleStatus = () => {
     const newStatus = !isActive;
@@ -50,7 +57,7 @@ export default function TeacherDetailScreen() {
     };
 
     if (Platform.OS === 'web') {
-      if (confirm(`${actionText} teacher "${data?.name ?? 'this teacher'}"?`)) doToggle();
+      if (confirm(`${actionText} teacher "${teacher?.name ?? 'this teacher'}"?`)) doToggle();
     } else {
       Alert.alert(`${actionText} Teacher`, `Are you sure you want to ${actionText.toLowerCase()} this teacher?`, [
         { text: 'Cancel', style: 'cancel' },
@@ -61,67 +68,122 @@ export default function TeacherDetailScreen() {
 
   const handleDelete = () => {
     const doDelete = () => {
-      deleteMutation.mutate({ id: teacherId }, {
-        onSuccess: async () => {
-          await queryClient.invalidateQueries();
-          router.back();
-        },
-      });
+      deleteMutation.mutate(
+        { id: teacherId },
+        {
+          onSuccess: async () => {
+            await queryClient.invalidateQueries();
+            router.back();
+          },
+        }
+      );
     };
-    if (Platform.OS === 'web') { if (confirm('Remove this teacher?')) doDelete(); }
-    else { Alert.alert('Remove Teacher', 'Are you sure?', [{ text: 'Cancel', style: 'cancel' }, { text: 'Remove', style: 'destructive', onPress: doDelete }]); }
+    if (Platform.OS === 'web') {
+      if (confirm('Remove this teacher?')) doDelete();
+    } else {
+      Alert.alert('Remove Teacher', 'Are you sure?', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Remove', style: 'destructive', onPress: doDelete },
+      ]);
+    }
   };
 
-  if (isLoading || !data) return <SafeAreaView style={styles.container}><ActivityIndicator style={{ marginTop: 60 }} color={theme.colors.primary} /></SafeAreaView>;
+  if (isLoading || !teacher) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator style={{ marginTop: 60 }} color={theme.colors.primary} />
+      </SafeAreaView>
+    );
+  }
+
+  const displayName = teacher.nickname ? `${teacher.nickname} (${teacher.name})` : teacher.name;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={16}><Ionicons name="arrow-back" size={24} color={theme.colors.text} /></Pressable>
+        <Pressable onPress={() => router.back()} hitSlop={16}>
+          <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
+        </Pressable>
         <Text style={styles.headerTitle}>Teacher Profile</Text>
-        {isAdmin ? <Pressable onPress={() => router.push(`/teacher/${teacherId}/edit`)} hitSlop={16}><Ionicons name="create-outline" size={22} color={theme.colors.primary} /></Pressable> : <View style={{ width: 22 }} />}
+        {isAdmin ? (
+          <Pressable onPress={() => router.push(`/teacher/${teacherId}/edit`)} hitSlop={16}>
+            <Ionicons name="create-outline" size={22} color={theme.colors.primary} />
+          </Pressable>
+        ) : (
+          <View style={{ width: 22 }} />
+        )}
       </View>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.profileSection}>
-          <Avatar name={data?.name ?? ''} uri={data?.photoUrl} size={80} />
+          <Avatar name={teacher?.name ?? ''} uri={teacher?.photoUrl} size={80} />
           <View style={styles.nameRow}>
-            <Text style={styles.name}>{data?.name ?? ''}</Text>
+            <Text style={styles.name}>{displayName}</Text>
             <View style={[styles.statusBadge, isActive ? styles.activeBadge : styles.inactiveBadge]}>
               <Text style={[styles.statusBadgeText, isActive ? styles.activeBadgeText : styles.inactiveBadgeText]}>
                 {isActive ? 'ACTIVE' : 'INACTIVE'}
               </Text>
             </View>
           </View>
-          <Text style={styles.sub}>Age: {data?.age ?? '-'} • {data?.contactNumber ?? '-'}</Text>
+          <Text style={styles.sub}>
+            {teacher?.email ? `${teacher.email} • ` : ''}Age: {teacher?.age ?? '-'} • {teacher?.contactNumber ?? '-'}
+          </Text>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Attendance Summary</Text>
           <View style={styles.statsRow}>
-            <View style={styles.statBox}><Text style={styles.statNum}>{data?.attendanceSummary?.totalSessions ?? 0}</Text><Text style={styles.statLabel}>Sessions</Text></View>
-            <View style={styles.statBox}><Text style={[styles.statNum, { color: theme.colors.success }]}>{data?.attendanceSummary?.present ?? 0}</Text><Text style={styles.statLabel}>Present</Text></View>
-            <View style={styles.statBox}><Text style={[styles.statNum, { color: theme.colors.error }]}>{data?.attendanceSummary?.absent ?? 0}</Text><Text style={styles.statLabel}>Absent</Text></View>
-            <View style={styles.statBox}><Text style={[styles.statNum, { color: theme.colors.primary }]}>{data?.attendanceSummary?.percentage ?? 0}%</Text><Text style={styles.statLabel}>Rate</Text></View>
+            <View style={styles.statBox}>
+              <Text style={styles.statNum}>{teacher?.attendanceSummary?.totalSessions ?? 0}</Text>
+              <Text style={styles.statLabel}>Sessions</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={[styles.statNum, { color: theme.colors.success }]}>
+                {teacher?.attendanceSummary?.present ?? 0}
+              </Text>
+              <Text style={styles.statLabel}>Present</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={[styles.statNum, { color: theme.colors.error }]}>
+                {teacher?.attendanceSummary?.absent ?? 0}
+              </Text>
+              <Text style={styles.statLabel}>Absent</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={[styles.statNum, { color: theme.colors.primary }]}>
+                {teacher?.attendanceSummary?.percentage ?? 0}%
+              </Text>
+              <Text style={styles.statLabel}>Rate</Text>
+            </View>
           </View>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Assigned Classes</Text>
-          {(data?.assignedClasses ?? []).length === 0 ? <Text style={styles.emptyText}>No classes assigned</Text> : (data?.assignedClasses ?? []).map(c => (
-            <Pressable key={c?.id} style={styles.classCard} onPress={() => router.push(`/class/${c?.id}`)}>
-              <View style={styles.classIcon}><Ionicons name="school-outline" size={20} color={theme.colors.primary} /></View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.className}>{c?.name ?? ''}</Text>
-                <Text style={styles.classGrade}>Grade {c?.grade ?? ''}</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={theme.colors.textSecondary} />
-            </Pressable>
-          ))}
+          {(teacher?.assignedClasses ?? []).length === 0 ? (
+            <Text style={styles.emptyText}>No classes assigned</Text>
+          ) : (
+            (teacher?.assignedClasses ?? []).map((c) => (
+              <Pressable key={c?.id} style={styles.classCard} onPress={() => router.push(`/class/${c?.id}`)}>
+                <View style={styles.classIcon}>
+                  <Ionicons name="school-outline" size={20} color={theme.colors.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.className}>{c?.name ?? ''}</Text>
+                  <Text style={styles.classGrade}>Grade {c?.grade ?? ''}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={theme.colors.textSecondary} />
+              </Pressable>
+            ))
+          )}
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Remarks</Text>
-          {data?.remarks ? <Text style={styles.remarksText}>{data.remarks}</Text> : <Text style={styles.emptyText}>No remarks added</Text>}
+          {teacher?.remarks ? (
+            <Text style={styles.remarksText}>{teacher.remarks}</Text>
+          ) : (
+            <Text style={styles.emptyText}>No remarks added</Text>
+          )}
         </View>
 
         {isAdmin && (

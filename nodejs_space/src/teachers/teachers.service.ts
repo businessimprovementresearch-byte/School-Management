@@ -32,10 +32,12 @@ export class TeachersService {
     });
 
     return Promise.all(
-      teachers.map(async (t) => ({
+      teachers.map(async (t: any) => ({
         id: t.id,
         userId: t.userId,
         name: t.name,
+        nickname: t.nickname ?? null,
+        isActive: t.isActive ?? true,
         email: t.user.email,
         dob: t.dob ? t.dob.toISOString() : null,
         age: this.calculateAge(t.dob),
@@ -43,7 +45,7 @@ export class TeachersService {
         remarks: t.remarks,
         photoFileId: t.photoFileId,
         photoUrl: await this.uploadService.getFileUrlByFileId(t.photoFileId),
-        assignedClasses: t.assignments.map((a) => ({
+        assignedClasses: (t.assignments || []).map((a: any) => ({
           id: a.class.id,
           name: a.class.name,
           grade: a.class.grade,
@@ -68,10 +70,14 @@ export class TeachersService {
     const presentCount = teacher.attendance.filter((a) => a.status === 'PRESENT').length;
     const absentCount = teacher.attendance.filter((a) => a.status === 'ABSENT').length;
 
+    const tAny = teacher as any;
+
     return {
       id: teacher.id,
       userId: teacher.userId,
       name: teacher.name,
+      nickname: tAny.nickname ?? null,
+      isActive: tAny.isActive ?? true,
       email: teacher.user.email,
       dob: teacher.dob ? teacher.dob.toISOString() : null,
       age: this.calculateAge(teacher.dob),
@@ -79,12 +85,12 @@ export class TeachersService {
       remarks: teacher.remarks,
       photoFileId: teacher.photoFileId,
       photoUrl: await this.uploadService.getFileUrlByFileId(teacher.photoFileId),
-      assignedClasses: teacher.assignments.map((a) => ({
+      assignedClasses: (teacher.assignments || []).map((a) => ({
         id: a.class.id,
         name: a.class.name,
         grade: a.class.grade,
       })),
-      assignedClassIds: teacher.assignments.map((a) => a.classId),
+      assignedClassIds: (teacher.assignments || []).map((a) => a.classId),
       teachingHistory: [],
       attendanceSummary: {
         totalSessions,
@@ -96,7 +102,7 @@ export class TeachersService {
     };
   }
 
-  async create(dto: CreateTeacherDto) {
+  async create(dto: CreateTeacherDto & { nickname?: string; isActive?: boolean }) {
     const email = dto.email || `teacher_${Date.now()}@school.internal`;
     const password = dto.password || 'password123';
 
@@ -114,15 +120,20 @@ export class TeachersService {
       },
     });
 
+    const teacherData: any = {
+      userId: user.id,
+      name: dto.name,
+      dob: dto.dob ? new Date(dto.dob) : null,
+      contactNumber: dto.contactNumber || null,
+      remarks: dto.remarks || null,
+      photoFileId: dto.photoFileId || null,
+    };
+
+    if (dto.nickname !== undefined) teacherData.nickname = dto.nickname;
+    if (dto.isActive !== undefined) teacherData.isActive = dto.isActive;
+
     const teacher = await this.prisma.teacher.create({
-      data: {
-        userId: user.id,
-        name: dto.name,
-        dob: dto.dob ? new Date(dto.dob) : null,
-        contactNumber: dto.contactNumber || null,
-        remarks: dto.remarks || null,
-        photoFileId: dto.photoFileId || null,
-      },
+      data: teacherData,
     });
 
     if (dto.classIds && dto.classIds.length > 0) {
@@ -141,11 +152,11 @@ export class TeachersService {
     return this.findOne(teacher.id);
   }
 
-  async update(id: string, dto: UpdateTeacherDto) {
+  async update(id: string, dto: UpdateTeacherDto & { nickname?: string; isActive?: boolean }) {
     const teacher = await this.prisma.teacher.findUnique({ where: { id } });
     if (!teacher) throw new NotFoundException('Guru tidak ditemukan');
 
-    // Update data akun login pada tabel User jika ada
+    // 1. Update data akun login pada tabel User jika ada perubahan email/password/name
     if (dto.email || dto.password || dto.name) {
       const userUpdateData: { email?: string; password?: string; name?: string } = {};
       if (dto.name) userUpdateData.name = dto.name;
@@ -165,19 +176,24 @@ export class TeachersService {
       });
     }
 
-    // Update profil pada tabel Teacher
-    await this.prisma.teacher.update({
-      where: { id },
-      data: {
-        ...(dto.name !== undefined && { name: dto.name }),
-        ...(dto.dob !== undefined && { dob: dto.dob ? new Date(dto.dob) : null }),
-        ...(dto.contactNumber !== undefined && { contactNumber: dto.contactNumber }),
-        ...(dto.remarks !== undefined && { remarks: dto.remarks }),
-        ...(dto.photoFileId !== undefined && { photoFileId: dto.photoFileId }),
-      },
-    });
+    // 2. Update profil pada tabel Teacher
+    const updateTeacherData: any = {};
+    if (dto.name !== undefined) updateTeacherData.name = dto.name;
+    if (dto.nickname !== undefined) updateTeacherData.nickname = dto.nickname;
+    if (dto.isActive !== undefined) updateTeacherData.isActive = dto.isActive;
+    if (dto.dob !== undefined) updateTeacherData.dob = dto.dob ? new Date(dto.dob) : null;
+    if (dto.contactNumber !== undefined) updateTeacherData.contactNumber = dto.contactNumber;
+    if (dto.remarks !== undefined) updateTeacherData.remarks = dto.remarks;
+    if (dto.photoFileId !== undefined) updateTeacherData.photoFileId = dto.photoFileId;
 
-    // Update penugasan kelas jika dikirimkan
+    if (Object.keys(updateTeacherData).length > 0) {
+      await this.prisma.teacher.update({
+        where: { id },
+        data: updateTeacherData,
+      });
+    }
+
+    // 3. Update penugasan kelas jika dikirimkan
     if (dto.classIds !== undefined) {
       const activeYear = await this.prisma.academicYear.findFirst({ where: { isActive: true } });
       if (activeYear) {
