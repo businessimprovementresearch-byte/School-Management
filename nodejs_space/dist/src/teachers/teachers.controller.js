@@ -39,8 +39,8 @@ let TeachersController = class TeachersController {
     async update(id, dto) {
         return this.teachersService.update(id, dto);
     }
-    async setActive(id, dto) {
-        return this.teachersService.setActive(id, dto.isActive);
+    async setActive(id, isActive) {
+        return this.teachersService.setActive(id, isActive);
     }
     async remove(id) {
         return this.teachersService.remove(id);
@@ -50,14 +50,14 @@ exports.TeachersController = TeachersController;
 __decorate([
     (0, common_1.Get)(),
     (0, roles_decorator_1.Roles)('ADMIN'),
-    openapi.ApiResponse({ status: 200, type: [require("./dto/teacher-list-response.dto").TeacherListItemDto] }),
+    openapi.ApiResponse({ status: 200 }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], TeachersController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    openapi.ApiResponse({ status: 200, type: require("./dto/teacher-detail-response.dto").TeacherDetailResponseDto }),
+    openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -66,7 +66,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)(),
     (0, roles_decorator_1.Roles)('ADMIN'),
-    openapi.ApiResponse({ status: 201, type: require("./dto/teacher-detail-response.dto").TeacherDetailResponseDto }),
+    openapi.ApiResponse({ status: 201 }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_teacher_dto_1.CreateTeacherDto]),
@@ -74,7 +74,8 @@ __decorate([
 ], TeachersController.prototype, "create", null);
 __decorate([
     (0, common_1.Patch)(':id'),
-    openapi.ApiResponse({ status: 200, type: require("./dto/teacher-detail-response.dto").TeacherDetailResponseDto }),
+    (0, roles_decorator_1.Roles)('ADMIN', 'TEACHER'),
+    openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -84,17 +85,17 @@ __decorate([
 __decorate([
     (0, common_1.Patch)(':id/active'),
     (0, roles_decorator_1.Roles)('ADMIN'),
-    openapi.ApiResponse({ status: 200, type: require("./dto/teacher-detail-response.dto").TeacherDetailResponseDto }),
+    openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)()),
+    __param(1, (0, common_1.Body)('isActive')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, Boolean]),
     __metadata("design:returntype", Promise)
 ], TeachersController.prototype, "setActive", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     (0, roles_decorator_1.Roles)('ADMIN'),
-    openapi.ApiResponse({ status: 200, type: require("../common/dto/success-response.dto").SuccessResponseDto }),
+    openapi.ApiResponse({ status: 200 }),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

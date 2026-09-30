@@ -36,9 +36,8 @@ exports.TeachersService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const upload_service_1 = require("../upload/upload.service");
-const client_1 = require("@prisma/client");
 const bcrypt = __importStar(require("bcryptjs"));
-const active_academic_year_1 = require("../common/active-academic-year");
+const client_1 = require("@prisma/client");
 let TeachersService = class TeachersService {
     prisma;
     uploadService;
@@ -56,9 +55,6 @@ let TeachersService = class TeachersService {
             age--;
         return age;
     }
-    async safeFileUrl(fileId) {
-        return this.uploadService.getFileUrlByFileId(fileId);
-    }
     async findAll() {
         const teachers = await this.prisma.teacher.findMany({
             include: {
@@ -72,14 +68,14 @@ let TeachersService = class TeachersService {
             userId: t.userId,
             name: t.name,
             nickname: t.nickname,
-            email: t.user.email,
             isActive: t.isActive,
+            email: t.user.email,
             dob: t.dob ? t.dob.toISOString() : null,
             age: this.calculateAge(t.dob),
             contactNumber: t.contactNumber,
             remarks: t.remarks,
             photoFileId: t.photoFileId,
-            photoUrl: await this.safeFileUrl(t.photoFileId),
+            photoUrl: await this.uploadService.getFileUrlByFileId(t.photoFileId),
             assignedClasses: t.assignments.map((a) => ({
                 id: a.class.id,
                 name: a.class.name,
@@ -97,34 +93,10 @@ let TeachersService = class TeachersService {
             },
         });
         if (!teacher)
-            throw new common_1.NotFoundException('Teacher not found');
+            throw new common_1.NotFoundException('Guru tidak ditemukan');
         const totalSessions = teacher.attendance.length;
-        const present = teacher.attendance.filter((a) => a.status === 'PRESENT').length;
-        const absent = teacher.attendance.filter((a) => a.status === 'ABSENT').length;
-        const yearMap = new Map();
-        for (const a of teacher.assignments) {
-            const yearId = a.academicYearId;
-            if (!yearMap.has(yearId)) {
-                yearMap.set(yearId, {
-                    academicYearId: yearId,
-                    academicYearName: a.academicYear.name,
-                    startDate: a.academicYear.startDate,
-                    classes: [],
-                });
-            }
-            yearMap.get(yearId).classes.push({
-                id: a.class.id,
-                name: a.class.name,
-                grade: a.class.grade,
-            });
-        }
-        const teachingHistory = Array.from(yearMap.values())
-            .sort((a, b) => b.startDate.getTime() - a.startDate.getTime())
-            .map((y) => ({
-            academicYearId: y.academicYearId,
-            academicYearName: y.academicYearName,
-            classes: y.classes,
-        }));
+        const presentCount = teacher.attendance.filter((a) => a.status === 'PRESENT').length;
+        const absentCount = teacher.attendance.filter((a) => a.status === 'ABSENT').length;
         return {
             id: teacher.id,
             userId: teacher.userId,
@@ -137,137 +109,113 @@ let TeachersService = class TeachersService {
             contactNumber: teacher.contactNumber,
             remarks: teacher.remarks,
             photoFileId: teacher.photoFileId,
-            photoUrl: await this.safeFileUrl(teacher.photoFileId),
+            photoUrl: await this.uploadService.getFileUrlByFileId(teacher.photoFileId),
             assignedClasses: teacher.assignments.map((a) => ({
                 id: a.class.id,
                 name: a.class.name,
                 grade: a.class.grade,
             })),
-            assignedClassIds: teacher.assignments.map((a) => a.class.id),
-            teachingHistory,
+            assignedClassIds: teacher.assignments.map((a) => a.classId),
+            teachingHistory: [],
             attendanceSummary: {
                 totalSessions,
-                present,
-                absent,
-                percentage: totalSessions > 0 ? Math.round((present / totalSessions) * 100) : 0,
+                present: presentCount,
+                absent: absentCount,
+                percentage: totalSessions > 0 ? Math.round((presentCount / totalSessions) * 100) : 0,
             },
             createdAt: teacher.createdAt.toISOString(),
         };
     }
-    async create(data) {
-        let email = data.email?.trim() || undefined;
-        let password = data.password?.trim() || undefined;
-        if (!email) {
-            const base = (data.name || 'teacher')
-                .toLowerCase()
-                .replace(/\s+/g, '.')
-                .replace(/[^a-z0-9.]/g, '');
-            const candidate = `${base}.${Date.now()}@noemail.local`;
-            email = candidate;
-        }
-        if (!password) {
-            password = `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
-        }
-        const existing = await this.prisma.user.findUnique({ where: { email } });
-        if (existing) {
-            throw new common_1.ConflictException('Email already in use');
-        }
-        const hashed = await bcrypt.hash(password, 10);
+    async create(dto) {
+        const email = dto.email || `teacher_${Date.now()}@school.internal`;
+        const password = dto.password || 'password123';
+        const existingUser = await this.prisma.user.findUnique({ where: { email } });
+        if (existingUser)
+            throw new common_1.ConflictException('Email sudah digunakan');
+        const hashedPassword = await bcrypt.hash(password, 10);
         const user = await this.prisma.user.create({
             data: {
                 email,
-                password: hashed,
-                name: data.name,
+                password: hashedPassword,
+                name: dto.name,
                 role: client_1.UserRole.TEACHER,
             },
         });
-        const academicYearId = data.classIds?.length
-            ? await (0, active_academic_year_1.requireAcademicYearId)(this.prisma)
-            : undefined;
         const teacher = await this.prisma.teacher.create({
             data: {
                 userId: user.id,
-                name: data.name,
-                nickname: data.nickname ?? null,
-                isActive: data.isActive ?? true,
-                dob: data.dob ? new Date(data.dob) : null,
-                contactNumber: data.contactNumber ?? null,
-                remarks: data.remarks ?? null,
-                photoFileId: data.photoFileId ?? null,
-                assignments: data.classIds?.length
-                    ? {
-                        create: data.classIds.map((cid) => ({
-                            classId: cid,
-                            academicYearId: academicYearId,
-                        })),
-                    }
-                    : undefined,
+                name: dto.name,
+                nickname: dto.nickname || null,
+                isActive: dto.isActive ?? true,
+                dob: dto.dob ? new Date(dto.dob) : null,
+                contactNumber: dto.contactNumber || null,
+                remarks: dto.remarks || null,
+                photoFileId: dto.photoFileId || null,
             },
         });
+        if (dto.classIds && dto.classIds.length > 0) {
+            const activeYear = await this.prisma.academicYear.findFirst({ where: { isActive: true } });
+            if (activeYear) {
+                await this.prisma.teacherAssignment.createMany({
+                    data: dto.classIds.map((classId) => ({
+                        teacherId: teacher.id,
+                        classId,
+                        academicYearId: activeYear.id,
+                    })),
+                });
+            }
+        }
         return this.findOne(teacher.id);
     }
-    async update(id, data) {
-        const teacher = await this.prisma.teacher.findUnique({
-            where: { id },
-            include: { user: true, assignments: true },
-        });
+    async update(id, dto) {
+        const teacher = await this.prisma.teacher.findUnique({ where: { id }, include: { user: true } });
         if (!teacher)
-            throw new common_1.NotFoundException('Teacher not found');
-        const dataToUpdate = {};
-        if (data.name !== undefined)
-            dataToUpdate.name = data.name;
-        if (data.nickname !== undefined)
-            dataToUpdate.nickname = data.nickname;
-        if (data.isActive !== undefined)
-            dataToUpdate.isActive = data.isActive;
-        if (data.dob !== undefined)
-            dataToUpdate.dob = data.dob ? new Date(data.dob) : null;
-        if (data.contactNumber !== undefined)
-            dataToUpdate.contactNumber = data.contactNumber;
-        if (data.remarks !== undefined)
-            dataToUpdate.remarks = data.remarks;
-        if (data.photoFileId !== undefined)
-            dataToUpdate.photoFileId = data.photoFileId;
-        await this.prisma.teacher.update({ where: { id }, data: dataToUpdate });
-        const userData = {};
-        if (data.email && data.email !== teacher.user.email) {
-            const existing = await this.prisma.user.findUnique({
-                where: { email: data.email },
-            });
-            if (existing && existing.id !== teacher.userId) {
-                throw new common_1.ConflictException('Email already in use');
+            throw new common_1.NotFoundException('Guru tidak ditemukan');
+        if (dto.email || dto.password) {
+            const userUpdateData = {};
+            if (dto.email) {
+                const emailExists = await this.prisma.user.findFirst({
+                    where: { email: dto.email, NOT: { id: teacher.userId } },
+                });
+                if (emailExists)
+                    throw new common_1.ConflictException('Email sudah digunakan oleh pengguna lain');
+                userUpdateData.email = dto.email;
             }
-            userData.email = data.email;
-        }
-        if (data.password) {
-            userData.password = await bcrypt.hash(data.password, 10);
-        }
-        if (Object.keys(userData).length > 0) {
+            if (dto.password) {
+                userUpdateData.password = await bcrypt.hash(dto.password, 10);
+            }
             await this.prisma.user.update({
                 where: { id: teacher.userId },
-                data: userData,
+                data: userUpdateData,
             });
         }
-        if (data.classIds !== undefined) {
-            const academicYearId = await (0, active_academic_year_1.requireAcademicYearId)(this.prisma);
-            const newIds = new Set(data.classIds);
-            const current = teacher.assignments.filter((a) => a.academicYearId === academicYearId);
-            const toRemove = current.filter((a) => !newIds.has(a.classId));
-            if (toRemove.length > 0) {
+        await this.prisma.teacher.update({
+            where: { id },
+            data: {
+                ...(dto.name !== undefined && { name: dto.name }),
+                ...(dto.nickname !== undefined && { nickname: dto.nickname }),
+                ...(dto.isActive !== undefined && { isActive: dto.isActive }),
+                ...(dto.dob !== undefined && { dob: dto.dob ? new Date(dto.dob) : null }),
+                ...(dto.contactNumber !== undefined && { contactNumber: dto.contactNumber }),
+                ...(dto.remarks !== undefined && { remarks: dto.remarks }),
+                ...(dto.photoFileId !== undefined && { photoFileId: dto.photoFileId }),
+            },
+        });
+        if (dto.classIds !== undefined) {
+            const activeYear = await this.prisma.academicYear.findFirst({ where: { isActive: true } });
+            if (activeYear) {
                 await this.prisma.teacherAssignment.deleteMany({
-                    where: { id: { in: toRemove.map((a) => a.id) } },
+                    where: { teacherId: id, academicYearId: activeYear.id },
                 });
-            }
-            const toAdd = [...newIds].filter((cid) => !current.some((a) => a.classId === cid));
-            if (toAdd.length > 0) {
-                await this.prisma.teacherAssignment.createMany({
-                    data: toAdd.map((classId) => ({
-                        teacherId: id,
-                        classId,
-                        academicYearId,
-                    })),
-                    skipDuplicates: true,
-                });
+                if (dto.classIds.length > 0) {
+                    await this.prisma.teacherAssignment.createMany({
+                        data: dto.classIds.map((classId) => ({
+                            teacherId: id,
+                            classId,
+                            academicYearId: activeYear.id,
+                        })),
+                    });
+                }
             }
         }
         return this.findOne(id);
@@ -275,43 +223,19 @@ let TeachersService = class TeachersService {
     async setActive(id, isActive) {
         const teacher = await this.prisma.teacher.findUnique({ where: { id } });
         if (!teacher)
-            throw new common_1.NotFoundException('Teacher not found');
-        await this.prisma.teacher.update({ where: { id }, data: { isActive } });
+            throw new common_1.NotFoundException('Guru tidak ditemukan');
+        await this.prisma.teacher.update({
+            where: { id },
+            data: { isActive },
+        });
         return this.findOne(id);
     }
     async remove(id) {
         const teacher = await this.prisma.teacher.findUnique({ where: { id } });
         if (!teacher)
-            throw new common_1.NotFoundException('Teacher not found');
-        await this.prisma.teacher.delete({ where: { id } });
+            throw new common_1.NotFoundException('Guru tidak ditemukan');
         await this.prisma.user.delete({ where: { id: teacher.userId } });
         return { success: true };
-    }
-    async findAvailableByClass(classId, academicYearId) {
-        const yearId = await (0, active_academic_year_1.requireAcademicYearId)(this.prisma, academicYearId).catch(() => null);
-        const assignedIds = yearId
-            ? (await this.prisma.teacherAssignment.findMany({
-                where: { classId, academicYearId: yearId },
-                select: { teacherId: true },
-            })).map((a) => a.teacherId)
-            : [];
-        const teachers = await this.prisma.teacher.findMany({
-            where: {
-                isActive: true,
-                ...(assignedIds.length ? { id: { notIn: assignedIds } } : {}),
-            },
-            include: { user: true },
-            orderBy: { name: 'asc' },
-        });
-        return teachers.map((t) => ({
-            id: t.id,
-            userId: t.userId,
-            name: t.name,
-            nickname: t.nickname,
-            isActive: t.isActive,
-            photoFileId: t.photoFileId,
-            photoUrl: null,
-        }));
     }
 };
 exports.TeachersService = TeachersService;

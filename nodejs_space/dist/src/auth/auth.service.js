@@ -53,6 +53,9 @@ let AuthService = class AuthService {
         if (!user)
             throw new common_1.UnauthorizedException('Invalid credentials');
         const valid = await bcrypt.compare(password, user.password);
+        if (user.teacher && !user.teacher.isActive) {
+            throw new common_1.UnauthorizedException('Akun Anda dalam status nonaktif. Silakan hubungi admin.');
+        }
         if (!valid)
             throw new common_1.UnauthorizedException('Invalid credentials');
         if (user.teacher && !user.teacher.isActive) {

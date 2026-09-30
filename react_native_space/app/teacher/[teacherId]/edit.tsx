@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Switch, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { customFetch } from '../../../src/api/customFetch';
+import type { TeacherDetailResponseDto } from '../../../src/api/generated/schemas/teacherDetailResponseDto';
 
 export default function EditTeacherScreen() {
   const { teacherId } = useLocalSearchParams<{ teacherId: string }>();
@@ -19,7 +20,7 @@ export default function EditTeacherScreen() {
 
   useEffect(() => {
     if (teacherId) {
-      customFetch(`/api/teachers/${teacherId}`)
+      customFetch<TeacherDetailResponseDto>(`/api/teachers/${teacherId}`)
         .then((data) => {
           setName(data.name || '');
           setNickname(data.nickname || '');

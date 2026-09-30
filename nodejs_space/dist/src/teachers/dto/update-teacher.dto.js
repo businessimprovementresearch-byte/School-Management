@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UpdateTeacherDto = void 0;
 const openapi = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
-const swagger_1 = require("@nestjs/swagger");
 class UpdateTeacherDto {
     name;
     nickname;
@@ -25,67 +24,57 @@ class UpdateTeacherDto {
     isActive;
     classIds;
     static _OPENAPI_METADATA_FACTORY() {
-        return { name: { required: false, type: () => String }, nickname: { required: false, type: () => String }, email: { required: false, type: () => String, format: "email" }, password: { required: false, type: () => String, minLength: 6 }, dob: { required: false, type: () => String }, contactNumber: { required: false, type: () => String }, remarks: { required: false, type: () => String }, photoFileId: { required: false, type: () => String, nullable: true, format: "uuid" }, isActive: { required: false, type: () => Boolean }, classIds: { required: false, type: () => [String], format: "uuid" } };
+        return { name: { required: false, type: () => String }, nickname: { required: false, type: () => String }, email: { required: false, type: () => String, format: "email" }, password: { required: false, type: () => String, minLength: 6 }, dob: { required: false, type: () => String }, contactNumber: { required: false, type: () => String }, remarks: { required: false, type: () => String }, photoFileId: { required: false, type: () => String, format: "uuid" }, isActive: { required: false, type: () => Boolean }, classIds: { required: false, type: () => [String], format: "uuid" } };
     }
 }
 exports.UpdateTeacherDto = UpdateTeacherDto;
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ example: 'Gurmukh Singh' }),
-    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateTeacherDto.prototype, "name", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ example: 'Gurmukh' }),
-    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateTeacherDto.prototype, "nickname", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ example: 'teacher@example.com' }),
+    (0, class_validator_1.IsEmail)(),
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEmail)({}, { message: 'Invalid email format' }),
     __metadata("design:type", String)
 ], UpdateTeacherDto.prototype, "email", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ example: 'newpassword123' }),
-    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.MinLength)(6),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateTeacherDto.prototype, "password", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ example: '1990-01-01' }),
-    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsDateString)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateTeacherDto.prototype, "dob", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ example: '+62xxxxxxxx' }),
-    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateTeacherDto.prototype, "contactNumber", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ example: 'Remarks' }),
-    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateTeacherDto.prototype, "remarks", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ type: String, example: 'uuid-file-id' }),
     (0, class_validator_1.IsUUID)(),
     (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", Object)
+    __metadata("design:type", String)
 ], UpdateTeacherDto.prototype, "photoFileId", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ example: true }),
-    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Boolean)
 ], UpdateTeacherDto.prototype, "isActive", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ type: [String] }),
     (0, class_validator_1.IsArray)(),
     (0, class_validator_1.IsUUID)('4', { each: true }),
     (0, class_validator_1.IsOptional)(),

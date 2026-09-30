@@ -6,7 +6,7 @@ export declare class UpdateTeacherDto {
     dob?: string;
     contactNumber?: string;
     remarks?: string;
-    photoFileId?: string | null;
+    photoFileId?: string;
     isActive?: boolean;
     classIds?: string[];
 }

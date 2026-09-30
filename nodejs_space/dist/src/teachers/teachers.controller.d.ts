@@ -1,18 +1,141 @@
 import { TeachersService } from './teachers.service';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
-import { TeacherListItemDto } from './dto/teacher-list-response.dto';
-import { TeacherDetailResponseDto } from './dto/teacher-detail-response.dto';
-import { SuccessResponseDto } from '../common/dto/success-response.dto';
 export declare class TeachersController {
-    private teachersService;
+    private readonly teachersService;
     constructor(teachersService: TeachersService);
-    findAll(): Promise<TeacherListItemDto[]>;
-    findOne(id: string): Promise<TeacherDetailResponseDto>;
-    create(dto: CreateTeacherDto): Promise<TeacherDetailResponseDto>;
-    update(id: string, dto: UpdateTeacherDto): Promise<TeacherDetailResponseDto>;
-    setActive(id: string, dto: {
+    findAll(): Promise<{
+        id: string;
+        userId: string;
+        name: string;
+        nickname: string | null;
         isActive: boolean;
-    }): Promise<TeacherDetailResponseDto>;
-    remove(id: string): Promise<SuccessResponseDto>;
+        email: string;
+        dob: string | null;
+        age: number | null;
+        contactNumber: string | null;
+        remarks: string | null;
+        photoFileId: string | null;
+        photoUrl: string | null;
+        assignedClasses: {
+            id: string;
+            name: string;
+            grade: string;
+        }[];
+    }[]>;
+    findOne(id: string): Promise<{
+        id: string;
+        userId: string;
+        name: string;
+        nickname: string | null;
+        email: string;
+        isActive: boolean;
+        dob: string | null;
+        age: number | null;
+        contactNumber: string | null;
+        remarks: string | null;
+        photoFileId: string | null;
+        photoUrl: string | null;
+        assignedClasses: {
+            id: string;
+            name: string;
+            grade: string;
+        }[];
+        assignedClassIds: string[];
+        teachingHistory: never[];
+        attendanceSummary: {
+            totalSessions: number;
+            present: number;
+            absent: number;
+            percentage: number;
+        };
+        createdAt: string;
+    }>;
+    create(dto: CreateTeacherDto): Promise<{
+        id: string;
+        userId: string;
+        name: string;
+        nickname: string | null;
+        email: string;
+        isActive: boolean;
+        dob: string | null;
+        age: number | null;
+        contactNumber: string | null;
+        remarks: string | null;
+        photoFileId: string | null;
+        photoUrl: string | null;
+        assignedClasses: {
+            id: string;
+            name: string;
+            grade: string;
+        }[];
+        assignedClassIds: string[];
+        teachingHistory: never[];
+        attendanceSummary: {
+            totalSessions: number;
+            present: number;
+            absent: number;
+            percentage: number;
+        };
+        createdAt: string;
+    }>;
+    update(id: string, dto: UpdateTeacherDto): Promise<{
+        id: string;
+        userId: string;
+        name: string;
+        nickname: string | null;
+        email: string;
+        isActive: boolean;
+        dob: string | null;
+        age: number | null;
+        contactNumber: string | null;
+        remarks: string | null;
+        photoFileId: string | null;
+        photoUrl: string | null;
+        assignedClasses: {
+            id: string;
+            name: string;
+            grade: string;
+        }[];
+        assignedClassIds: string[];
+        teachingHistory: never[];
+        attendanceSummary: {
+            totalSessions: number;
+            present: number;
+            absent: number;
+            percentage: number;
+        };
+        createdAt: string;
+    }>;
+    setActive(id: string, isActive: boolean): Promise<{
+        id: string;
+        userId: string;
+        name: string;
+        nickname: string | null;
+        email: string;
+        isActive: boolean;
+        dob: string | null;
+        age: number | null;
+        contactNumber: string | null;
+        remarks: string | null;
+        photoFileId: string | null;
+        photoUrl: string | null;
+        assignedClasses: {
+            id: string;
+            name: string;
+            grade: string;
+        }[];
+        assignedClassIds: string[];
+        teachingHistory: never[];
+        attendanceSummary: {
+            totalSessions: number;
+            present: number;
+            absent: number;
+            percentage: number;
+        };
+        createdAt: string;
+    }>;
+    remove(id: string): Promise<{
+        success: boolean;
+    }>;
 }

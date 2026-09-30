@@ -1,18 +1,19 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
+import { CreateTeacherDto } from './dto/create-teacher.dto';
+import { UpdateTeacherDto } from './dto/update-teacher.dto';
 export declare class TeachersService {
     private prisma;
     private uploadService;
     constructor(prisma: PrismaService, uploadService: UploadService);
     private calculateAge;
-    private safeFileUrl;
     findAll(): Promise<{
         id: string;
         userId: string;
         name: string;
         nickname: string | null;
-        email: string;
         isActive: boolean;
+        email: string;
         dob: string | null;
         age: number | null;
         contactNumber: string | null;
@@ -44,11 +45,7 @@ export declare class TeachersService {
             grade: string;
         }[];
         assignedClassIds: string[];
-        teachingHistory: {
-            academicYearId: string;
-            academicYearName: string;
-            classes: any[];
-        }[];
+        teachingHistory: never[];
         attendanceSummary: {
             totalSessions: number;
             present: number;
@@ -57,18 +54,7 @@ export declare class TeachersService {
         };
         createdAt: string;
     }>;
-    create(data: {
-        name: string;
-        nickname?: string | null;
-        email?: string | null;
-        password?: string | null;
-        dob?: string | null;
-        contactNumber?: string | null;
-        remarks?: string | null;
-        photoFileId?: string | null;
-        isActive?: boolean;
-        classIds?: string[];
-    }): Promise<{
+    create(dto: CreateTeacherDto): Promise<{
         id: string;
         userId: string;
         name: string;
@@ -87,11 +73,7 @@ export declare class TeachersService {
             grade: string;
         }[];
         assignedClassIds: string[];
-        teachingHistory: {
-            academicYearId: string;
-            academicYearName: string;
-            classes: any[];
-        }[];
+        teachingHistory: never[];
         attendanceSummary: {
             totalSessions: number;
             present: number;
@@ -100,18 +82,7 @@ export declare class TeachersService {
         };
         createdAt: string;
     }>;
-    update(id: string, data: {
-        name?: string;
-        nickname?: string | null;
-        email?: string | null;
-        password?: string | null;
-        dob?: string | null;
-        contactNumber?: string | null;
-        remarks?: string | null;
-        photoFileId?: string | null;
-        isActive?: boolean;
-        classIds?: string[];
-    }): Promise<{
+    update(id: string, dto: UpdateTeacherDto): Promise<{
         id: string;
         userId: string;
         name: string;
@@ -130,11 +101,7 @@ export declare class TeachersService {
             grade: string;
         }[];
         assignedClassIds: string[];
-        teachingHistory: {
-            academicYearId: string;
-            academicYearName: string;
-            classes: any[];
-        }[];
+        teachingHistory: never[];
         attendanceSummary: {
             totalSessions: number;
             present: number;
@@ -162,11 +129,7 @@ export declare class TeachersService {
             grade: string;
         }[];
         assignedClassIds: string[];
-        teachingHistory: {
-            academicYearId: string;
-            academicYearName: string;
-            classes: any[];
-        }[];
+        teachingHistory: never[];
         attendanceSummary: {
             totalSessions: number;
             present: number;
@@ -178,13 +141,4 @@ export declare class TeachersService {
     remove(id: string): Promise<{
         success: boolean;
     }>;
-    findAvailableByClass(classId: string, academicYearId?: string): Promise<{
-        id: string;
-        userId: string;
-        name: string;
-        nickname: string | null;
-        isActive: boolean;
-        photoFileId: string | null;
-        photoUrl: string | null;
-    }[]>;
 }
