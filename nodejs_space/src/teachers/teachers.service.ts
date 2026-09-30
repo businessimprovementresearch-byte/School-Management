@@ -36,8 +36,6 @@ export class TeachersService {
         id: t.id,
         userId: t.userId,
         name: t.name,
-        nickname: t.nickname,
-        isActive: t.isActive,
         email: t.user.email,
         dob: t.dob ? t.dob.toISOString() : null,
         age: this.calculateAge(t.dob),
@@ -59,8 +57,8 @@ export class TeachersService {
       where: { id },
       include: {
         user: true,
-        assignments: { include: { class: true, academicYear: true } },
-        attendance: { include: { classSession: true } },
+        assignments: { include: { class: true } },
+        attendance: true,
       },
     });
 
@@ -74,9 +72,7 @@ export class TeachersService {
       id: teacher.id,
       userId: teacher.userId,
       name: teacher.name,
-      nickname: teacher.nickname,
       email: teacher.user.email,
-      isActive: teacher.isActive,
       dob: teacher.dob ? teacher.dob.toISOString() : null,
       age: this.calculateAge(teacher.dob),
       contactNumber: teacher.contactNumber,
@@ -105,7 +101,7 @@ export class TeachersService {
     const password = dto.password || 'password123';
 
     const existingUser = await this.prisma.user.findUnique({ where: { email } });
-    if (existingUser) throw new ConflictException('Email sudah digunakan');
+    if (existingUser) throw new ConflictException('Email sudah terdaftar');
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -122,8 +118,6 @@ export class TeachersService {
       data: {
         userId: user.id,
         name: dto.name,
-        nickname: dto.nickname || null,
-        isActive: dto.isActive ?? true,
         dob: dto.dob ? new Date(dto.dob) : null,
         contactNumber: dto.contactNumber || null,
         remarks: dto.remarks || null,
@@ -148,17 +142,18 @@ export class TeachersService {
   }
 
   async update(id: string, dto: UpdateTeacherDto) {
-    const teacher = await this.prisma.teacher.findUnique({ where: { id }, include: { user: true } });
+    const teacher = await this.prisma.teacher.findUnique({ where: { id } });
     if (!teacher) throw new NotFoundException('Guru tidak ditemukan');
 
-    // Update login credentials (User Model)
-    if (dto.email || dto.password) {
-      const userUpdateData: { email?: string; password?: string } = {};
+    // Update data akun login pada tabel User jika ada
+    if (dto.email || dto.password || dto.name) {
+      const userUpdateData: { email?: string; password?: string; name?: string } = {};
+      if (dto.name) userUpdateData.name = dto.name;
       if (dto.email) {
         const emailExists = await this.prisma.user.findFirst({
           where: { email: dto.email, NOT: { id: teacher.userId } },
         });
-        if (emailExists) throw new ConflictException('Email sudah digunakan oleh pengguna lain');
+        if (emailExists) throw new ConflictException('Email sudah digunakan');
         userUpdateData.email = dto.email;
       }
       if (dto.password) {
@@ -170,13 +165,11 @@ export class TeachersService {
       });
     }
 
-    // Update Teacher Profile
+    // Update profil pada tabel Teacher
     await this.prisma.teacher.update({
       where: { id },
       data: {
         ...(dto.name !== undefined && { name: dto.name }),
-        ...(dto.nickname !== undefined && { nickname: dto.nickname }),
-        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
         ...(dto.dob !== undefined && { dob: dto.dob ? new Date(dto.dob) : null }),
         ...(dto.contactNumber !== undefined && { contactNumber: dto.contactNumber }),
         ...(dto.remarks !== undefined && { remarks: dto.remarks }),
@@ -184,7 +177,7 @@ export class TeachersService {
       },
     });
 
-    // Update Class Assignments if provided
+    // Update penugasan kelas jika dikirimkan
     if (dto.classIds !== undefined) {
       const activeYear = await this.prisma.academicYear.findFirst({ where: { isActive: true } });
       if (activeYear) {
@@ -202,18 +195,6 @@ export class TeachersService {
         }
       }
     }
-
-    return this.findOne(id);
-  }
-
-  async setActive(id: string, isActive: boolean) {
-    const teacher = await this.prisma.teacher.findUnique({ where: { id } });
-    if (!teacher) throw new NotFoundException('Guru tidak ditemukan');
-
-    await this.prisma.teacher.update({
-      where: { id },
-      data: { isActive },
-    });
 
     return this.findOne(id);
   }

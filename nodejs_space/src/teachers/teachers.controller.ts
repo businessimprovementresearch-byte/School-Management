@@ -36,12 +36,6 @@ export class TeachersController {
     return this.teachersService.update(id, dto);
   }
 
-  @Patch(':id/active')
-  @Roles('ADMIN')
-  async setActive(@Param('id') id: string, @Body('isActive') isActive: boolean) {
-    return this.teachersService.setActive(id, isActive);
-  }
-
   @Delete(':id')
   @Roles('ADMIN')
   async remove(@Param('id') id: string) {

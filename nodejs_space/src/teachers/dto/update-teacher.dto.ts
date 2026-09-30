@@ -1,13 +1,9 @@
-import { IsString, IsEmail, IsOptional, IsDateString, IsBoolean, IsArray, IsUUID, MinLength } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsDateString, IsArray, IsUUID, MinLength } from 'class-validator';
 
 export class UpdateTeacherDto {
   @IsString()
   @IsOptional()
   name?: string;
-
-  @IsString()
-  @IsOptional()
-  nickname?: string;
 
   @IsEmail()
   @IsOptional()
@@ -33,10 +29,6 @@ export class UpdateTeacherDto {
   @IsUUID()
   @IsOptional()
   photoFileId?: string;
-
-  @IsBoolean()
-  @IsOptional()
-  isActive?: boolean;
 
   @IsArray()
   @IsUUID('4', { each: true })

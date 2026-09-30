@@ -15,35 +15,30 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async login(email: string, password: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { email },
-      include: { teacher: true },
-    });
-    if (!user) throw new UnauthorizedException('Invalid credentials');
-    const valid = await bcrypt.compare(password, user.password);
-    if (user.teacher && !user.teacher.isActive) {
-  throw new UnauthorizedException('Akun Anda dalam status nonaktif. Silakan hubungi admin.');
+async login(email: string, password: string) {
+  const user = await this.prisma.user.findUnique({
+    where: { email },
+    include: { teacher: true },
+  });
+  if (!user) throw new UnauthorizedException('Kredensial tidak valid');
+  
+  const valid = await bcrypt.compare(password, user.password);
+  if (!valid) throw new UnauthorizedException('Kredensial tidak valid');
+
+  const payload = { sub: user.id, email: user.email, role: user.role };
+  const token = this.jwtService.sign(payload);
+
+  return {
+    token,
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      teacherId: user.teacher?.id ?? null,
+    },
+  };
 }
-    if (!valid) throw new UnauthorizedException('Invalid credentials');
-    if (user.teacher && !user.teacher.isActive) {
-      throw new UnauthorizedException(
-        'Account is inactive. Contact your administrator.',
-      );
-    }
-    const payload = { sub: user.id, email: user.email, role: user.role };
-    const token = this.jwtService.sign(payload);
-    return {
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        teacherId: user.teacher?.id ?? null,
-      },
-    };
-  }
 
   async getMe(userId: string) {
     const user = await this.prisma.user.findUnique({
