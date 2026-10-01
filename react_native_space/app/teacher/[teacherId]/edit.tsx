@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Switch, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { customFetch } from '../../../src/api/customFetch';
+import { customFetch, getErrorMessage } from '../../../src/api/customFetch';
 import type { TeacherDetailResponseDto } from '../../../src/api/generated/schemas/teacherDetailResponseDto';
 
 export default function EditTeacherScreen() {
@@ -10,6 +10,8 @@ export default function EditTeacherScreen() {
 
   const [name, setName] = useState('');
   const [nickname, setNickname] = useState('');
+  const [title, setTitle] = useState('');
+  const [address, setAddress] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [contactNumber, setContactNumber] = useState('');
@@ -24,6 +26,8 @@ export default function EditTeacherScreen() {
         .then((data) => {
           setName(data.name || '');
           setNickname(data.nickname || '');
+          setTitle(data.title || '');
+          setAddress(data.address || '');
           setEmail(data.email || '');
           setContactNumber(data.contactNumber || '');
           setDob(data.dob ? data.dob.split('T')[0] : '');
@@ -35,16 +39,13 @@ export default function EditTeacherScreen() {
   }, [teacherId]);
 
   const handleSave = async () => {
-    if (!name.trim()) {
-      Alert.alert('Validasi', 'Nama lengkap wajib diisi');
-      return;
-    }
-
     setLoading(true);
     try {
       const payload: any = {
-        name,
+        name: name.trim() || null,
         nickname: nickname || null,
+        title: title || null,
+        address: address || null,
         email: email || undefined,
         contactNumber: contactNumber || null,
         dob: dob || null,
@@ -58,13 +59,14 @@ export default function EditTeacherScreen() {
 
       await customFetch(`/api/teachers/${teacherId}`, {
         method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
       Alert.alert('Sukses', 'Data guru berhasil diperbarui');
       router.back();
-    } catch (err: any) {
-      Alert.alert('Gagal', err.message || 'Terjadi kesalahan saat menyimpan');
+    } catch (err: unknown) {
+      Alert.alert('Gagal', getErrorMessage(err, 'Terjadi kesalahan saat menyimpan'));
     } finally {
       setLoading(false);
     }
@@ -74,11 +76,17 @@ export default function EditTeacherScreen() {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Edit Profile Guru</Text>
 
-      <Text style={styles.label}>Nama Lengkap *</Text>
+      <Text style={styles.label}>Nama Lengkap (Opsional)</Text>
       <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Nama Guru" />
 
       <Text style={styles.label}>Nama Panggilan (Nickname)</Text>
       <TextInput style={styles.input} value={nickname} onChangeText={setNickname} placeholder="Contoh: Pak Budi" />
+
+      <Text style={styles.label}>Gelar (Opsional)</Text>
+      <TextInput style={styles.input} value={title} onChangeText={setTitle} placeholder="Contoh: Guru" />
+
+      <Text style={styles.label}>Alamat (Opsional)</Text>
+      <TextInput style={styles.input} value={address} onChangeText={setAddress} multiline numberOfLines={3} />
 
       <Text style={styles.label}>Email (Detail Login)</Text>
       <TextInput style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />

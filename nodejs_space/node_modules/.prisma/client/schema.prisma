@@ -64,8 +64,10 @@ model User {
 model Teacher {
   id                  String               @id @default(uuid())
   userId              String               @unique
-  name                String
+  name                String?
   nickname            String?
+  title               String?
+  address             String?              @db.Text
   isActive            Boolean              @default(true)
   dob                 DateTime?
   contactNumber       String?

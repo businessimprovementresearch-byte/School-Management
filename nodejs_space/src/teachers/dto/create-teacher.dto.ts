@@ -2,7 +2,16 @@ import { IsString, IsEmail, IsOptional, IsDateString, IsBoolean, IsArray, IsUUID
 
 export class CreateTeacherDto {
   @IsString()
-  name: string;
+  @IsOptional()
+  name?: string;
+
+  @IsString()
+  @IsOptional()
+  title?: string;
+
+  @IsString()
+  @IsOptional()
+  address?: string;
 
   @IsString()
   @IsOptional()

@@ -13,8 +13,10 @@ export declare class TeachingHistoryYearDto {
 export declare class TeacherDetailResponseDto {
     id: string;
     userId: string;
-    name: string;
+    name: string | null;
     nickname: string | null;
+    title: string | null;
+    address: string | null;
     email: string;
     isActive: boolean;
     dob: string | null;

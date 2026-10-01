@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
 import { sortByGrade } from '../common/grade-order';
@@ -67,9 +67,9 @@ export class ClassesService {
         description: c.description,
         studentCount: c.enrollments.length,
         teachers: await Promise.all(
-          c.assignments.map(async (a) => ({
+          c.assignments.filter((a) => a.teacher.isActive).map(async (a) => ({
             id: a.teacher.id,
-            name: a.teacher.name,
+            name: a.teacher.nickname || a.teacher.name || 'Teacher',
             photoFileId: a.teacher.photoFileId,
             photoUrl: await this.uploadService.getFileUrlByFileId(a.teacher.photoFileId),
           })),
@@ -113,9 +113,9 @@ export class ClassesService {
       grade: cls.grade,
       description: cls.description,
       teachers: await Promise.all(
-        cls.assignments.map(async (a) => ({
+        cls.assignments.filter((a) => a.teacher.isActive).map(async (a) => ({
           id: a.teacher.id,
-          name: a.teacher.name,
+          name: a.teacher.nickname || a.teacher.name || 'Teacher',
           photoFileId: a.teacher.photoFileId,
           photoUrl: await this.uploadService.getFileUrlByFileId(a.teacher.photoFileId),
         })),
@@ -147,6 +147,13 @@ export class ClassesService {
 
   async assignTeacher(classId: string, teacherId: string, academicYearId?: string) {
     const yearId = await requireAcademicYearId(this.prisma, academicYearId);
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { id: teacherId },
+      select: { isActive: true },
+    });
+    if (!teacher) throw new NotFoundException('Teacher not found');
+    if (!teacher.isActive) throw new BadRequestException('Inactive teachers cannot be assigned to classes');
+
     const assignment = await this.prisma.teacherAssignment.create({
       data: { classId, teacherId, academicYearId: yearId },
     });

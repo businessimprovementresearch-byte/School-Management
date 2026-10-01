@@ -65,7 +65,7 @@ export class NotificationsService {
     });
     return teachers.map((t) => ({
       teacherId: t.id,
-      teacherName: t.name,
+      teacherName: t.nickname || t.name || 'Teacher',
       delayMinutes: t.alertSetting?.delayMinutes ?? 60,
       enabled: t.alertSetting?.enabled ?? true,
       channel: t.alertSetting?.channel ?? 'IN_APP',

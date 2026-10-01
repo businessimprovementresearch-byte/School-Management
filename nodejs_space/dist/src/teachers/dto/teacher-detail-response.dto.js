@@ -65,6 +65,8 @@ class TeacherDetailResponseDto {
     userId;
     name;
     nickname;
+    title;
+    address;
     email;
     isActive;
     dob;
@@ -79,7 +81,7 @@ class TeacherDetailResponseDto {
     attendanceSummary;
     createdAt;
     static _OPENAPI_METADATA_FACTORY() {
-        return { id: { required: true, type: () => String }, userId: { required: true, type: () => String }, name: { required: true, type: () => String }, nickname: { required: true, type: () => String, nullable: true }, email: { required: true, type: () => String }, isActive: { required: true, type: () => Boolean }, dob: { required: true, type: () => String, nullable: true }, age: { required: true, type: () => Number, nullable: true }, contactNumber: { required: true, type: () => String, nullable: true }, remarks: { required: true, type: () => String, nullable: true }, photoFileId: { required: true, type: () => String, nullable: true }, photoUrl: { required: true, type: () => String, nullable: true }, assignedClasses: { required: true, type: () => [require("./teacher-list-response.dto").TeacherClassDto] }, assignedClassIds: { required: true, type: () => [String] }, teachingHistory: { required: true, type: () => [require("./teacher-detail-response.dto").TeachingHistoryYearDto] }, attendanceSummary: { required: true, type: () => require("./teacher-detail-response.dto").TeacherAttendanceSummaryDto }, createdAt: { required: true, type: () => String } };
+        return { id: { required: true, type: () => String }, userId: { required: true, type: () => String }, name: { required: true, type: () => String, nullable: true }, nickname: { required: true, type: () => String, nullable: true }, title: { required: true, type: () => String, nullable: true }, address: { required: true, type: () => String, nullable: true }, email: { required: true, type: () => String }, isActive: { required: true, type: () => Boolean }, dob: { required: true, type: () => String, nullable: true }, age: { required: true, type: () => Number, nullable: true }, contactNumber: { required: true, type: () => String, nullable: true }, remarks: { required: true, type: () => String, nullable: true }, photoFileId: { required: true, type: () => String, nullable: true }, photoUrl: { required: true, type: () => String, nullable: true }, assignedClasses: { required: true, type: () => [require("./teacher-list-response.dto").TeacherClassDto] }, assignedClassIds: { required: true, type: () => [String] }, teachingHistory: { required: true, type: () => [require("./teacher-detail-response.dto").TeachingHistoryYearDto] }, attendanceSummary: { required: true, type: () => require("./teacher-detail-response.dto").TeacherAttendanceSummaryDto }, createdAt: { required: true, type: () => String } };
     }
 }
 exports.TeacherDetailResponseDto = TeacherDetailResponseDto;
@@ -92,13 +94,21 @@ __decorate([
     __metadata("design:type", String)
 ], TeacherDetailResponseDto.prototype, "userId", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)(),
-    __metadata("design:type", String)
+    (0, swagger_1.ApiProperty)({ nullable: true, type: String }),
+    __metadata("design:type", Object)
 ], TeacherDetailResponseDto.prototype, "name", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ nullable: true, type: String }),
     __metadata("design:type", Object)
 ], TeacherDetailResponseDto.prototype, "nickname", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ nullable: true, type: String }),
+    __metadata("design:type", Object)
+], TeacherDetailResponseDto.prototype, "title", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ nullable: true, type: String }),
+    __metadata("design:type", Object)
+], TeacherDetailResponseDto.prototype, "address", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)

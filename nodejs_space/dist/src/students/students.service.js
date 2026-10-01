@@ -233,7 +233,7 @@ let StudentsService = class StudentsService {
                 id: f.id,
                 date: f.classSession.date.toISOString(),
                 className: f.classSession.class.name,
-                teacherName: f.teacher.name,
+                teacherName: f.teacher.nickname || f.teacher.name || 'Teacher',
                 content: f.content,
             })),
             classHistory: student.classHistory.map((h) => ({

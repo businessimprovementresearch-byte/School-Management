@@ -141,7 +141,7 @@ export class DashboardService {
         id: f.id,
         classSessionId: f.classSessionId,
         teacherId: f.teacherId,
-        teacherName: f.teacher.name,
+        teacherName: f.teacher.nickname || f.teacher.name || 'Teacher',
         studentId: f.studentId,
         studentName: f.student?.name ?? null,
         content: f.content,

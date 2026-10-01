@@ -1,5 +1,7 @@
 export declare class UpdateTeacherDto {
-    name?: string;
+    name?: string | null;
+    title?: string | null;
+    address?: string | null;
     nickname?: string;
     email?: string;
     password?: string;

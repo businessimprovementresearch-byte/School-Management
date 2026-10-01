@@ -67,9 +67,9 @@ let ClassesService = class ClassesService {
             grade: c.grade,
             description: c.description,
             studentCount: c.enrollments.length,
-            teachers: await Promise.all(c.assignments.map(async (a) => ({
+            teachers: await Promise.all(c.assignments.filter((a) => a.teacher.isActive).map(async (a) => ({
                 id: a.teacher.id,
-                name: a.teacher.name,
+                name: a.teacher.nickname || a.teacher.name || 'Teacher',
                 photoFileId: a.teacher.photoFileId,
                 photoUrl: await this.uploadService.getFileUrlByFileId(a.teacher.photoFileId),
             }))),
@@ -109,9 +109,9 @@ let ClassesService = class ClassesService {
             name: cls.name,
             grade: cls.grade,
             description: cls.description,
-            teachers: await Promise.all(cls.assignments.map(async (a) => ({
+            teachers: await Promise.all(cls.assignments.filter((a) => a.teacher.isActive).map(async (a) => ({
                 id: a.teacher.id,
-                name: a.teacher.name,
+                name: a.teacher.nickname || a.teacher.name || 'Teacher',
                 photoFileId: a.teacher.photoFileId,
                 photoUrl: await this.uploadService.getFileUrlByFileId(a.teacher.photoFileId),
             }))),
@@ -139,6 +139,14 @@ let ClassesService = class ClassesService {
     }
     async assignTeacher(classId, teacherId, academicYearId) {
         const yearId = await (0, active_academic_year_1.requireAcademicYearId)(this.prisma, academicYearId);
+        const teacher = await this.prisma.teacher.findUnique({
+            where: { id: teacherId },
+            select: { isActive: true },
+        });
+        if (!teacher)
+            throw new common_1.NotFoundException('Teacher not found');
+        if (!teacher.isActive)
+            throw new common_1.BadRequestException('Inactive teachers cannot be assigned to classes');
         const assignment = await this.prisma.teacherAssignment.create({
             data: { classId, teacherId, academicYearId: yearId },
         });

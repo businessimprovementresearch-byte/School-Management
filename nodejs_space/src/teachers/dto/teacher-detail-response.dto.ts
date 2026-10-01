@@ -17,8 +17,10 @@ export class TeachingHistoryYearDto {
 export class TeacherDetailResponseDto {
   @ApiProperty() id: string;
   @ApiProperty() userId: string;
-  @ApiProperty() name: string;
+  @ApiProperty({ nullable: true, type: String }) name: string | null;
   @ApiProperty({ nullable: true, type: String }) nickname: string | null;
+  @ApiProperty({ nullable: true, type: String }) title: string | null;
+  @ApiProperty({ nullable: true, type: String }) address: string | null;
   @ApiProperty() email: string;
   @ApiProperty() isActive: boolean;
   @ApiProperty({ nullable: true, type: String }) dob: string | null;

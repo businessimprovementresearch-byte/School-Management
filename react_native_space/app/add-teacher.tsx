@@ -16,10 +16,13 @@ export default function AddTeacherScreen() {
 
   const [name, setName] = useState('');
   const [nickname, setNickname] = useState('');
+  const [title, setTitle] = useState('');
+  const [address, setAddress] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [dob, setDob] = useState('');
   const [contactNumber, setContactNumber] = useState('');
+  const [remarks, setRemarks] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
 
@@ -42,24 +45,20 @@ export default function AddTeacherScreen() {
   const handleSave = async () => {
     const trimmedName = name.trim();
 
-    // Validasi: Hanya Nama yang Wajib Diisi
-    if (!trimmedName) {
-      Alert.alert('Error', 'Please fill in the required field: Teacher Name');
-      return;
-    }
-
     try {
-      // Hanya masukkan field yang diisi ke dalam payload (field kosong tidak dikirim)
       const payload: Record<string, any> = {
-        name: trimmedName,
         isActive,
       };
 
+      if (trimmedName) payload.name = trimmedName;
       if (nickname.trim()) payload.nickname = nickname.trim();
+      if (title.trim()) payload.title = title.trim();
+      if (address.trim()) payload.address = address.trim();
       if (email.trim()) payload.email = email.trim();
       if (password.trim()) payload.password = password.trim();
       if (dob.trim()) payload.dob = dob.trim();
       if (contactNumber.trim()) payload.contactNumber = contactNumber.trim();
+      if (remarks.trim()) payload.remarks = remarks.trim();
       if (selectedClasses.length > 0) payload.classIds = selectedClasses;
 
       await createMutation.mutateAsync({
@@ -95,13 +94,12 @@ export default function AddTeacherScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        {/* Name (Hanya ini yang wajib) */}
-        <Text style={styles.label}>Name *</Text>
+        <Text style={styles.label}>Name (Optional)</Text>
         <TextInput
           style={styles.input}
           value={name}
           onChangeText={setName}
-          placeholder="Full name (Required)"
+          placeholder="Full name"
           placeholderTextColor={Colors.textSecondary + '80'}
         />
 
@@ -114,6 +112,12 @@ export default function AddTeacherScreen() {
           placeholder="Nickname"
           placeholderTextColor={Colors.textSecondary + '80'}
         />
+
+        <Text style={styles.label}>Title / Degree (Optional)</Text>
+        <TextInput style={styles.input} value={title} onChangeText={setTitle} placeholder="e.g. Teacher" placeholderTextColor={Colors.textSecondary + '80'} />
+
+        <Text style={styles.label}>Address (Optional)</Text>
+        <TextInput style={[styles.input, styles.multiline]} value={address} onChangeText={setAddress} multiline numberOfLines={3} placeholder="Address" placeholderTextColor={Colors.textSecondary + '80'} />
 
         {/* Email (Optional) */}
         <Text style={styles.label}>Email (Optional)</Text>
@@ -163,6 +167,9 @@ export default function AddTeacherScreen() {
           placeholderTextColor={Colors.textSecondary + '80'}
         />
 
+        <Text style={styles.label}>Remarks (Optional)</Text>
+        <TextInput style={[styles.input, styles.multiline]} value={remarks} onChangeText={setRemarks} multiline numberOfLines={3} placeholder="Notes" placeholderTextColor={Colors.textSecondary + '80'} />
+
         {/* Teacher Status Switch */}
         <View style={styles.statusRow}>
           <View>
@@ -209,6 +216,7 @@ const styles = StyleSheet.create({
   content: { padding: Spacing.lg, paddingBottom: Spacing.xxl * 2 },
   label: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary, marginBottom: Spacing.xs, marginTop: Spacing.md },
   input: { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: BorderRadius.md, padding: Spacing.md, fontSize: 16, color: Colors.textPrimary },
+  multiline: { minHeight: 72, textAlignVertical: 'top' },
   statusRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: Spacing.lg, paddingVertical: Spacing.xs },
   statusLabel: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
   statusSubLabel: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },

@@ -6,8 +6,10 @@ export declare class TeacherClassDto {
 export declare class TeacherListItemDto {
     id: string;
     userId: string;
-    name: string;
+    name: string | null;
     nickname: string | null;
+    title: string | null;
+    address: string | null;
     isActive: boolean;
     email: string;
     dob: string | null;

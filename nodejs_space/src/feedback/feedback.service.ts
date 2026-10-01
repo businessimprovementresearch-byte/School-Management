@@ -25,7 +25,7 @@ export class FeedbackService {
       id: feedback.id,
       classSessionId: feedback.classSessionId,
       teacherId: feedback.teacherId,
-      teacherName: feedback.teacher.name,
+      teacherName: feedback.teacher.nickname || feedback.teacher.name || 'Teacher',
       studentId: feedback.studentId,
       studentName: feedback.student?.name ?? null,
       content: feedback.content,

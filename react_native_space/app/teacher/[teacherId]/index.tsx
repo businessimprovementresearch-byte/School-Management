@@ -6,7 +6,6 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import {
   useTeachersControllerFindOne,
   useTeachersControllerRemove,
-  useTeachersControllerUpdate,
 } from '@/src/api/generated/api';
 import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
@@ -14,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/src/theme';
 import Avatar from '@/src/components/Avatar';
 import { useAuth } from '@/src/context/AuthContext';
+import { customFetch, getErrorMessage } from '@/src/api/customFetch';
 
 export default function TeacherDetailScreen() {
   const router = useRouter();
@@ -24,7 +24,7 @@ export default function TeacherDetailScreen() {
 
   const { data, isLoading, refetch } = useTeachersControllerFindOne(teacherId, { query: { enabled: !!teacherId } });
   const deleteMutation = useTeachersControllerRemove();
-  const updateMutation = useTeachersControllerUpdate();
+  const [updatingStatus, setUpdatingStatus] = React.useState(false);
 
   useFocusEffect(React.useCallback(() => { if (teacherId) refetch(); }, [teacherId]));
 
@@ -34,19 +34,21 @@ export default function TeacherDetailScreen() {
     const newStatus = !isActive;
     const actionText = newStatus ? 'Activate' : 'Deactivate';
 
-    const doToggle = () => {
-      updateMutation.mutate(
-        {
-          id: teacherId,
-          data: { isActive: newStatus, status: newStatus ? 'ACTIVE' : 'INACTIVE' } as any,
-        },
-        {
-          onSuccess: async () => {
-            await queryClient.invalidateQueries();
-            refetch();
-          },
-        }
-      );
+    const doToggle = async () => {
+      setUpdatingStatus(true);
+      try {
+        await customFetch(`/api/teachers/${teacherId}/active`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isActive: newStatus }),
+        });
+        await queryClient.invalidateQueries();
+        await refetch();
+      } catch (error: unknown) {
+        Alert.alert('Error', getErrorMessage(error, 'Could not update teacher status'));
+      } finally {
+        setUpdatingStatus(false);
+      }
     };
 
     if (Platform.OS === 'web') {
@@ -131,7 +133,8 @@ export default function TeacherDetailScreen() {
               textColor={isActive ? '#D97706' : '#16A34A'}
               style={[styles.actionBtn, isActive ? styles.deactivateBtn : styles.activateBtn]}
               onPress={handleToggleStatus}
-              loading={updateMutation.isPending}
+              loading={updatingStatus}
+              disabled={updatingStatus}
             >
               {isActive ? 'Deactivate Teacher' : 'Activate Teacher'}
             </Button>

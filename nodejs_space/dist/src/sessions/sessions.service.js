@@ -77,14 +77,14 @@ let SessionsService = class SessionsService {
                 photoUrl: await this.uploadService.getFileUrlByFileId(e.student.photoFileId),
                 attendanceStatus: attendanceMap.get(e.student.id) ?? null,
             }))),
-            teacherAttendance: session.class.assignments.map((a) => ({
+            teacherAttendance: session.class.assignments.filter((a) => a.teacher.isActive).map((a) => ({
                 teacherId: a.teacher.id,
-                teacherName: a.teacher.name,
+                teacherName: a.teacher.nickname || a.teacher.name || 'Teacher',
                 status: teacherAttMap.get(a.teacher.id) ?? null,
             })),
             feedback: session.feedback.map((f) => ({
                 id: f.id,
-                teacherName: f.teacher.name,
+                teacherName: f.teacher.nickname || f.teacher.name || 'Teacher',
                 content: f.content,
                 type: f.type,
                 studentId: f.studentId,

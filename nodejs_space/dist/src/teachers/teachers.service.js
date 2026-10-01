@@ -68,6 +68,8 @@ let TeachersService = class TeachersService {
             userId: t.userId,
             name: t.name,
             nickname: t.nickname,
+            title: t.title,
+            address: t.address,
             isActive: t.isActive,
             email: t.user.email,
             dob: t.dob ? t.dob.toISOString() : null,
@@ -102,6 +104,8 @@ let TeachersService = class TeachersService {
             userId: teacher.userId,
             name: teacher.name,
             nickname: teacher.nickname,
+            title: teacher.title,
+            address: teacher.address,
             email: teacher.user.email,
             isActive: teacher.isActive,
             dob: teacher.dob ? teacher.dob.toISOString() : null,
@@ -129,6 +133,8 @@ let TeachersService = class TeachersService {
     async create(dto) {
         const email = dto.email || `teacher_${Date.now()}@school.internal`;
         const password = dto.password || 'password123';
+        const name = dto.name?.trim() || null;
+        const userName = name || dto.nickname?.trim() || email.split('@')[0] || 'Teacher';
         const existingUser = await this.prisma.user.findUnique({ where: { email } });
         if (existingUser)
             throw new common_1.ConflictException('Email sudah digunakan');
@@ -137,15 +143,17 @@ let TeachersService = class TeachersService {
             data: {
                 email,
                 password: hashedPassword,
-                name: dto.name,
+                name: userName,
                 role: client_1.UserRole.TEACHER,
             },
         });
         const teacher = await this.prisma.teacher.create({
             data: {
                 userId: user.id,
-                name: dto.name,
+                name,
                 nickname: dto.nickname || null,
+                title: dto.title || null,
+                address: dto.address || null,
                 isActive: dto.isActive ?? true,
                 dob: dto.dob ? new Date(dto.dob) : null,
                 contactNumber: dto.contactNumber || null,
@@ -171,7 +179,7 @@ let TeachersService = class TeachersService {
         const teacher = await this.prisma.teacher.findUnique({ where: { id }, include: { user: true } });
         if (!teacher)
             throw new common_1.NotFoundException('Guru tidak ditemukan');
-        if (dto.email || dto.password) {
+        if (dto.email || dto.password || dto.name !== undefined || dto.nickname !== undefined) {
             const userUpdateData = {};
             if (dto.email) {
                 const emailExists = await this.prisma.user.findFirst({
@@ -184,6 +192,13 @@ let TeachersService = class TeachersService {
             if (dto.password) {
                 userUpdateData.password = await bcrypt.hash(dto.password, 10);
             }
+            if (dto.name !== undefined || dto.nickname !== undefined) {
+                userUpdateData.name =
+                    dto.name?.trim() ||
+                        (dto.nickname !== undefined ? dto.nickname.trim() : teacher.nickname?.trim()) ||
+                        (dto.email || teacher.user.email).split('@')[0] ||
+                        'Teacher';
+            }
             await this.prisma.user.update({
                 where: { id: teacher.userId },
                 data: userUpdateData,
@@ -192,8 +207,10 @@ let TeachersService = class TeachersService {
         await this.prisma.teacher.update({
             where: { id },
             data: {
-                ...(dto.name !== undefined && { name: dto.name }),
+                ...(dto.name !== undefined && { name: dto.name?.trim() || null }),
                 ...(dto.nickname !== undefined && { nickname: dto.nickname }),
+                ...(dto.title !== undefined && { title: dto.title?.trim() || null }),
+                ...(dto.address !== undefined && { address: dto.address?.trim() || null }),
                 ...(dto.isActive !== undefined && { isActive: dto.isActive }),
                 ...(dto.dob !== undefined && { dob: dto.dob ? new Date(dto.dob) : null }),
                 ...(dto.contactNumber !== undefined && { contactNumber: dto.contactNumber }),

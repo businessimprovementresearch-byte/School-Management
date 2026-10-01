@@ -14,6 +14,8 @@ const openapi = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 class UpdateTeacherDto {
     name;
+    title;
+    address;
     nickname;
     email;
     password;
@@ -24,15 +26,25 @@ class UpdateTeacherDto {
     isActive;
     classIds;
     static _OPENAPI_METADATA_FACTORY() {
-        return { name: { required: false, type: () => String }, nickname: { required: false, type: () => String }, email: { required: false, type: () => String, format: "email" }, password: { required: false, type: () => String, minLength: 6 }, dob: { required: false, type: () => String }, contactNumber: { required: false, type: () => String }, remarks: { required: false, type: () => String }, photoFileId: { required: false, type: () => String, format: "uuid" }, isActive: { required: false, type: () => Boolean }, classIds: { required: false, type: () => [String], format: "uuid" } };
+        return { name: { required: false, type: () => String, nullable: true }, title: { required: false, type: () => String, nullable: true }, address: { required: false, type: () => String, nullable: true }, nickname: { required: false, type: () => String }, email: { required: false, type: () => String, format: "email" }, password: { required: false, type: () => String, minLength: 6 }, dob: { required: false, type: () => String }, contactNumber: { required: false, type: () => String }, remarks: { required: false, type: () => String }, photoFileId: { required: false, type: () => String, format: "uuid" }, isActive: { required: false, type: () => Boolean }, classIds: { required: false, type: () => [String], format: "uuid" } };
     }
 }
 exports.UpdateTeacherDto = UpdateTeacherDto;
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], UpdateTeacherDto.prototype, "name", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], UpdateTeacherDto.prototype, "title", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], UpdateTeacherDto.prototype, "address", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),

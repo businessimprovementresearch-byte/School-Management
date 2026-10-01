@@ -1,5 +1,7 @@
 export declare class CreateTeacherDto {
-    name: string;
+    name?: string;
+    title?: string;
+    address?: string;
     nickname?: string;
     email?: string;
     password?: string;

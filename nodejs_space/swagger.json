@@ -17,14 +17,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LoginResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -38,14 +31,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MeResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -69,14 +55,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SignupResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -100,14 +79,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PresignedUploadResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -131,14 +103,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CompleteUploadResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -169,14 +134,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FileUrlResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -199,14 +157,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -220,7 +171,7 @@
         "parameters": [
           {
             "name": "search",
-            "required": false,
+            "required": true,
             "in": "query",
             "schema": {
               "type": "string"
@@ -228,7 +179,7 @@
           },
           {
             "name": "classId",
-            "required": false,
+            "required": true,
             "in": "query",
             "schema": {
               "type": "string"
@@ -236,7 +187,7 @@
           },
           {
             "name": "includeInactive",
-            "required": false,
+            "required": true,
             "in": "query",
             "schema": {
               "type": "string"
@@ -244,7 +195,7 @@
           },
           {
             "name": "page",
-            "required": false,
+            "required": true,
             "in": "query",
             "schema": {
               "type": "number"
@@ -252,7 +203,7 @@
           },
           {
             "name": "limit",
-            "required": false,
+            "required": true,
             "in": "query",
             "schema": {
               "type": "number"
@@ -261,14 +212,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StudentListResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -290,14 +234,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StudentDetailResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -320,14 +257,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StudentDetailResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -358,14 +288,7 @@
         },
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StudentDetailResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -386,14 +309,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -416,14 +332,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StudentDetailResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -456,14 +365,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EnrollmentResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -496,14 +398,7 @@
         },
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UpdateEnrollmentResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -524,14 +419,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -564,14 +452,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClassHistoryResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -585,17 +466,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ClassListItemDto"
-                  }
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -617,14 +488,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClassDetailResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -646,7 +510,7 @@
           },
           {
             "name": "academicYearId",
-            "required": false,
+            "required": true,
             "in": "query",
             "schema": {
               "type": "string"
@@ -655,14 +519,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClassDetailResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -695,14 +552,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TeacherAssignmentResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -735,14 +585,7 @@
         },
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClassDetailResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -763,14 +606,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -801,14 +637,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -853,17 +682,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TeacherListItemDto"
-                  }
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -885,14 +704,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TeacherDetailResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -915,14 +727,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TeacherDetailResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -953,14 +758,7 @@
         },
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TeacherDetailResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -981,14 +779,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1011,14 +802,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TeacherDetailResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1042,14 +826,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SessionDetailResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1073,14 +850,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BulkCreateSessionsResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1103,14 +873,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SessionDetailResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1131,14 +894,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1171,14 +927,7 @@
         },
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SessionDetailResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1202,14 +951,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BulkAttendanceResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1232,14 +974,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AttendanceByDateResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1278,14 +1013,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AttendanceOverviewResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1309,14 +1037,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FeedbackResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1340,14 +1061,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProgressResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1367,7 +1081,7 @@
           },
           {
             "name": "classId",
-            "required": false,
+            "required": true,
             "in": "query",
             "schema": {
               "type": "string"
@@ -1376,14 +1090,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProgressListResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1438,17 +1145,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SessionProgressEntryDto"
-                  }
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1462,14 +1159,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DashboardResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1483,17 +1173,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AcademicYearListItemDto"
-                  }
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1515,14 +1195,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AcademicYearResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1555,14 +1228,7 @@
         },
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AcademicYearResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1582,7 +1248,7 @@
           },
           {
             "name": "force",
-            "required": false,
+            "required": true,
             "in": "query",
             "schema": {
               "type": "string"
@@ -1591,14 +1257,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1645,7 +1304,7 @@
         "parameters": [
           {
             "name": "academicYearId",
-            "required": false,
+            "required": true,
             "in": "query",
             "schema": {
               "type": "string"
@@ -1654,17 +1313,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TermListItemDto"
-                  }
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1686,14 +1335,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TermResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1726,14 +1368,7 @@
         },
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TermResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1754,14 +1389,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1775,7 +1403,7 @@
         "parameters": [
           {
             "name": "classId",
-            "required": false,
+            "required": true,
             "in": "query",
             "schema": {
               "type": "string"
@@ -1784,17 +1412,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MetricListItemDto"
-                  }
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1816,14 +1434,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MetricResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1846,14 +1457,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1877,14 +1481,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReportCardResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1907,17 +1504,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ReportCardResponseDto"
-                  }
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1940,14 +1527,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FileUrlResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -1984,17 +1564,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/EventListItemDto"
-                  }
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2016,14 +1586,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EventListItemDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2046,14 +1609,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EventDetailDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2084,14 +1640,7 @@
         },
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EventListItemDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2112,14 +1661,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2152,14 +1694,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EventGroupDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2182,14 +1717,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2222,14 +1750,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2252,14 +1773,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2273,17 +1787,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AwardListItemDto"
-                  }
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2305,14 +1809,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AwardListItemDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2326,7 +1823,7 @@
         "parameters": [
           {
             "name": "studentId",
-            "required": false,
+            "required": true,
             "in": "query",
             "schema": {
               "type": "string"
@@ -2334,7 +1831,7 @@
           },
           {
             "name": "teacherId",
-            "required": false,
+            "required": true,
             "in": "query",
             "schema": {
               "type": "string"
@@ -2343,17 +1840,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AwardIssuanceDto"
-                  }
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2376,14 +1863,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2414,14 +1894,7 @@
         },
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AwardListItemDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2445,14 +1918,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2475,14 +1941,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2496,7 +1955,7 @@
         "parameters": [
           {
             "name": "classId",
-            "required": false,
+            "required": true,
             "in": "query",
             "schema": {
               "type": "string"
@@ -2504,7 +1963,7 @@
           },
           {
             "name": "eventId",
-            "required": false,
+            "required": true,
             "in": "query",
             "schema": {
               "type": "string"
@@ -2513,17 +1972,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AlbumListItemDto"
-                  }
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2545,14 +1994,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AlbumListItemDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2575,14 +2017,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AlbumDetailDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2603,14 +2038,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2643,14 +2071,7 @@
         },
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GalleryPhotoDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2673,14 +2094,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2694,17 +2108,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NotificationDto"
-                  }
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2718,14 +2122,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnreadCountDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2748,14 +2145,7 @@
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2769,14 +2159,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuccessResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2790,17 +2173,7 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AlertSettingDto"
-                  }
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2833,14 +2206,7 @@
         },
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AlertSettingDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2854,14 +2220,7 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CheckAlertsResultDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
         "tags": [
@@ -2882,713 +2241,23 @@
     "schemas": {
       "LoginDto": {
         "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "password": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "required": [
-          "email",
-          "password"
-        ]
-      },
-      "UserInfoDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "role": {
-            "type": "string"
-          },
-          "teacherId": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "email",
-          "name",
-          "role",
-          "teacherId"
-        ]
-      },
-      "LoginResponseDto": {
-        "type": "object",
-        "properties": {
-          "token": {
-            "type": "string"
-          },
-          "user": {
-            "$ref": "#/components/schemas/UserInfoDto"
-          }
-        },
-        "required": [
-          "token",
-          "user"
-        ]
-      },
-      "MeResponseDto": {
-        "type": "object",
-        "properties": {
-          "user": {
-            "$ref": "#/components/schemas/UserInfoDto"
-          }
-        },
-        "required": [
-          "user"
-        ]
+        "properties": {}
       },
       "SignupDto": {
         "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "password": {
-            "type": "string",
-            "minLength": 6
-          },
-          "name": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "required": [
-          "email",
-          "password",
-          "name"
-        ]
-      },
-      "SignupResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "role": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "email",
-          "name",
-          "role"
-        ]
+        "properties": {}
       },
       "PresignedUploadDto": {
         "type": "object",
-        "properties": {
-          "fileName": {
-            "type": "string"
-          },
-          "contentType": {
-            "type": "string"
-          },
-          "isPublic": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "fileName",
-          "contentType"
-        ]
-      },
-      "PresignedUploadResponseDto": {
-        "type": "object",
-        "properties": {
-          "uploadUrl": {
-            "type": "string"
-          },
-          "cloud_storage_path": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "uploadUrl",
-          "cloud_storage_path"
-        ]
+        "properties": {}
       },
       "CompleteUploadDto": {
         "type": "object",
-        "properties": {
-          "cloud_storage_path": {
-            "type": "string"
-          },
-          "fileName": {
-            "type": "string"
-          },
-          "contentType": {
-            "type": "string"
-          },
-          "fileSize": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "cloud_storage_path",
-          "fileName",
-          "contentType"
-        ]
-      },
-      "CompleteUploadResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "cloud_storage_path": {
-            "type": "string"
-          },
-          "fileName": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "cloud_storage_path",
-          "fileName"
-        ]
-      },
-      "FileUrlResponseDto": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "url"
-        ]
-      },
-      "SuccessResponseDto": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "success"
-        ]
-      },
-      "EnrolledClassDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "grade": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "grade"
-        ]
-      },
-      "StudentListItemDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "nickname": {
-            "type": "string",
-            "nullable": true
-          },
-          "parentName": {
-            "type": "string",
-            "nullable": true
-          },
-          "dob": {
-            "type": "string",
-            "nullable": true
-          },
-          "age": {
-            "type": "number",
-            "nullable": true
-          },
-          "contactNumber": {
-            "type": "string",
-            "nullable": true
-          },
-          "photoFileId": {
-            "type": "string",
-            "nullable": true
-          },
-          "photoUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "enrolledClasses": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EnrolledClassDto"
-            }
-          },
-          "studentIdNumber": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "nickname",
-          "parentName",
-          "dob",
-          "age",
-          "contactNumber",
-          "photoFileId",
-          "photoUrl",
-          "enrolledClasses",
-          "studentIdNumber"
-        ]
-      },
-      "StudentListResponseDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/StudentListItemDto"
-            }
-          },
-          "total": {
-            "type": "number"
-          },
-          "page": {
-            "type": "number"
-          },
-          "totalPages": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "items",
-          "total",
-          "page",
-          "totalPages"
-        ]
-      },
-      "EnrollmentInfoDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "classId": {
-            "type": "string"
-          },
-          "className": {
-            "type": "string"
-          },
-          "classGrade": {
-            "type": "string"
-          },
-          "academicYearId": {
-            "type": "string"
-          },
-          "academicYearName": {
-            "type": "string"
-          },
-          "enrollmentDate": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "classId",
-          "className",
-          "classGrade",
-          "academicYearId",
-          "academicYearName",
-          "enrollmentDate",
-          "status"
-        ]
-      },
-      "PerClassAttendanceDto": {
-        "type": "object",
-        "properties": {
-          "classId": {
-            "type": "string"
-          },
-          "className": {
-            "type": "string"
-          },
-          "percentage": {
-            "type": "number"
-          },
-          "total": {
-            "type": "number"
-          },
-          "present": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "classId",
-          "className",
-          "percentage",
-          "total",
-          "present"
-        ]
-      },
-      "AttendanceSummaryDto": {
-        "type": "object",
-        "properties": {
-          "totalSessions": {
-            "type": "number"
-          },
-          "present": {
-            "type": "number"
-          },
-          "absent": {
-            "type": "number"
-          },
-          "late": {
-            "type": "number"
-          },
-          "excused": {
-            "type": "number"
-          },
-          "percentage": {
-            "type": "number"
-          },
-          "perClass": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PerClassAttendanceDto"
-            }
-          }
-        },
-        "required": [
-          "totalSessions",
-          "present",
-          "absent",
-          "late",
-          "excused",
-          "percentage",
-          "perClass"
-        ]
-      },
-      "RecentAttendanceDto": {
-        "type": "object",
-        "properties": {
-          "date": {
-            "type": "string"
-          },
-          "className": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "date",
-          "className",
-          "status"
-        ]
-      },
-      "ProgressEntryDto": {
-        "type": "object",
-        "properties": {
-          "date": {
-            "type": "string"
-          },
-          "value": {
-            "type": "number"
-          },
-          "notes": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "date",
-          "value",
-          "notes"
-        ]
-      },
-      "ProgressInfoDto": {
-        "type": "object",
-        "properties": {
-          "metricId": {
-            "type": "string"
-          },
-          "metricName": {
-            "type": "string"
-          },
-          "metricType": {
-            "type": "string"
-          },
-          "classId": {
-            "type": "string"
-          },
-          "className": {
-            "type": "string"
-          },
-          "entries": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProgressEntryDto"
-            }
-          }
-        },
-        "required": [
-          "metricId",
-          "metricName",
-          "metricType",
-          "classId",
-          "className",
-          "entries"
-        ]
-      },
-      "FeedbackInfoDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "date": {
-            "type": "string"
-          },
-          "className": {
-            "type": "string"
-          },
-          "teacherName": {
-            "type": "string"
-          },
-          "content": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "date",
-          "className",
-          "teacherName",
-          "content"
-        ]
-      },
-      "ClassHistoryInfoDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "classId": {
-            "type": "string"
-          },
-          "className": {
-            "type": "string"
-          },
-          "academicYearName": {
-            "type": "string"
-          },
-          "action": {
-            "type": "string"
-          },
-          "date": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "classId",
-          "className",
-          "academicYearName",
-          "action",
-          "date"
-        ]
-      },
-      "StudentDetailResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "nickname": {
-            "type": "string",
-            "nullable": true
-          },
-          "isActive": {
-            "type": "boolean"
-          },
-          "parentName": {
-            "type": "string",
-            "nullable": true
-          },
-          "dob": {
-            "type": "string",
-            "nullable": true
-          },
-          "age": {
-            "type": "number",
-            "nullable": true
-          },
-          "contactNumber": {
-            "type": "string",
-            "nullable": true
-          },
-          "remarks": {
-            "type": "string",
-            "nullable": true
-          },
-          "photoFileId": {
-            "type": "string",
-            "nullable": true
-          },
-          "photoUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "enrollments": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EnrollmentInfoDto"
-            }
-          },
-          "attendanceSummary": {
-            "$ref": "#/components/schemas/AttendanceSummaryDto"
-          },
-          "recentAttendance": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/RecentAttendanceDto"
-            }
-          },
-          "progress": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProgressInfoDto"
-            }
-          },
-          "feedback": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FeedbackInfoDto"
-            }
-          },
-          "classHistory": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ClassHistoryInfoDto"
-            }
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "studentContactNumber": {
-            "type": "string",
-            "nullable": true
-          },
-          "studentIdNumber": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "nickname",
-          "isActive",
-          "parentName",
-          "dob",
-          "age",
-          "contactNumber",
-          "remarks",
-          "photoFileId",
-          "photoUrl",
-          "enrollments",
-          "attendanceSummary",
-          "recentAttendance",
-          "progress",
-          "feedback",
-          "classHistory",
-          "createdAt",
-          "studentContactNumber",
-          "studentIdNumber"
-        ]
+        "properties": {}
       },
       "CreateStudentDto": {
         "type": "object",
-        "properties": {
-          "studentIdNumber": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "nickname": {
-            "type": "string"
-          },
-          "parentName": {
-            "type": "string"
-          },
-          "dob": {
-            "type": "string"
-          },
-          "contactNumber": {
-            "type": "string"
-          },
-          "studentContactNumber": {
-            "type": "string"
-          },
-          "remarks": {
-            "type": "string"
-          },
-          "photoFileId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid"
-          },
-          "classIds": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        },
-        "required": [
-          "name"
-        ]
+        "properties": {}
       },
       "UpdateStudentDto": {
         "type": "object",
@@ -3618,9 +2287,7 @@
             "type": "string"
           },
           "photoFileId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid"
+            "type": "object"
           },
           "isActive": {
             "type": "boolean",
@@ -3630,2621 +2297,131 @@
       },
       "AddEnrollmentDto": {
         "type": "object",
-        "properties": {
-          "classId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "academicYearId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "required": [
-          "classId"
-        ]
-      },
-      "EnrollmentResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "studentId": {
-            "type": "string"
-          },
-          "classId": {
-            "type": "string"
-          },
-          "academicYearId": {
-            "type": "string"
-          },
-          "enrollmentDate": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "studentId",
-          "classId",
-          "academicYearId",
-          "enrollmentDate",
-          "status"
-        ]
+        "properties": {}
       },
       "UpdateEnrollmentDto": {
         "type": "object",
-        "properties": {
-          "status": {
-            "type": "string"
-          },
-          "classId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        }
-      },
-      "UpdateEnrollmentResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "classId": {
-            "type": "string"
-          },
-          "className": {
-            "type": "string"
-          },
-          "academicYearId": {
-            "type": "string"
-          },
-          "academicYearName": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "status",
-          "classId",
-          "className",
-          "academicYearId",
-          "academicYearName"
-        ]
+        "properties": {}
       },
       "AddClassHistoryDto": {
         "type": "object",
-        "properties": {
-          "classId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "academicYearId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "action": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "classId",
-          "academicYearId",
-          "action"
-        ]
-      },
-      "ClassHistoryResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "studentId": {
-            "type": "string"
-          },
-          "classId": {
-            "type": "string"
-          },
-          "className": {
-            "type": "string"
-          },
-          "academicYearId": {
-            "type": "string"
-          },
-          "academicYearName": {
-            "type": "string"
-          },
-          "action": {
-            "type": "string"
-          },
-          "date": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "studentId",
-          "classId",
-          "className",
-          "academicYearId",
-          "academicYearName",
-          "action",
-          "date"
-        ]
-      },
-      "ClassTeacherDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "photoFileId": {
-            "type": "string",
-            "nullable": true
-          },
-          "photoUrl": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "photoFileId",
-          "photoUrl"
-        ]
-      },
-      "ClassListItemDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "grade": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "studentCount": {
-            "type": "number"
-          },
-          "teachers": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ClassTeacherDto"
-            }
-          },
-          "nextSessionDate": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "grade",
-          "description",
-          "studentCount",
-          "teachers",
-          "nextSessionDate"
-        ]
-      },
-      "ClassStudentDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "photoFileId": {
-            "type": "string",
-            "nullable": true
-          },
-          "photoUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "enrollmentStatus": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "photoFileId",
-          "photoUrl",
-          "enrollmentStatus"
-        ]
-      },
-      "ClassSessionInfoDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "date": {
-            "type": "string"
-          },
-          "attendanceSubmitted": {
-            "type": "boolean"
-          },
-          "isHoliday": {
-            "type": "boolean"
-          },
-          "termName": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "date",
-          "attendanceSubmitted",
-          "isHoliday",
-          "termName"
-        ]
-      },
-      "ClassMetricInfoDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "type",
-          "description"
-        ]
-      },
-      "ClassDetailResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "grade": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "teachers": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ClassTeacherDto"
-            }
-          },
-          "students": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ClassStudentDto"
-            }
-          },
-          "sessions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ClassSessionInfoDto"
-            }
-          },
-          "metrics": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ClassMetricInfoDto"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "grade",
-          "description",
-          "teachers",
-          "students",
-          "sessions",
-          "metrics"
-        ]
+        "properties": {}
       },
       "AssignTeacherDto": {
         "type": "object",
-        "properties": {
-          "teacherId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "academicYearId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "required": [
-          "teacherId"
-        ]
-      },
-      "TeacherAssignmentResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "classId": {
-            "type": "string"
-          },
-          "teacherId": {
-            "type": "string"
-          },
-          "academicYearId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "classId",
-          "teacherId",
-          "academicYearId"
-        ]
+        "properties": {}
       },
       "UpdateClassDto": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "grade": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          }
-        }
+        "properties": {}
       },
       "CreateClassDto": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "grade": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "grade"
-        ]
-      },
-      "TeacherClassDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "grade": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "grade"
-        ]
-      },
-      "TeacherListItemDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "nickname": {
-            "type": "string",
-            "nullable": true
-          },
-          "isActive": {
-            "type": "boolean"
-          },
-          "email": {
-            "type": "string"
-          },
-          "dob": {
-            "type": "string",
-            "nullable": true
-          },
-          "age": {
-            "type": "number",
-            "nullable": true
-          },
-          "contactNumber": {
-            "type": "string",
-            "nullable": true
-          },
-          "remarks": {
-            "type": "string",
-            "nullable": true
-          },
-          "photoFileId": {
-            "type": "string",
-            "nullable": true
-          },
-          "photoUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "assignedClasses": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TeacherClassDto"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "userId",
-          "name",
-          "nickname",
-          "isActive",
-          "email",
-          "dob",
-          "age",
-          "contactNumber",
-          "remarks",
-          "photoFileId",
-          "photoUrl",
-          "assignedClasses"
-        ]
-      },
-      "TeachingHistoryYearDto": {
-        "type": "object",
-        "properties": {
-          "academicYearId": {
-            "type": "string"
-          },
-          "academicYearName": {
-            "type": "string"
-          },
-          "classes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TeacherClassDto"
-            }
-          }
-        },
-        "required": [
-          "academicYearId",
-          "academicYearName",
-          "classes"
-        ]
-      },
-      "TeacherAttendanceSummaryDto": {
-        "type": "object",
-        "properties": {
-          "totalSessions": {
-            "type": "number"
-          },
-          "present": {
-            "type": "number"
-          },
-          "absent": {
-            "type": "number"
-          },
-          "percentage": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "totalSessions",
-          "present",
-          "absent",
-          "percentage"
-        ]
-      },
-      "TeacherDetailResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "nickname": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string"
-          },
-          "isActive": {
-            "type": "boolean"
-          },
-          "dob": {
-            "type": "string",
-            "nullable": true
-          },
-          "age": {
-            "type": "number",
-            "nullable": true
-          },
-          "contactNumber": {
-            "type": "string",
-            "nullable": true
-          },
-          "remarks": {
-            "type": "string",
-            "nullable": true
-          },
-          "photoFileId": {
-            "type": "string",
-            "nullable": true
-          },
-          "photoUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "assignedClasses": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TeacherClassDto"
-            }
-          },
-          "assignedClassIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "teachingHistory": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TeachingHistoryYearDto"
-            }
-          },
-          "attendanceSummary": {
-            "$ref": "#/components/schemas/TeacherAttendanceSummaryDto"
-          },
-          "createdAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "userId",
-          "name",
-          "nickname",
-          "email",
-          "isActive",
-          "dob",
-          "age",
-          "contactNumber",
-          "remarks",
-          "photoFileId",
-          "photoUrl",
-          "assignedClasses",
-          "assignedClassIds",
-          "teachingHistory",
-          "attendanceSummary",
-          "createdAt"
-        ]
+        "properties": {}
       },
       "CreateTeacherDto": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "Gurmukh Singh"
-          },
-          "nickname": {
-            "type": "string",
-            "example": "Gurmukh"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "example": "teacher@example.com"
-          },
-          "password": {
-            "type": "string",
-            "minLength": 6,
-            "example": "secret123"
-          },
-          "dob": {
-            "type": "string",
-            "example": "1990-01-01"
-          },
-          "contactNumber": {
-            "type": "string",
-            "example": "+62xxxxxxxx"
-          },
-          "remarks": {
-            "type": "string",
-            "example": "Some remarks"
-          },
-          "photoFileId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid",
-            "example": "uuid-file-id"
-          },
-          "isActive": {
-            "type": "boolean",
-            "example": true,
-            "default": true
-          },
-          "classIds": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        },
-        "required": [
-          "name"
-        ]
+        "properties": {}
       },
       "UpdateTeacherDto": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "Gurmukh Singh"
-          },
-          "nickname": {
-            "type": "string",
-            "example": "Gurmukh"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "example": "teacher@example.com"
-          },
-          "password": {
-            "type": "string",
-            "minLength": 6,
-            "example": "newpassword123"
-          },
-          "dob": {
-            "type": "string",
-            "example": "1990-01-01"
-          },
-          "contactNumber": {
-            "type": "string",
-            "example": "+62xxxxxxxx"
-          },
-          "remarks": {
-            "type": "string",
-            "example": "Remarks"
-          },
-          "photoFileId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid",
-            "example": "uuid-file-id"
-          },
-          "isActive": {
-            "type": "boolean",
-            "example": true
-          },
-          "classIds": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        }
+        "properties": {}
       },
       "CreateSessionDto": {
         "type": "object",
-        "properties": {
-          "classId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "date": {
-            "type": "string"
-          },
-          "academicYearId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "termId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid"
-          }
-        },
-        "required": [
-          "classId",
-          "date",
-          "academicYearId"
-        ]
-      },
-      "SessionStudentDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "photoFileId": {
-            "type": "string",
-            "nullable": true
-          },
-          "photoUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "attendanceStatus": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "photoFileId",
-          "photoUrl",
-          "attendanceStatus"
-        ]
-      },
-      "SessionTeacherAttendanceDto": {
-        "type": "object",
-        "properties": {
-          "teacherId": {
-            "type": "string"
-          },
-          "teacherName": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "teacherId",
-          "teacherName",
-          "status"
-        ]
-      },
-      "SessionFeedbackDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "teacherName": {
-            "type": "string"
-          },
-          "content": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          },
-          "studentId": {
-            "type": "string",
-            "nullable": true
-          },
-          "studentName": {
-            "type": "string",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "teacherName",
-          "content",
-          "type",
-          "studentId",
-          "studentName",
-          "createdAt"
-        ]
-      },
-      "SessionDetailResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "classId": {
-            "type": "string"
-          },
-          "className": {
-            "type": "string"
-          },
-          "classGrade": {
-            "type": "string"
-          },
-          "date": {
-            "type": "string"
-          },
-          "academicYearId": {
-            "type": "string"
-          },
-          "academicYearName": {
-            "type": "string"
-          },
-          "termId": {
-            "type": "string",
-            "nullable": true
-          },
-          "termName": {
-            "type": "string",
-            "nullable": true
-          },
-          "attendanceSubmitted": {
-            "type": "boolean"
-          },
-          "isHoliday": {
-            "type": "boolean"
-          },
-          "students": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SessionStudentDto"
-            }
-          },
-          "teacherAttendance": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SessionTeacherAttendanceDto"
-            }
-          },
-          "feedback": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SessionFeedbackDto"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "classId",
-          "className",
-          "classGrade",
-          "date",
-          "academicYearId",
-          "academicYearName",
-          "termId",
-          "termName",
-          "attendanceSubmitted",
-          "isHoliday",
-          "students",
-          "teacherAttendance",
-          "feedback"
-        ]
+        "properties": {}
       },
       "BulkCreateSessionsDto": {
         "type": "object",
-        "properties": {
-          "date": {
-            "type": "string"
-          },
-          "academicYearId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "termId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "required": [
-          "date"
-        ]
-      },
-      "BulkCreateSessionsResponseDto": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean"
-          },
-          "date": {
-            "type": "string"
-          },
-          "totalClasses": {
-            "type": "number"
-          },
-          "createdCount": {
-            "type": "number"
-          },
-          "skippedCount": {
-            "type": "number"
-          },
-          "createdClassNames": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "skippedClassNames": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "success",
-          "date",
-          "totalClasses",
-          "createdCount",
-          "skippedCount",
-          "createdClassNames",
-          "skippedClassNames"
-        ]
+        "properties": {}
       },
       "SetSessionHolidayDto": {
         "type": "object",
-        "properties": {
-          "isHoliday": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "isHoliday"
-        ]
-      },
-      "StudentAttendanceEntry": {
-        "type": "object",
-        "properties": {
-          "studentId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "status": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "studentId",
-          "status"
-        ]
-      },
-      "TeacherAttendanceEntry": {
-        "type": "object",
-        "properties": {
-          "teacherId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "status": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "teacherId",
-          "status"
-        ]
+        "properties": {}
       },
       "BulkAttendanceDto": {
         "type": "object",
-        "properties": {
-          "sessionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "studentAttendance": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/StudentAttendanceEntry"
-            }
-          },
-          "teacherAttendance": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TeacherAttendanceEntry"
-            }
-          }
-        },
-        "required": [
-          "sessionId",
-          "studentAttendance"
-        ]
-      },
-      "BulkAttendanceResponseDto": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean"
-          },
-          "savedCount": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "success",
-          "savedCount"
-        ]
-      },
-      "ClassAttendanceByDateDto": {
-        "type": "object",
-        "properties": {
-          "classId": {
-            "type": "string"
-          },
-          "className": {
-            "type": "string"
-          },
-          "grade": {
-            "type": "string"
-          },
-          "sessionId": {
-            "type": "string",
-            "nullable": true
-          },
-          "attendanceSubmitted": {
-            "type": "boolean"
-          },
-          "totalStudents": {
-            "type": "number"
-          },
-          "present": {
-            "type": "number"
-          },
-          "absent": {
-            "type": "number"
-          },
-          "unsure": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "classId",
-          "className",
-          "grade",
-          "sessionId",
-          "attendanceSubmitted",
-          "totalStudents",
-          "present",
-          "absent",
-          "unsure"
-        ]
-      },
-      "AttendanceByDateResponseDto": {
-        "type": "object",
-        "properties": {
-          "date": {
-            "type": "string"
-          },
-          "classes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ClassAttendanceByDateDto"
-            }
-          }
-        },
-        "required": [
-          "date",
-          "classes"
-        ]
-      },
-      "SessionSummaryDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "date": {
-            "type": "string"
-          },
-          "attendanceSubmitted": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "date",
-          "attendanceSubmitted"
-        ]
-      },
-      "ClassSummaryDto": {
-        "type": "object",
-        "properties": {
-          "totalSessions": {
-            "type": "number"
-          },
-          "averageAttendance": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "totalSessions",
-          "averageAttendance"
-        ]
-      },
-      "StudentBreakdownDto": {
-        "type": "object",
-        "properties": {
-          "studentId": {
-            "type": "string"
-          },
-          "studentName": {
-            "type": "string"
-          },
-          "present": {
-            "type": "number"
-          },
-          "absent": {
-            "type": "number"
-          },
-          "late": {
-            "type": "number"
-          },
-          "excused": {
-            "type": "number"
-          },
-          "total": {
-            "type": "number"
-          },
-          "percentage": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "studentId",
-          "studentName",
-          "present",
-          "absent",
-          "late",
-          "excused",
-          "total",
-          "percentage"
-        ]
-      },
-      "AttendanceOverviewResponseDto": {
-        "type": "object",
-        "properties": {
-          "sessions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SessionSummaryDto"
-            }
-          },
-          "classSummary": {
-            "$ref": "#/components/schemas/ClassSummaryDto"
-          },
-          "studentBreakdown": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/StudentBreakdownDto"
-            }
-          }
-        },
-        "required": [
-          "sessions",
-          "classSummary",
-          "studentBreakdown"
-        ]
+        "properties": {}
       },
       "CreateFeedbackDto": {
         "type": "object",
-        "properties": {
-          "classSessionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "content": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          },
-          "studentId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid"
-          }
-        },
-        "required": [
-          "classSessionId",
-          "content",
-          "type"
-        ]
-      },
-      "FeedbackResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "classSessionId": {
-            "type": "string"
-          },
-          "teacherId": {
-            "type": "string"
-          },
-          "teacherName": {
-            "type": "string"
-          },
-          "studentId": {
-            "type": "string",
-            "nullable": true
-          },
-          "studentName": {
-            "type": "string",
-            "nullable": true
-          },
-          "content": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "classSessionId",
-          "teacherId",
-          "teacherName",
-          "studentId",
-          "studentName",
-          "content",
-          "type",
-          "createdAt"
-        ]
+        "properties": {}
       },
       "CreateProgressDto": {
         "type": "object",
-        "properties": {
-          "studentId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "progressMetricId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "classSessionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "value": {
-            "type": "number"
-          },
-          "notes": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "studentId",
-          "progressMetricId",
-          "classSessionId",
-          "value"
-        ]
-      },
-      "ProgressResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "studentId": {
-            "type": "string"
-          },
-          "progressMetricId": {
-            "type": "string"
-          },
-          "classSessionId": {
-            "type": "string"
-          },
-          "value": {
-            "type": "number"
-          },
-          "notes": {
-            "type": "string",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "studentId",
-          "progressMetricId",
-          "classSessionId",
-          "value",
-          "notes",
-          "createdAt"
-        ]
-      },
-      "ProgressScoreEntry": {
-        "type": "object",
-        "properties": {
-          "studentId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "value": {
-            "type": "number"
-          },
-          "notes": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "studentId",
-          "value"
-        ]
+        "properties": {}
       },
       "BulkProgressDto": {
         "type": "object",
-        "properties": {
-          "classSessionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "progressMetricId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "entries": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProgressScoreEntry"
-            }
-          }
-        },
-        "required": [
-          "classSessionId",
-          "progressMetricId",
-          "entries"
-        ]
-      },
-      "SessionProgressEntryDto": {
-        "type": "object",
-        "properties": {
-          "studentId": {
-            "type": "string"
-          },
-          "value": {
-            "type": "number"
-          },
-          "notes": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "studentId",
-          "value",
-          "notes"
-        ]
-      },
-      "ProgressEntryItemDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "date": {
-            "type": "string"
-          },
-          "sessionId": {
-            "type": "string"
-          },
-          "value": {
-            "type": "number"
-          },
-          "notes": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "date",
-          "sessionId",
-          "value",
-          "notes"
-        ]
-      },
-      "ProgressMetricInfoDto": {
-        "type": "object",
-        "properties": {
-          "metricId": {
-            "type": "string"
-          },
-          "metricName": {
-            "type": "string"
-          },
-          "metricType": {
-            "type": "string"
-          },
-          "classId": {
-            "type": "string"
-          },
-          "className": {
-            "type": "string"
-          },
-          "entries": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProgressEntryItemDto"
-            }
-          }
-        },
-        "required": [
-          "metricId",
-          "metricName",
-          "metricType",
-          "classId",
-          "className",
-          "entries"
-        ]
-      },
-      "ProgressListResponseDto": {
-        "type": "object",
-        "properties": {
-          "metrics": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProgressMetricInfoDto"
-            }
-          }
-        },
-        "required": [
-          "metrics"
-        ]
-      },
-      "DashboardSessionDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "classId": {
-            "type": "string"
-          },
-          "className": {
-            "type": "string"
-          },
-          "date": {
-            "type": "string"
-          },
-          "attendanceSubmitted": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "classId",
-          "className",
-          "date",
-          "attendanceSubmitted"
-        ]
-      },
-      "PendingSessionDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "classId": {
-            "type": "string"
-          },
-          "className": {
-            "type": "string"
-          },
-          "date": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "classId",
-          "className",
-          "date"
-        ]
-      },
-      "DashboardFeedbackDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "classSessionId": {
-            "type": "string"
-          },
-          "teacherId": {
-            "type": "string"
-          },
-          "teacherName": {
-            "type": "string"
-          },
-          "studentId": {
-            "type": "string",
-            "nullable": true
-          },
-          "studentName": {
-            "type": "string",
-            "nullable": true
-          },
-          "content": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "classSessionId",
-          "teacherId",
-          "teacherName",
-          "studentId",
-          "studentName",
-          "content",
-          "type",
-          "createdAt"
-        ]
-      },
-      "ActiveAcademicYearDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name"
-        ]
-      },
-      "DashboardResponseDto": {
-        "type": "object",
-        "properties": {
-          "totalStudents": {
-            "type": "number"
-          },
-          "totalTeachers": {
-            "type": "number"
-          },
-          "activeClasses": {
-            "type": "number"
-          },
-          "todaySessions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/DashboardSessionDto"
-            }
-          },
-          "pendingAttendanceSessions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PendingSessionDto"
-            }
-          },
-          "recentFeedback": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/DashboardFeedbackDto"
-            }
-          },
-          "activeAcademicYear": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ActiveAcademicYearDto"
-              }
-            ]
-          }
-        },
-        "required": [
-          "totalStudents",
-          "totalTeachers",
-          "activeClasses",
-          "todaySessions",
-          "pendingAttendanceSessions",
-          "recentFeedback",
-          "activeAcademicYear"
-        ]
-      },
-      "AcademicYearListItemDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "startDate": {
-            "type": "string"
-          },
-          "endDate": {
-            "type": "string"
-          },
-          "isActive": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "startDate",
-          "endDate",
-          "isActive",
-          "createdAt"
-        ]
+        "properties": {}
       },
       "CreateAcademicYearDto": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "startDate": {
-            "type": "string"
-          },
-          "endDate": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "startDate",
-          "endDate"
-        ]
-      },
-      "AcademicYearResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "startDate": {
-            "type": "string"
-          },
-          "endDate": {
-            "type": "string"
-          },
-          "isActive": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "startDate",
-          "endDate",
-          "isActive"
-        ]
+        "properties": {}
       },
       "UpdateAcademicYearDto": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "startDate": {
-            "type": "string"
-          },
-          "endDate": {
-            "type": "string"
-          },
-          "isActive": {
-            "type": "boolean"
-          }
-        }
+        "properties": {}
       },
       "RolloverAcademicYearDto": {
         "type": "object",
-        "properties": {
-          "fromAcademicYearId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "excludeStudentIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "excludeTeacherIds": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "TermListItemDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "startDate": {
-            "type": "string"
-          },
-          "endDate": {
-            "type": "string"
-          },
-          "academicYearId": {
-            "type": "string"
-          },
-          "academicYearName": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "startDate",
-          "endDate",
-          "academicYearId",
-          "academicYearName"
-        ]
+        "properties": {}
       },
       "CreateTermDto": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "startDate": {
-            "type": "string"
-          },
-          "endDate": {
-            "type": "string"
-          },
-          "academicYearId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "required": [
-          "name",
-          "startDate",
-          "endDate",
-          "academicYearId"
-        ]
-      },
-      "TermResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "startDate": {
-            "type": "string"
-          },
-          "endDate": {
-            "type": "string"
-          },
-          "academicYearId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "startDate",
-          "endDate",
-          "academicYearId"
-        ]
+        "properties": {}
       },
       "UpdateTermDto": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "startDate": {
-            "type": "string"
-          },
-          "endDate": {
-            "type": "string"
-          },
-          "academicYearId": {
-            "type": "string",
-            "format": "uuid"
-          }
-        }
-      },
-      "MetricListItemDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "classId": {
-            "type": "string"
-          },
-          "className": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "description",
-          "classId",
-          "className",
-          "type"
-        ]
+        "properties": {}
       },
       "CreateMetricDto": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "classId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "type": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "classId",
-          "type"
-        ]
-      },
-      "MetricResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "classId": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "description",
-          "classId",
-          "type"
-        ]
+        "properties": {}
       },
       "GenerateReportCardDto": {
         "type": "object",
-        "properties": {
-          "studentId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "academicYearId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "termId": {
-            "type": "string",
-            "nullable": true,
-            "format": "uuid"
-          }
-        },
-        "required": [
-          "studentId",
-          "academicYearId"
-        ]
-      },
-      "ReportCardResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "studentId": {
-            "type": "string"
-          },
-          "studentName": {
-            "type": "string"
-          },
-          "academicYearName": {
-            "type": "string"
-          },
-          "termName": {
-            "type": "string",
-            "nullable": true
-          },
-          "pdfFileId": {
-            "type": "string"
-          },
-          "pdfUrl": {
-            "type": "string"
-          },
-          "generatedAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "studentId",
-          "studentName",
-          "academicYearName",
-          "termName",
-          "pdfFileId",
-          "pdfUrl",
-          "generatedAt"
-        ]
-      },
-      "EventListItemDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "date": {
-            "type": "string"
-          },
-          "location": {
-            "type": "string",
-            "nullable": true
-          },
-          "participantCount": {
-            "type": "number"
-          },
-          "groupCount": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "description",
-          "date",
-          "location",
-          "participantCount",
-          "groupCount"
-        ]
-      },
-      "EventGroupDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name"
-        ]
-      },
-      "EventParticipantDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "studentId": {
-            "type": "string",
-            "nullable": true
-          },
-          "teacherId": {
-            "type": "string",
-            "nullable": true
-          },
-          "groupId": {
-            "type": "string",
-            "nullable": true
-          },
-          "name": {
-            "type": "string"
-          },
-          "kind": {
-            "type": "string"
-          },
-          "photoUrl": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "studentId",
-          "teacherId",
-          "groupId",
-          "name",
-          "kind",
-          "photoUrl"
-        ]
-      },
-      "EventDetailDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "date": {
-            "type": "string"
-          },
-          "location": {
-            "type": "string",
-            "nullable": true
-          },
-          "groups": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EventGroupDto"
-            }
-          },
-          "participants": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EventParticipantDto"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "description",
-          "date",
-          "location",
-          "groups",
-          "participants"
-        ]
+        "properties": {}
       },
       "CreateEventDto": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "date": {
-            "type": "string"
-          },
-          "location": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "date"
-        ]
+        "properties": {}
       },
       "UpdateEventDto": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "date": {
-            "type": "string"
-          },
-          "location": {
-            "type": "string"
-          }
-        }
+        "properties": {}
       },
       "CreateEventGroupDto": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name"
-        ]
+        "properties": {}
       },
       "AddParticipantDto": {
         "type": "object",
-        "properties": {
-          "studentId": {
-            "type": "string"
-          },
-          "teacherId": {
-            "type": "string"
-          },
-          "groupId": {
-            "type": "string"
-          }
-        }
-      },
-      "AwardListItemDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "icon": {
-            "type": "string",
-            "nullable": true
-          },
-          "issuedCount": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "description",
-          "icon",
-          "issuedCount"
-        ]
-      },
-      "AwardIssuanceDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "awardId": {
-            "type": "string"
-          },
-          "awardName": {
-            "type": "string"
-          },
-          "awardIcon": {
-            "type": "string",
-            "nullable": true
-          },
-          "note": {
-            "type": "string",
-            "nullable": true
-          },
-          "issuedAt": {
-            "type": "string"
-          },
-          "recipientName": {
-            "type": "string"
-          },
-          "recipientKind": {
-            "type": "string"
-          },
-          "studentId": {
-            "type": "string",
-            "nullable": true
-          },
-          "teacherId": {
-            "type": "string",
-            "nullable": true
-          },
-          "photoUrl": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "awardId",
-          "awardName",
-          "awardIcon",
-          "note",
-          "issuedAt",
-          "recipientName",
-          "recipientKind",
-          "studentId",
-          "teacherId",
-          "photoUrl"
-        ]
+        "properties": {}
       },
       "CreateAwardDto": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "icon": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name"
-        ]
+        "properties": {}
       },
       "UpdateAwardDto": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "icon": {
-            "type": "string"
-          }
-        }
+        "properties": {}
       },
       "IssueAwardDto": {
         "type": "object",
-        "properties": {
-          "awardId": {
-            "type": "string"
-          },
-          "studentId": {
-            "type": "string"
-          },
-          "teacherId": {
-            "type": "string"
-          },
-          "note": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "awardId"
-        ]
-      },
-      "AlbumListItemDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "className": {
-            "type": "string",
-            "nullable": true
-          },
-          "eventName": {
-            "type": "string",
-            "nullable": true
-          },
-          "photoCount": {
-            "type": "number"
-          },
-          "coverUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "title",
-          "description",
-          "className",
-          "eventName",
-          "photoCount",
-          "coverUrl",
-          "createdAt"
-        ]
-      },
-      "GalleryPhotoDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "fileId": {
-            "type": "string"
-          },
-          "caption": {
-            "type": "string",
-            "nullable": true
-          },
-          "url": {
-            "type": "string",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "fileId",
-          "caption",
-          "url",
-          "createdAt"
-        ]
-      },
-      "AlbumDetailDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "className": {
-            "type": "string",
-            "nullable": true
-          },
-          "eventName": {
-            "type": "string",
-            "nullable": true
-          },
-          "photos": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GalleryPhotoDto"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "title",
-          "description",
-          "className",
-          "eventName",
-          "photos"
-        ]
+        "properties": {}
       },
       "CreateAlbumDto": {
         "type": "object",
-        "properties": {
-          "title": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "classId": {
-            "type": "string"
-          },
-          "eventId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "title"
-        ]
+        "properties": {}
       },
       "AddPhotoDto": {
         "type": "object",
-        "properties": {
-          "fileId": {
-            "type": "string"
-          },
-          "caption": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "fileId"
-        ]
-      },
-      "NotificationDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "teacherId": {
-            "type": "string",
-            "nullable": true
-          },
-          "title": {
-            "type": "string"
-          },
-          "body": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          },
-          "read": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "teacherId",
-          "title",
-          "body",
-          "type",
-          "read",
-          "createdAt"
-        ]
-      },
-      "UnreadCountDto": {
-        "type": "object",
-        "properties": {
-          "count": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "count"
-        ]
-      },
-      "AlertSettingDto": {
-        "type": "object",
-        "properties": {
-          "teacherId": {
-            "type": "string"
-          },
-          "teacherName": {
-            "type": "string"
-          },
-          "delayMinutes": {
-            "type": "number"
-          },
-          "enabled": {
-            "type": "boolean"
-          },
-          "channel": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "teacherId",
-          "teacherName",
-          "delayMinutes",
-          "enabled",
-          "channel"
-        ]
+        "properties": {}
       },
       "UpdateAlertSettingDto": {
         "type": "object",
-        "properties": {
-          "delayMinutes": {
-            "type": "number",
-            "minimum": 0
-          },
-          "enabled": {
-            "type": "boolean"
-          },
-          "channel": {
-            "type": "string"
-          }
-        }
-      },
-      "CheckAlertsResultDto": {
-        "type": "object",
-        "properties": {
-          "created": {
-            "type": "number"
-          },
-          "checkedSessions": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "created",
-          "checkedSessions"
-        ]
+        "properties": {}
       }
     }
   }

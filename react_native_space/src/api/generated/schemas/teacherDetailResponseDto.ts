@@ -9,6 +9,10 @@ export interface TeacherDetailResponseDto {
   name: string;
   /** @nullable */
   nickname: string | null;
+  /** @nullable */
+  title: string | null;
+  /** @nullable */
+  address: string | null;
   email: string;
   isActive: boolean;
   /** @nullable */

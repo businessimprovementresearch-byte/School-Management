@@ -7,6 +7,10 @@ export interface TeacherListItemDto {
   name: string;
   /** @nullable */
   nickname: string | null;
+  /** @nullable */
+  title: string | null;
+  /** @nullable */
+  address: string | null;
   isActive: boolean;
   email: string;
   /** @nullable */

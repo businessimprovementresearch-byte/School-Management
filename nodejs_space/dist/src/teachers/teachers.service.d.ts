@@ -10,8 +10,10 @@ export declare class TeachersService {
     findAll(): Promise<{
         id: string;
         userId: string;
-        name: string;
+        name: string | null;
         nickname: string | null;
+        title: string | null;
+        address: string | null;
         isActive: boolean;
         email: string;
         dob: string | null;
@@ -29,8 +31,10 @@ export declare class TeachersService {
     findOne(id: string): Promise<{
         id: string;
         userId: string;
-        name: string;
+        name: string | null;
         nickname: string | null;
+        title: string | null;
+        address: string | null;
         email: string;
         isActive: boolean;
         dob: string | null;
@@ -57,8 +61,10 @@ export declare class TeachersService {
     create(dto: CreateTeacherDto): Promise<{
         id: string;
         userId: string;
-        name: string;
+        name: string | null;
         nickname: string | null;
+        title: string | null;
+        address: string | null;
         email: string;
         isActive: boolean;
         dob: string | null;
@@ -85,8 +91,10 @@ export declare class TeachersService {
     update(id: string, dto: UpdateTeacherDto): Promise<{
         id: string;
         userId: string;
-        name: string;
+        name: string | null;
         nickname: string | null;
+        title: string | null;
+        address: string | null;
         email: string;
         isActive: boolean;
         dob: string | null;
@@ -113,8 +121,10 @@ export declare class TeachersService {
     setActive(id: string, isActive: boolean): Promise<{
         id: string;
         userId: string;
-        name: string;
+        name: string | null;
         nickname: string | null;
+        title: string | null;
+        address: string | null;
         email: string;
         isActive: boolean;
         dob: string | null;

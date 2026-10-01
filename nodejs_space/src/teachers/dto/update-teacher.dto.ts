@@ -3,7 +3,15 @@ import { IsString, IsEmail, IsOptional, IsDateString, IsBoolean, IsArray, IsUUID
 export class UpdateTeacherDto {
   @IsString()
   @IsOptional()
-  name?: string;
+  name?: string | null;
+
+  @IsString()
+  @IsOptional()
+  title?: string | null;
+
+  @IsString()
+  @IsOptional()
+  address?: string | null;
 
   @IsString()
   @IsOptional()
