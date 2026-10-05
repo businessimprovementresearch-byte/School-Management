@@ -3,17 +3,26 @@ import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl, TextInpu
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 import { Colors, Spacing, BorderRadius } from '@/src/theme';
-import { useClassesControllerFindAll, useAttendanceControllerGetOverview, useAttendanceControllerGetByDate } from '@/src/api/generated/api';
+import { useAttendanceControllerGetOverview, useAttendanceControllerGetByDate } from '@/src/api/generated/api';
+import type { ClassListItemDto } from '@/src/api/generated/schemas';
+import { customFetch } from '@/src/api/customFetch';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { useFocusEffect } from 'expo-router';
 import { formatDate } from '@/src/lib/dateFormat';
 
 export default function AttendanceScreen() {
   const router = useRouter();
-  const { data: classesData } = useClassesControllerFindAll();
   const [viewMode, setViewMode] = useState<'CLASS' | 'DATE'>('CLASS');
+  const [includeInactiveClasses, setIncludeInactiveClasses] = useState(false);
   const [selectedClassId, setSelectedClassId] = useState<string>('');
+  const { data: classesData, refetch: refetchClasses } = useQuery({
+    queryKey: ['classes', 'list', includeInactiveClasses],
+    queryFn: () => customFetch<ClassListItemDto[]>(
+      `/api/classes${includeInactiveClasses ? '?includeInactive=true' : ''}`,
+    ),
+  });
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
@@ -41,12 +50,15 @@ export default function AttendanceScreen() {
     { query: { enabled: viewMode === 'DATE' } },
   );
 
-  useFocusEffect(useCallback(() => { if (classId && viewMode === 'CLASS') refetch(); }, [classId, viewMode, month, year]));
+  useFocusEffect(useCallback(() => {
+    refetchClasses();
+    if (classId && viewMode === 'CLASS') refetch();
+  }, [classId, viewMode, month, year, refetchClasses, refetch]));
   useFocusEffect(useCallback(() => { if (viewMode === 'DATE') refetchByDate(); }, [selectedDate, viewMode]));
 
   const onRefresh = async () => {
     setRefreshing(true);
-    if (viewMode === 'CLASS') await refetch(); else await refetchByDate();
+    if (viewMode === 'CLASS') await Promise.all([refetch(), refetchClasses()]); else await refetchByDate();
     setRefreshing(false);
   };
 
@@ -68,6 +80,14 @@ export default function AttendanceScreen() {
 
       {viewMode === 'CLASS' ? (
         <>
+          <View style={styles.modeToggle}>
+            <Pressable style={[styles.modeBtn, !includeInactiveClasses && styles.modeBtnActive]} onPress={() => setIncludeInactiveClasses(false)}>
+              <Text style={[styles.modeBtnText, !includeInactiveClasses && styles.modeBtnTextActive]}>Current Year</Text>
+            </Pressable>
+            <Pressable style={[styles.modeBtn, includeInactiveClasses && styles.modeBtnActive]} onPress={() => setIncludeInactiveClasses(true)}>
+              <Text style={[styles.modeBtnText, includeInactiveClasses && styles.modeBtnTextActive]}>All Classes</Text>
+            </Pressable>
+          </View>
           {/* Class selector */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.classSelector}>
             {(classesData ?? []).map((c) => (

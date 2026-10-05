@@ -3,15 +3,16 @@ import { View, Text, ScrollView, StyleSheet, Pressable, RefreshControl, Alert, P
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 import { Colors, Spacing, BorderRadius } from '@/src/theme';
 import {
-  useClassesControllerFindAll,
   useAcademicYearsControllerFindAll,
   useSessionsControllerBulkCreate,
 } from '@/src/api/generated/api';
+import type { ClassListItemDto } from '@/src/api/generated/schemas';
 import LoadingScreen from '@/src/components/LoadingScreen';
 import { useAuth } from '@/src/context/AuthContext';
-import { getErrorMessage } from '@/src/api/customFetch';
+import { customFetch, getErrorMessage } from '@/src/api/customFetch';
 
 const gradeOrder = ['Nursery', '1', '2', '3', '4', '5', '6', 'Special'];
 
@@ -47,8 +48,13 @@ export default function ClassesScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
-
-  const { data: rawClasses, isLoading: isLoadingClasses, refetch: refetchClasses } = useClassesControllerFindAll();
+  const [includeInactiveClasses, setIncludeInactiveClasses] = useState(false);
+  const { data: rawClasses, isLoading: isLoadingClasses, refetch: refetchClasses } = useQuery({
+    queryKey: ['classes', 'list', includeInactiveClasses],
+    queryFn: () => customFetch<ClassListItemDto[]>(
+      `/api/classes${includeInactiveClasses ? '?includeInactive=true' : ''}`,
+    ),
+  });
   const { data: years, isLoading: isLoadingYears, refetch: refetchYears } = useAcademicYearsControllerFindAll();
   const [refreshing, setRefreshing] = useState(false);
   const bulkCreateMutation = useSessionsControllerBulkCreate();
@@ -141,6 +147,20 @@ export default function ClassesScreen() {
         contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
       >
+        <View style={styles.classScope}>
+          <Pressable
+            style={[styles.classScopeButton, !includeInactiveClasses && styles.classScopeButtonActive]}
+            onPress={() => setIncludeInactiveClasses(false)}
+          >
+            <Text style={[styles.classScopeText, !includeInactiveClasses && styles.classScopeTextActive]}>Current Year</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.classScopeButton, includeInactiveClasses && styles.classScopeButtonActive]}
+            onPress={() => setIncludeInactiveClasses(true)}
+          >
+            <Text style={[styles.classScopeText, includeInactiveClasses && styles.classScopeTextActive]}>All Classes</Text>
+          </Pressable>
+        </View>
         {grouped.map(([grade, classes]) => (
           <View key={grade} style={styles.section}>
             <Text style={styles.sectionTitle}>
@@ -213,6 +233,11 @@ const styles = StyleSheet.create({
   bulkBtnText: { fontSize: 12, fontWeight: '700', color: Colors.primary },
   title: { fontSize: 24, fontWeight: '700', color: Colors.textPrimary },
   content: { padding: Spacing.lg },
+  classScope: { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.md },
+  classScopeButton: { flex: 1, alignItems: 'center', paddingVertical: 9, borderRadius: BorderRadius.sm, borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.surface },
+  classScopeButtonActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  classScopeText: { fontSize: 13, fontWeight: '600', color: Colors.textSecondary },
+  classScopeTextActive: { color: '#fff' },
   section: { marginBottom: Spacing.xl },
   emptyGradeText: { fontSize: 13, color: Colors.textSecondary, fontStyle: 'italic', paddingVertical: 4 },
   sectionTitle: {

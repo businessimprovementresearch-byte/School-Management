@@ -14,12 +14,13 @@ export class ClassesService {
   async findAll(
     teacherClassIds?: string[],
     academicYearId?: string,
+    includeInactive = false,
   ) {
     const activeYearId =
       academicYearId ??
       (await requireAcademicYearId(this.prisma).catch(() => null));
 
-    const inactiveIds = activeYearId
+    const inactiveIds = activeYearId && !includeInactive
       ? (
           await this.prisma.classYearStatus.findMany({
             where: {

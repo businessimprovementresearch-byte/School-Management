@@ -24,7 +24,10 @@ export class ClassesController {
   ) { }
 
   @Get()
-  async findAll(@Req() req: Request): Promise<ClassListItemDto[]> {
+  async findAll(
+    @Req() req: Request,
+    @Query('includeInactive') includeInactive?: string,
+  ): Promise<ClassListItemDto[]> {
     const user = req.user as { userId: string; role: string };
     let teacherClassIds: string[] | undefined;
     if (user.role === 'TEACHER') {
@@ -34,7 +37,7 @@ export class ClassesController {
       });
       teacherClassIds = teacher?.assignments?.map((a) => a.classId) ?? [];
     }
-    return this.classesService.findAll(teacherClassIds);
+    return this.classesService.findAll(teacherClassIds, undefined, includeInactive === 'true');
   }
 
   @Get(':id')
