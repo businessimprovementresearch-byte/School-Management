@@ -12,7 +12,7 @@ export declare class ClassesController {
     private classesService;
     private prisma;
     constructor(classesService: ClassesService, prisma: PrismaService);
-    findAll(req: Request): Promise<ClassListItemDto[]>;
+    findAll(req: Request, includeInactive?: string): Promise<ClassListItemDto[]>;
     findOne(id: string, academicYearId?: string): Promise<ClassDetailResponseDto>;
     assignTeacher(classId: string, dto: AssignTeacherDto): Promise<TeacherAssignmentResponseDto>;
     update(classId: string, dto: UpdateClassDto): Promise<ClassDetailResponseDto>;

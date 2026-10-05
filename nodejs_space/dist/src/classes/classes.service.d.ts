@@ -4,7 +4,7 @@ export declare class ClassesService {
     private prisma;
     private uploadService;
     constructor(prisma: PrismaService, uploadService: UploadService);
-    findAll(teacherClassIds?: string[], academicYearId?: string): Promise<{
+    findAll(teacherClassIds?: string[], academicYearId?: string, includeInactive?: boolean): Promise<{
         id: string;
         name: string;
         grade: string;

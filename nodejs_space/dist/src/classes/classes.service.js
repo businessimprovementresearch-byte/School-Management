@@ -22,10 +22,10 @@ let ClassesService = class ClassesService {
         this.prisma = prisma;
         this.uploadService = uploadService;
     }
-    async findAll(teacherClassIds, academicYearId) {
+    async findAll(teacherClassIds, academicYearId, includeInactive = false) {
         const activeYearId = academicYearId ??
             (await (0, active_academic_year_1.requireAcademicYearId)(this.prisma).catch(() => null));
-        const inactiveIds = activeYearId
+        const inactiveIds = activeYearId && !includeInactive
             ? (await this.prisma.classYearStatus.findMany({
                 where: {
                     academicYearId: activeYearId,

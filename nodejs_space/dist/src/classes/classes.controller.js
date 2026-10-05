@@ -31,7 +31,7 @@ let ClassesController = class ClassesController {
         this.classesService = classesService;
         this.prisma = prisma;
     }
-    async findAll(req) {
+    async findAll(req, includeInactive) {
         const user = req.user;
         let teacherClassIds;
         if (user.role === 'TEACHER') {
@@ -41,7 +41,7 @@ let ClassesController = class ClassesController {
             });
             teacherClassIds = teacher?.assignments?.map((a) => a.classId) ?? [];
         }
-        return this.classesService.findAll(teacherClassIds);
+        return this.classesService.findAll(teacherClassIds, undefined, includeInactive === 'true');
     }
     async findOne(id, academicYearId) {
         return this.classesService.findOne(id, academicYearId);
@@ -67,11 +67,13 @@ let ClassesController = class ClassesController {
 };
 exports.ClassesController = ClassesController;
 __decorate([
+    openapi.ApiQuery({ name: "includeInactive", required: false }),
     (0, common_1.Get)(),
     openapi.ApiResponse({ status: 200, type: [require("./dto/class-list-response.dto").ClassListItemDto] }),
     __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Query)('includeInactive')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], ClassesController.prototype, "findAll", null);
 __decorate([
