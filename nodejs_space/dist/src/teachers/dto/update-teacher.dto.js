@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UpdateTeacherDto = void 0;
 const openapi = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
+const swagger_1 = require("@nestjs/swagger");
 class UpdateTeacherDto {
     name;
     gelar;
@@ -82,6 +83,7 @@ __decorate([
     __metadata("design:type", String)
 ], UpdateTeacherDto.prototype, "photoFileId", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)({ type: Boolean }),
     (0, class_validator_1.IsBoolean)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Boolean)

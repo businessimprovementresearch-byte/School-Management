@@ -1,4 +1,5 @@
 import { IsString, IsEmail, IsOptional, IsDateString, IsBoolean, IsArray, IsUUID, MinLength } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateTeacherDto {
   @IsString()
@@ -42,6 +43,7 @@ export class CreateTeacherDto {
   @IsOptional()
   photoFileId?: string;
 
+  @ApiPropertyOptional({ type: Boolean })
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
