@@ -17,7 +17,10 @@ export class DashboardService {
     if (role === 'TEACHER') {
       const teacher = await this.prisma.teacher.findUnique({
         where: { userId },
-        include: { assignments: true },
+        select: {
+          id: true,
+          assignments: { select: { classId: true } },
+        },
       });
       teacherId = teacher?.id;
       teacherClassIds = teacher?.assignments?.map((a) => a.classId) ?? [];
@@ -110,7 +113,7 @@ export class DashboardService {
           ? { classSession: { academicYearId: activeYearId } }
           : {},
       include: {
-        teacher: true,
+        teacher: { select: { name: true, nickname: true } },
         student: true,
         classSession: { include: { class: true } },
       },

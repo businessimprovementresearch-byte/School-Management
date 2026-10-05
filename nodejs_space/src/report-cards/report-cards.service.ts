@@ -61,7 +61,10 @@ export class ReportCardsService {
         studentId,
         classSession: sessionWhere,
       },
-      include: { teacher: true, classSession: { include: { class: true } } },
+      include: {
+        teacher: { select: { name: true, nickname: true } },
+        classSession: { include: { class: true } },
+      },
       orderBy: { createdAt: 'desc' },
       take: 10,
     });
@@ -75,7 +78,7 @@ export class ReportCardsService {
     const teacherAssignment = classIds.length
       ? await this.prisma.teacherAssignment.findFirst({
           where: { classId: { in: classIds }, academicYearId },
-          include: { teacher: true },
+          include: { teacher: { select: { name: true } } },
         })
       : null;
     const facilitatorName = teacherAssignment?.teacher?.name ?? feedback[0]?.teacher?.name ?? '';

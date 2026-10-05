@@ -73,7 +73,11 @@ export class AwardsService {
         ...(studentId ? { studentId } : {}),
         ...(teacherId ? { teacherId } : {}),
       },
-      include: { award: true, student: true, teacher: true },
+      include: {
+        award: true,
+        student: { select: { name: true, photoFileId: true } },
+        teacher: { select: { name: true, photoFileId: true } },
+      },
       orderBy: { issuedAt: 'desc' },
     });
     return Promise.all(

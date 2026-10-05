@@ -41,7 +41,18 @@ let SessionsService = class SessionsService {
                             where: { status: 'ACTIVE' },
                             include: { student: true },
                         },
-                        assignments: { include: { teacher: true } },
+                        assignments: {
+                            select: {
+                                teacher: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        nickname: true,
+                                        isActive: true,
+                                    },
+                                },
+                            },
+                        },
                     },
                 },
                 academicYear: true,
@@ -49,7 +60,10 @@ let SessionsService = class SessionsService {
                 studentAttendance: true,
                 teacherAttendance: true,
                 feedback: {
-                    include: { teacher: true, student: true },
+                    include: {
+                        teacher: { select: { name: true, nickname: true } },
+                        student: true,
+                    },
                     orderBy: { createdAt: 'desc' },
                 },
             },

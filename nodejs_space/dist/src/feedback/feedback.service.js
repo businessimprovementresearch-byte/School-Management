@@ -31,7 +31,10 @@ let FeedbackService = class FeedbackService {
                 content: data.content,
                 type: data.type,
             },
-            include: { teacher: true, student: true },
+            include: {
+                teacher: { select: { name: true, nickname: true } },
+                student: { select: { name: true } },
+            },
         });
         return {
             id: feedback.id,

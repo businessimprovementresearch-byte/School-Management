@@ -52,7 +52,17 @@ export class ClassesService {
           ? { where: { status: 'ACTIVE', academicYearId: activeYearId } }
           : { where: { status: 'ACTIVE' } },
         assignments: {
-          include: { teacher: true },
+          select: {
+            teacher: {
+              select: {
+                id: true,
+                name: true,
+                nickname: true,
+                isActive: true,
+                photoFileId: true,
+              },
+            },
+          },
           ...(activeYearId ? { where: { academicYearId: activeYearId } } : {}),
         },
         sessions: { orderBy: { date: 'desc' }, take: 1 },
@@ -87,7 +97,17 @@ export class ClassesService {
       where: { id },
       include: {
         assignments: {
-          include: { teacher: true },
+          select: {
+            teacher: {
+              select: {
+                id: true,
+                name: true,
+                nickname: true,
+                isActive: true,
+                photoFileId: true,
+              },
+            },
+          },
           ...(activeYearId ? { where: { academicYearId: activeYearId } } : {}),
         },
         enrollments: {

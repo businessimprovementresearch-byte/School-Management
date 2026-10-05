@@ -86,7 +86,10 @@ let EventsService = class EventsService {
             include: {
                 groups: { orderBy: { createdAt: 'asc' } },
                 participants: {
-                    include: { student: true, teacher: true },
+                    include: {
+                        student: { select: { name: true, photoFileId: true } },
+                        teacher: { select: { name: true, photoFileId: true } },
+                    },
                     orderBy: { createdAt: 'asc' },
                 },
             },

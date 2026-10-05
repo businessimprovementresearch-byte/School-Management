@@ -153,7 +153,7 @@ export class StudentsService {
           where: { type: 'STUDENT_SPECIFIC' },
           include: {
             classSession: { include: { class: true } },
-            teacher: true,
+            teacher: { select: { name: true, nickname: true } },
           },
           orderBy: { createdAt: 'desc' },
           take: 20,

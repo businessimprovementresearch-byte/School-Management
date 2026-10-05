@@ -61,7 +61,12 @@ export class NotificationsService {
   async listAlertSettings() {
     const teachers = await this.prisma.teacher.findMany({
       orderBy: { name: 'asc' },
-      include: { alertSetting: true },
+      select: {
+        id: true,
+        name: true,
+        nickname: true,
+        alertSetting: true,
+      },
     });
     return teachers.map((t) => ({
       teacherId: t.id,
@@ -88,10 +93,13 @@ export class NotificationsService {
         ...(dto.channel !== undefined ? { channel: dto.channel } : {}),
       },
     });
-    const teacher = await this.prisma.teacher.findUnique({ where: { id: teacherId } });
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { id: teacherId },
+      select: { name: true, nickname: true },
+    });
     return {
       teacherId,
-      teacherName: teacher?.name ?? '',
+      teacherName: teacher?.nickname || teacher?.name || 'Teacher',
       delayMinutes: s.delayMinutes,
       enabled: s.enabled,
       channel: s.channel,
@@ -105,7 +113,15 @@ export class NotificationsService {
     const sessions = await this.prisma.classSession.findMany({
       where: { date: { gte: weekAgo, lte: now } },
       include: {
-        class: { include: { assignments: { include: { teacher: { include: { alertSetting: true } } } } } },
+        class: {
+          include: {
+            assignments: {
+              select: {
+                teacher: { select: { id: true, alertSetting: true } },
+              },
+            },
+          },
+        },
         _count: { select: { studentAttendance: true } },
       },
     });

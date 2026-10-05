@@ -49,7 +49,7 @@ export class StudentsController {
     if (user.role === 'TEACHER') {
       const teacher = await this.prisma.teacher.findUnique({
         where: { userId: user.userId },
-        include: { assignments: true },
+        select: { assignments: { select: { classId: true } } },
       });
       return teacher?.assignments?.map((a) => a.classId) ?? [];
     }
