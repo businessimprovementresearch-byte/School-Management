@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, FlatList, StyleSheet, Pressable } from 'react-native';
+import { View, FlatList, StyleSheet, Pressable, Alert } from 'react-native';
 import { Text, Searchbar, FAB, ActivityIndicator } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -9,12 +9,19 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/src/theme';
 import Avatar from '@/src/components/Avatar';
+import { useAuth } from '@/src/context/AuthContext';
+import { customFetch, getErrorMessage } from '@/src/api/customFetch';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function TeachersListScreen() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
   const { data, isLoading, refetch } = useTeachersControllerFindAll();
   const [search, setSearch] = React.useState('');
   const [statusFilter, setStatusFilter] = React.useState<'ACTIVE' | 'INACTIVE' | 'ALL'>('ACTIVE');
+  const [updatingTeacherId, setUpdatingTeacherId] = React.useState<string | null>(null);
 
   useFocusEffect(React.useCallback(() => { refetch(); }, []));
 
@@ -29,29 +36,65 @@ export default function TeachersListScreen() {
     );
   }, [data, search, statusFilter]);
 
+  const toggleTeacherStatus = async (teacher: TeacherListItemDto) => {
+    if (!teacher.id || updatingTeacherId) return;
+    const isActive = teacher.isActive !== false;
+    setUpdatingTeacherId(teacher.id);
+    try {
+      await customFetch(`/api/teachers/${teacher.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !isActive }),
+      });
+      await queryClient.invalidateQueries();
+      await refetch();
+    } catch (error: unknown) {
+      Alert.alert('Status tidak berubah', getErrorMessage(error, 'Gagal memperbarui status guru'));
+    } finally {
+      setUpdatingTeacherId(null);
+    }
+  };
+
   const renderItem = ({ item }: { item: TeacherListItemDto }) => (
-    <Pressable style={styles.card} onPress={() => router.push(`/teacher/${item?.id}`)}>
-      <Avatar name={item?.nickname || item?.name || ''} uri={item?.photoUrl} size={48} />
-      <View style={styles.cardContent}>
-        <View style={styles.nameRow}>
-          <Text style={styles.name}>{item?.nickname || item?.name || 'Teacher'}</Text>
-          {item?.isActive === false ? <Text style={styles.inactiveBadge}>Inactive</Text> : null}
+    <View style={styles.card}>
+      <Pressable style={styles.cardMain} onPress={() => router.push(`/teacher/${item?.id}`)}>
+        <Avatar name={item?.nickname || item?.name || ''} uri={item?.photoUrl} size={48} />
+        <View style={styles.cardContent}>
+          <View style={styles.nameRow}>
+            <Text style={styles.name}>{item?.nickname || item?.name || 'Teacher'}</Text>
+            {item?.isActive === false ? <Text style={styles.inactiveBadge}>Inactive</Text> : null}
+          </View>
+          {item?.nickname && item?.name ? <Text style={styles.sub}>{item.name}</Text> : null}
+          <Text style={styles.sub}>{item?.contactNumber ?? ''}</Text>
+          <View style={styles.classRow}>
+            {(item?.assignedClasses ?? []).slice(0, 3).map(c => (
+              <View key={c?.id} style={styles.classBadge}>
+                <Text style={styles.classBadgeText}>{c?.name ?? ''}</Text>
+              </View>
+            ))}
+            {(item?.assignedClasses?.length ?? 0) > 3 && (
+              <Text style={styles.moreText}>+{(item?.assignedClasses?.length ?? 0) - 3}</Text>
+            )}
+          </View>
         </View>
-        {item?.nickname && item?.name ? <Text style={styles.sub}>{item.name}</Text> : null}
-        <Text style={styles.sub}>{item?.contactNumber ?? ''}</Text>
-        <View style={styles.classRow}>
-          {(item?.assignedClasses ?? []).slice(0, 3).map(c => (
-            <View key={c?.id} style={styles.classBadge}>
-              <Text style={styles.classBadgeText}>{c?.name ?? ''}</Text>
-            </View>
-          ))}
-          {(item?.assignedClasses?.length ?? 0) > 3 && (
-            <Text style={styles.moreText}>+{(item?.assignedClasses?.length ?? 0) - 3}</Text>
-          )}
-        </View>
-      </View>
-      <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
-    </Pressable>
+        <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
+      </Pressable>
+      {isAdmin ? (
+        <Pressable
+          style={[styles.statusAction, item?.isActive === false && styles.activateAction]}
+          onPress={() => toggleTeacherStatus(item)}
+          disabled={updatingTeacherId !== null}
+        >
+          <Text style={[styles.statusActionText, item?.isActive === false && styles.activateActionText]}>
+            {updatingTeacherId === item?.id
+              ? 'Updating...'
+              : item?.isActive === false
+                ? 'Activate'
+                : 'Deactivate'}
+          </Text>
+        </Pressable>
+      ) : null}
+    </View>
   );
 
   return (
@@ -99,7 +142,8 @@ const styles = StyleSheet.create({
   title: { fontSize: 20, fontWeight: '700', color: theme.colors.text },
   search: { marginHorizontal: 16, marginBottom: 8, backgroundColor: '#FFF', elevation: 1 },
   list: { paddingHorizontal: 16, paddingBottom: 100 },
-  card: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', borderRadius: 12, padding: 14, marginBottom: 10, elevation: 1 },
+  card: { backgroundColor: '#FFF', borderRadius: 8, padding: 12, marginBottom: 10, elevation: 1 },
+  cardMain: { flexDirection: 'row', alignItems: 'center' },
   cardContent: { flex: 1, marginLeft: 12 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   name: { fontSize: 16, fontWeight: '600', color: theme.colors.text },
@@ -109,6 +153,10 @@ const styles = StyleSheet.create({
   statusFilterActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
   statusFilterText: { fontSize: 13, fontWeight: '600', color: theme.colors.textSecondary },
   statusFilterTextActive: { color: '#FFF' },
+  statusAction: { alignSelf: 'flex-end', marginTop: 8, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, borderWidth: 1, borderColor: '#F59E0B' },
+  statusActionText: { fontSize: 12, fontWeight: '600', color: '#B45309' },
+  activateAction: { borderColor: '#16A34A' },
+  activateActionText: { color: '#15803D' },
   sub: { fontSize: 13, color: theme.colors.textSecondary, marginTop: 2 },
   classRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 6, gap: 4 },
   classBadge: { backgroundColor: theme.colors.primaryLight, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
