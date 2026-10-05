@@ -57,9 +57,20 @@ let TeachersService = class TeachersService {
     }
     async findAll() {
         const teachers = await this.prisma.teacher.findMany({
-            include: {
-                user: true,
-                assignments: { include: { class: true } },
+            select: {
+                id: true,
+                userId: true,
+                name: true,
+                nickname: true,
+                isActive: true,
+                dob: true,
+                contactNumber: true,
+                remarks: true,
+                photoFileId: true,
+                user: { select: { email: true } },
+                assignments: {
+                    select: { class: { select: { id: true, name: true, grade: true } } },
+                },
             },
             orderBy: { name: 'asc' },
         });
@@ -68,8 +79,8 @@ let TeachersService = class TeachersService {
             userId: t.userId,
             name: t.name,
             nickname: t.nickname,
-            gelar: t.gelar,
-            alamat: t.alamat,
+            gelar: null,
+            alamat: null,
             isActive: t.isActive,
             email: t.user.email,
             dob: t.dob ? t.dob.toISOString() : null,
@@ -88,10 +99,22 @@ let TeachersService = class TeachersService {
     async findOne(id) {
         const teacher = await this.prisma.teacher.findUnique({
             where: { id },
-            include: {
-                user: true,
-                assignments: { include: { class: true, academicYear: true } },
-                attendance: { include: { classSession: true } },
+            select: {
+                id: true,
+                userId: true,
+                name: true,
+                nickname: true,
+                isActive: true,
+                dob: true,
+                contactNumber: true,
+                remarks: true,
+                photoFileId: true,
+                createdAt: true,
+                user: { select: { email: true } },
+                assignments: {
+                    select: { classId: true, class: { select: { id: true, name: true, grade: true } } },
+                },
+                attendance: { select: { status: true } },
             },
         });
         if (!teacher)
@@ -104,8 +127,8 @@ let TeachersService = class TeachersService {
             userId: teacher.userId,
             name: teacher.name,
             nickname: teacher.nickname,
-            gelar: teacher.gelar,
-            alamat: teacher.alamat,
+            gelar: null,
+            alamat: null,
             email: teacher.user.email,
             isActive: teacher.isActive,
             dob: teacher.dob ? teacher.dob.toISOString() : null,
@@ -131,6 +154,9 @@ let TeachersService = class TeachersService {
         };
     }
     async create(dto) {
+        if (dto.gelar?.trim() || dto.alamat?.trim()) {
+            throw new common_1.ConflictException('Gelar dan alamat belum tersedia sampai migrasi profil diterapkan');
+        }
         const email = dto.email || `teacher_${Date.now()}@school.internal`;
         const password = dto.password || 'password123';
         const name = dto.name?.trim() || null;
@@ -146,7 +172,6 @@ let TeachersService = class TeachersService {
                     password: hashedPassword,
                     name: userName,
                     role: client_1.UserRole.TEACHER,
-                    isActive: dto.isActive ?? true,
                 },
             });
             const teacher = await tx.teacher.create({
@@ -154,8 +179,6 @@ let TeachersService = class TeachersService {
                     userId: user.id,
                     name,
                     nickname: dto.nickname || null,
-                    gelar: dto.gelar || null,
-                    alamat: dto.alamat || null,
                     isActive: dto.isActive ?? true,
                     dob: dto.dob ? new Date(dto.dob) : null,
                     contactNumber: dto.contactNumber || null,
@@ -180,8 +203,19 @@ let TeachersService = class TeachersService {
         return this.findOne(teacherId);
     }
     async update(id, dto) {
+        if (dto.gelar?.trim() || dto.alamat?.trim()) {
+            throw new common_1.ConflictException('Gelar dan alamat belum tersedia sampai migrasi profil diterapkan');
+        }
         await this.prisma.$transaction(async (tx) => {
-            const teacher = await tx.teacher.findUnique({ where: { id }, include: { user: true } });
+            const teacher = await tx.teacher.findUnique({
+                where: { id },
+                select: {
+                    id: true,
+                    userId: true,
+                    nickname: true,
+                    user: { select: { email: true } },
+                },
+            });
             if (!teacher)
                 throw new common_1.NotFoundException('Guru tidak ditemukan');
             if (dto.email || dto.password || dto.name !== undefined || dto.nickname !== undefined) {
@@ -207,19 +241,11 @@ let TeachersService = class TeachersService {
                     await tx.user.update({ where: { id: teacher.userId }, data: userUpdateData });
                 }
             }
-            if (dto.isActive !== undefined) {
-                await tx.user.update({
-                    where: { id: teacher.userId },
-                    data: { isActive: dto.isActive },
-                });
-            }
             await tx.teacher.update({
                 where: { id },
                 data: {
                     ...(dto.name !== undefined && { name: dto.name?.trim() || null }),
                     ...(dto.nickname !== undefined && { nickname: dto.nickname }),
-                    ...(dto.gelar !== undefined && { gelar: dto.gelar?.trim() || null }),
-                    ...(dto.alamat !== undefined && { alamat: dto.alamat?.trim() || null }),
                     ...(dto.isActive !== undefined && { isActive: dto.isActive }),
                     ...(dto.dob !== undefined && { dob: dto.dob ? new Date(dto.dob) : null }),
                     ...(dto.contactNumber !== undefined && { contactNumber: dto.contactNumber }),
@@ -248,13 +274,17 @@ let TeachersService = class TeachersService {
         return this.findOne(id);
     }
     async setActive(id, isActive) {
-        const teacher = await this.prisma.teacher.findUnique({ where: { id } });
+        const teacher = await this.prisma.teacher.findUnique({
+            where: { id },
+            select: { id: true, userId: true },
+        });
         if (!teacher)
             throw new common_1.NotFoundException('Guru tidak ditemukan');
-        await this.prisma.$transaction([
-            this.prisma.teacher.update({ where: { id }, data: { isActive } }),
-            this.prisma.user.update({ where: { id: teacher.userId }, data: { isActive } }),
-        ]);
+        await this.prisma.teacher.update({
+            where: { id },
+            data: { isActive },
+            select: { id: true },
+        });
         return this.findOne(id);
     }
     async remove(id) {

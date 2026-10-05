@@ -35,6 +35,7 @@ __decorate([
 ], EnrolledClassDto.prototype, "grade", void 0);
 class StudentListItemDto {
     id;
+    isActive;
     name;
     nickname;
     parentName;
@@ -46,7 +47,7 @@ class StudentListItemDto {
     enrolledClasses;
     studentIdNumber;
     static _OPENAPI_METADATA_FACTORY() {
-        return { id: { required: true, type: () => String }, name: { required: true, type: () => String }, nickname: { required: true, type: () => String, nullable: true }, parentName: { required: true, type: () => String, nullable: true }, dob: { required: true, type: () => String, nullable: true }, age: { required: true, type: () => Number, nullable: true }, contactNumber: { required: true, type: () => String, nullable: true }, photoFileId: { required: true, type: () => String, nullable: true }, photoUrl: { required: true, type: () => String, nullable: true }, enrolledClasses: { required: true, type: () => [require("./student-list-response.dto").EnrolledClassDto] }, studentIdNumber: { required: true, type: () => String, nullable: true } };
+        return { id: { required: true, type: () => String }, isActive: { required: true, type: () => Boolean }, name: { required: true, type: () => String }, nickname: { required: true, type: () => String, nullable: true }, parentName: { required: true, type: () => String, nullable: true }, dob: { required: true, type: () => String, nullable: true }, age: { required: true, type: () => Number, nullable: true }, contactNumber: { required: true, type: () => String, nullable: true }, photoFileId: { required: true, type: () => String, nullable: true }, photoUrl: { required: true, type: () => String, nullable: true }, enrolledClasses: { required: true, type: () => [require("./student-list-response.dto").EnrolledClassDto] }, studentIdNumber: { required: true, type: () => String, nullable: true } };
     }
 }
 exports.StudentListItemDto = StudentListItemDto;
@@ -54,6 +55,10 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], StudentListItemDto.prototype, "id", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Boolean)
+], StudentListItemDto.prototype, "isActive", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)

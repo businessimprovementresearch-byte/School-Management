@@ -8,6 +8,7 @@ export class EnrolledClassDto {
 
 export class StudentListItemDto {
   @ApiProperty() id: string;
+  @ApiProperty() isActive: boolean;
   @ApiProperty() name: string;
   @ApiProperty({ nullable: true, type: String }) nickname: string | null;
   @ApiProperty({ nullable: true, type: String }) parentName: string | null;

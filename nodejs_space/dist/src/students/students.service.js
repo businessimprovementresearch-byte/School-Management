@@ -81,6 +81,7 @@ let StudentsService = class StudentsService {
         ]);
         const mappedItems = await Promise.all(items.map(async (s) => ({
             id: s.id,
+            isActive: s.isActive,
             studentIdNumber: s.studentIdNumber,
             name: s.name,
             nickname: s.nickname,

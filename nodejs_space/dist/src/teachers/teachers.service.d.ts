@@ -12,8 +12,8 @@ export declare class TeachersService {
         userId: string;
         name: string | null;
         nickname: string | null;
-        gelar: string | null;
-        alamat: string | null;
+        gelar: null;
+        alamat: null;
         isActive: boolean;
         email: string;
         dob: string | null;
@@ -33,8 +33,8 @@ export declare class TeachersService {
         userId: string;
         name: string | null;
         nickname: string | null;
-        gelar: string | null;
-        alamat: string | null;
+        gelar: null;
+        alamat: null;
         email: string;
         isActive: boolean;
         dob: string | null;
@@ -63,8 +63,8 @@ export declare class TeachersService {
         userId: string;
         name: string | null;
         nickname: string | null;
-        gelar: string | null;
-        alamat: string | null;
+        gelar: null;
+        alamat: null;
         email: string;
         isActive: boolean;
         dob: string | null;
@@ -93,8 +93,8 @@ export declare class TeachersService {
         userId: string;
         name: string | null;
         nickname: string | null;
-        gelar: string | null;
-        alamat: string | null;
+        gelar: null;
+        alamat: null;
         email: string;
         isActive: boolean;
         dob: string | null;
@@ -123,8 +123,8 @@ export declare class TeachersService {
         userId: string;
         name: string | null;
         nickname: string | null;
-        gelar: string | null;
-        alamat: string | null;
+        gelar: null;
+        alamat: null;
         email: string;
         isActive: boolean;
         dob: string | null;

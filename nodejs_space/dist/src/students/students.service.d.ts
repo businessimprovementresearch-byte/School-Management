@@ -21,6 +21,7 @@ export declare class StudentsService {
     findAll(search?: string, classId?: string, page?: number, limit?: number, teacherClassIds?: string[], includeInactive?: boolean): Promise<{
         items: {
             id: string;
+            isActive: boolean;
             studentIdNumber: string | null;
             name: string;
             nickname: string | null;

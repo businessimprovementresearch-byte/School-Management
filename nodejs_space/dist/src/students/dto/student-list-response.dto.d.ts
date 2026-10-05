@@ -5,6 +5,7 @@ export declare class EnrolledClassDto {
 }
 export declare class StudentListItemDto {
     id: string;
+    isActive: boolean;
     name: string;
     nickname: string | null;
     parentName: string | null;

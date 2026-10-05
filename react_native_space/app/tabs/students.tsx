@@ -25,6 +25,7 @@ export default function StudentsScreen() {
   const { data, isLoading, refetch } = useStudentsControllerFindAll({
     search: search || undefined,
     classId: selectedClass,
+    includeInactive: 'true',
     page: 1,
     limit: 200,
   });

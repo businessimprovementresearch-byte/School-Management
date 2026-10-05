@@ -3,6 +3,7 @@ import type { EnrolledClassDto } from './enrolledClassDto';
 
 export interface StudentListItemDto {
   id: string;
+  isActive: boolean;
   name: string;
   /** @nullable */
   nickname: string | null;

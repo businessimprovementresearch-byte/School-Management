@@ -18,12 +18,19 @@ export class AuthService {
   async login(email: string, password: string) {
     const user = await this.prisma.user.findUnique({
       where: { email },
-      include: { teacher: true },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        name: true,
+        role: true,
+        teacher: { select: { id: true, isActive: true } },
+      },
     });
     if (!user) throw new UnauthorizedException('Invalid credentials');
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
-    if (user.isActive === false || user.teacher?.isActive === false) {
+    if (user.teacher?.isActive === false) {
       throw new UnauthorizedException('Akun Anda telah dinonaktifkan.');
     }
     const payload = { sub: user.id, email: user.email, role: user.role };
@@ -43,7 +50,13 @@ export class AuthService {
   async getMe(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: { teacher: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        teacher: { select: { id: true } },
+      },
     });
     if (!user) throw new UnauthorizedException('User not found');
     return {
