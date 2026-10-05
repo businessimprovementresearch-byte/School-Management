@@ -37,7 +37,7 @@ export default function TeacherDetailScreen() {
     const doToggle = async () => {
       setUpdatingStatus(true);
       try {
-        await customFetch(`/api/teachers/${teacherId}/active`, {
+        await customFetch(`/api/teachers/${teacherId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ isActive: newStatus }),
