@@ -78,6 +78,9 @@ export default function SessionDetailScreen() {
   const [saving, setSaving] = useState(false);
   const [attError, setAttError] = useState('');
   const [attSuccess, setAttSuccess] = useState('');
+  const sortedStudents = [...(data?.students ?? [])].sort((a, b) =>
+    (a?.name ?? '').localeCompare(b?.name ?? '', 'id', { sensitivity: 'base' }),
+  );
 
   useFocusEffect(useCallback(() => {
     if (sessionId) refetch();
@@ -189,7 +192,7 @@ export default function SessionDetailScreen() {
         {!data?.isHoliday ? (
         <>
         <Text style={styles.sectionTitle}>Student Attendance</Text>
-        {(data?.students ?? []).map((s) => (
+        {sortedStudents.map((s) => (
           <View key={s?.id} style={styles.attRow}>
             <Avatar uri={s?.photoUrl} name={s?.name} size={36} />
             <Text style={styles.attName} numberOfLines={1}>{s?.name ?? ''}</Text>

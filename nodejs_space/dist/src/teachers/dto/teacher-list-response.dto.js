@@ -38,8 +38,8 @@ class TeacherListItemDto {
     userId;
     name;
     nickname;
-    title;
-    address;
+    gelar;
+    alamat;
     isActive;
     email;
     dob;
@@ -50,7 +50,7 @@ class TeacherListItemDto {
     photoUrl;
     assignedClasses;
     static _OPENAPI_METADATA_FACTORY() {
-        return { id: { required: true, type: () => String }, userId: { required: true, type: () => String }, name: { required: true, type: () => String, nullable: true }, nickname: { required: true, type: () => String, nullable: true }, title: { required: true, type: () => String, nullable: true }, address: { required: true, type: () => String, nullable: true }, isActive: { required: true, type: () => Boolean }, email: { required: true, type: () => String }, dob: { required: true, type: () => String, nullable: true }, age: { required: true, type: () => Number, nullable: true }, contactNumber: { required: true, type: () => String, nullable: true }, remarks: { required: true, type: () => String, nullable: true }, photoFileId: { required: true, type: () => String, nullable: true }, photoUrl: { required: true, type: () => String, nullable: true }, assignedClasses: { required: true, type: () => [require("./teacher-list-response.dto").TeacherClassDto] } };
+        return { id: { required: true, type: () => String }, userId: { required: true, type: () => String }, name: { required: true, type: () => String, nullable: true }, nickname: { required: true, type: () => String, nullable: true }, gelar: { required: true, type: () => String, nullable: true }, alamat: { required: true, type: () => String, nullable: true }, isActive: { required: true, type: () => Boolean }, email: { required: true, type: () => String }, dob: { required: true, type: () => String, nullable: true }, age: { required: true, type: () => Number, nullable: true }, contactNumber: { required: true, type: () => String, nullable: true }, remarks: { required: true, type: () => String, nullable: true }, photoFileId: { required: true, type: () => String, nullable: true }, photoUrl: { required: true, type: () => String, nullable: true }, assignedClasses: { required: true, type: () => [require("./teacher-list-response.dto").TeacherClassDto] } };
     }
 }
 exports.TeacherListItemDto = TeacherListItemDto;
@@ -73,11 +73,11 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)({ nullable: true, type: String }),
     __metadata("design:type", Object)
-], TeacherListItemDto.prototype, "title", void 0);
+], TeacherListItemDto.prototype, "gelar", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ nullable: true, type: String }),
     __metadata("design:type", Object)
-], TeacherListItemDto.prototype, "address", void 0);
+], TeacherListItemDto.prototype, "alamat", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", Boolean)

@@ -53,13 +53,10 @@ let AuthService = class AuthService {
         if (!user)
             throw new common_1.UnauthorizedException('Invalid credentials');
         const valid = await bcrypt.compare(password, user.password);
-        if (user.teacher && !user.teacher.isActive) {
-            throw new common_1.UnauthorizedException('Akun Anda dalam status nonaktif. Silakan hubungi admin.');
-        }
         if (!valid)
             throw new common_1.UnauthorizedException('Invalid credentials');
-        if (user.teacher && !user.teacher.isActive) {
-            throw new common_1.UnauthorizedException('Account is inactive. Contact your administrator.');
+        if (user.isActive === false || user.teacher?.isActive === false) {
+            throw new common_1.UnauthorizedException('Akun Anda telah dinonaktifkan.');
         }
         const payload = { sub: user.id, email: user.email, role: user.role };
         const token = this.jwtService.sign(payload);

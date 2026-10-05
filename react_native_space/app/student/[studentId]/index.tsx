@@ -65,11 +65,9 @@ export default function StudentDetailScreen() {
     { query: { enabled: !!studentId } },
   );
 
-  // Get primary active class ID for progress fetch
-  const primaryClassId = data?.enrollments?.[0]?.classId;
   const { data: progressData, isLoading: isProgressLoading } = useProgressControllerFindByStudent(
-    { studentId, classId: primaryClassId! },
-    { query: { enabled: !!studentId && !!primaryClassId && activeTab === 'progress' } }
+    { studentId },
+    { query: { enabled: !!studentId && activeTab === 'progress' } }
   );
 
   useFocusEffect(useCallback(() => { if (studentId) refetch(); }, [studentId]));

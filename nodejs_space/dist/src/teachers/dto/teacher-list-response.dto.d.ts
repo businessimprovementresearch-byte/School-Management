@@ -8,8 +8,8 @@ export declare class TeacherListItemDto {
     userId: string;
     name: string | null;
     nickname: string | null;
-    title: string | null;
-    address: string | null;
+    gelar: string | null;
+    alamat: string | null;
     isActive: boolean;
     email: string;
     dob: string | null;

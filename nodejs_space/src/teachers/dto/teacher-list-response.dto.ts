@@ -11,8 +11,8 @@ export class TeacherListItemDto {
   @ApiProperty() userId: string;
   @ApiProperty({ nullable: true, type: String }) name: string | null;
   @ApiProperty({ nullable: true, type: String }) nickname: string | null;
-  @ApiProperty({ nullable: true, type: String }) title: string | null;
-  @ApiProperty({ nullable: true, type: String }) address: string | null;
+  @ApiProperty({ nullable: true, type: String }) gelar: string | null;
+  @ApiProperty({ nullable: true, type: String }) alamat: string | null;
   @ApiProperty() isActive: boolean;
   @ApiProperty() email: string;
   @ApiProperty({ nullable: true, type: String }) dob: string | null;

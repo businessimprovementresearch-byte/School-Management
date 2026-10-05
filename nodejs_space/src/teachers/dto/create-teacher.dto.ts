@@ -7,11 +7,11 @@ export class CreateTeacherDto {
 
   @IsString()
   @IsOptional()
-  title?: string;
+  gelar?: string;
 
   @IsString()
   @IsOptional()
-  address?: string;
+  alamat?: string;
 
   @IsString()
   @IsOptional()

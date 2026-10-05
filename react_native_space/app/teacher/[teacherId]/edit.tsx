@@ -4,14 +4,19 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { customFetch, getErrorMessage } from '../../../src/api/customFetch';
 import type { TeacherDetailResponseDto } from '../../../src/api/generated/schemas/teacherDetailResponseDto';
 
+type TeacherProfileResponse = TeacherDetailResponseDto & {
+  gelar: string | null;
+  alamat: string | null;
+};
+
 export default function EditTeacherScreen() {
   const { teacherId } = useLocalSearchParams<{ teacherId: string }>();
   const router = useRouter();
 
   const [name, setName] = useState('');
   const [nickname, setNickname] = useState('');
-  const [title, setTitle] = useState('');
-  const [address, setAddress] = useState('');
+  const [gelar, setGelar] = useState('');
+  const [alamat, setAlamat] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [contactNumber, setContactNumber] = useState('');
@@ -22,12 +27,12 @@ export default function EditTeacherScreen() {
 
   useEffect(() => {
     if (teacherId) {
-      customFetch<TeacherDetailResponseDto>(`/api/teachers/${teacherId}`)
+      customFetch<TeacherProfileResponse>(`/api/teachers/${teacherId}`)
         .then((data) => {
           setName(data.name || '');
           setNickname(data.nickname || '');
-          setTitle(data.title || '');
-          setAddress(data.address || '');
+          setGelar(data.gelar || '');
+          setAlamat(data.alamat || '');
           setEmail(data.email || '');
           setContactNumber(data.contactNumber || '');
           setDob(data.dob ? data.dob.split('T')[0] : '');
@@ -44,8 +49,8 @@ export default function EditTeacherScreen() {
       const payload: any = {
         name: name.trim() || null,
         nickname: nickname || null,
-        title: title || null,
-        address: address || null,
+        gelar: gelar || null,
+        alamat: alamat || null,
         email: email || undefined,
         contactNumber: contactNumber || null,
         dob: dob || null,
@@ -83,10 +88,10 @@ export default function EditTeacherScreen() {
       <TextInput style={styles.input} value={nickname} onChangeText={setNickname} placeholder="Contoh: Pak Budi" />
 
       <Text style={styles.label}>Gelar (Opsional)</Text>
-      <TextInput style={styles.input} value={title} onChangeText={setTitle} placeholder="Contoh: Guru" />
+      <TextInput style={styles.input} value={gelar} onChangeText={setGelar} placeholder="Contoh: Guru" />
 
       <Text style={styles.label}>Alamat (Opsional)</Text>
-      <TextInput style={styles.input} value={address} onChangeText={setAddress} multiline numberOfLines={3} />
+      <TextInput style={styles.input} value={alamat} onChangeText={setAlamat} multiline numberOfLines={3} />
 
       <Text style={styles.label}>Email (Detail Login)</Text>
       <TextInput style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />

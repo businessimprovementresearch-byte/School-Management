@@ -16,8 +16,8 @@ export default function AddTeacherScreen() {
 
   const [name, setName] = useState('');
   const [nickname, setNickname] = useState('');
-  const [title, setTitle] = useState('');
-  const [address, setAddress] = useState('');
+  const [gelar, setGelar] = useState('');
+  const [alamat, setAlamat] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [dob, setDob] = useState('');
@@ -52,8 +52,8 @@ export default function AddTeacherScreen() {
 
       if (trimmedName) payload.name = trimmedName;
       if (nickname.trim()) payload.nickname = nickname.trim();
-      if (title.trim()) payload.title = title.trim();
-      if (address.trim()) payload.address = address.trim();
+      if (gelar.trim()) payload.gelar = gelar.trim();
+      if (alamat.trim()) payload.alamat = alamat.trim();
       if (email.trim()) payload.email = email.trim();
       if (password.trim()) payload.password = password.trim();
       if (dob.trim()) payload.dob = dob.trim();
@@ -113,11 +113,11 @@ export default function AddTeacherScreen() {
           placeholderTextColor={Colors.textSecondary + '80'}
         />
 
-        <Text style={styles.label}>Title / Degree (Optional)</Text>
-        <TextInput style={styles.input} value={title} onChangeText={setTitle} placeholder="e.g. Teacher" placeholderTextColor={Colors.textSecondary + '80'} />
+        <Text style={styles.label}>Gelar (Optional)</Text>
+        <TextInput style={styles.input} value={gelar} onChangeText={setGelar} placeholder="Gelar" placeholderTextColor={Colors.textSecondary + '80'} />
 
-        <Text style={styles.label}>Address (Optional)</Text>
-        <TextInput style={[styles.input, styles.multiline]} value={address} onChangeText={setAddress} multiline numberOfLines={3} placeholder="Address" placeholderTextColor={Colors.textSecondary + '80'} />
+        <Text style={styles.label}>Alamat (Optional)</Text>
+        <TextInput style={[styles.input, styles.multiline]} value={alamat} onChangeText={setAlamat} multiline numberOfLines={3} placeholder="Alamat" placeholderTextColor={Colors.textSecondary + '80'} />
 
         {/* Email (Optional) */}
         <Text style={styles.label}>Email (Optional)</Text>

@@ -58,6 +58,14 @@ let SessionsService = class SessionsService {
             throw new common_1.NotFoundException('Session not found');
         const attendanceMap = new Map(session.studentAttendance.map((a) => [a.studentId, a.status]));
         const teacherAttMap = new Map(session.teacherAttendance.map((a) => [a.teacherId, a.status]));
+        const students = await Promise.all(session.class.enrollments.map(async (e) => ({
+            id: e.student.id,
+            name: e.student.name,
+            photoFileId: e.student.photoFileId,
+            photoUrl: await this.uploadService.getFileUrlByFileId(e.student.photoFileId),
+            attendanceStatus: attendanceMap.get(e.student.id) ?? null,
+        })));
+        students.sort((a, b) => a.name.localeCompare(b.name, 'id', { sensitivity: 'base' }));
         return {
             id: session.id,
             classId: session.classId,
@@ -70,13 +78,7 @@ let SessionsService = class SessionsService {
             termName: session.term?.name ?? null,
             attendanceSubmitted: session.studentAttendance.length > 0,
             isHoliday: session.isHoliday,
-            students: await Promise.all(session.class.enrollments.map(async (e) => ({
-                id: e.student.id,
-                name: e.student.name,
-                photoFileId: e.student.photoFileId,
-                photoUrl: await this.uploadService.getFileUrlByFileId(e.student.photoFileId),
-                attendanceStatus: attendanceMap.get(e.student.id) ?? null,
-            }))),
+            students,
             teacherAttendance: session.class.assignments.filter((a) => a.teacher.isActive).map((a) => ({
                 teacherId: a.teacher.id,
                 teacherName: a.teacher.nickname || a.teacher.name || 'Teacher',

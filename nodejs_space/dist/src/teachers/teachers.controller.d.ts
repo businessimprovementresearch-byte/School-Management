@@ -9,8 +9,8 @@ export declare class TeachersController {
         userId: string;
         name: string | null;
         nickname: string | null;
-        title: string | null;
-        address: string | null;
+        gelar: string | null;
+        alamat: string | null;
         isActive: boolean;
         email: string;
         dob: string | null;
@@ -30,8 +30,8 @@ export declare class TeachersController {
         userId: string;
         name: string | null;
         nickname: string | null;
-        title: string | null;
-        address: string | null;
+        gelar: string | null;
+        alamat: string | null;
         email: string;
         isActive: boolean;
         dob: string | null;
@@ -60,8 +60,8 @@ export declare class TeachersController {
         userId: string;
         name: string | null;
         nickname: string | null;
-        title: string | null;
-        address: string | null;
+        gelar: string | null;
+        alamat: string | null;
         email: string;
         isActive: boolean;
         dob: string | null;
@@ -90,8 +90,8 @@ export declare class TeachersController {
         userId: string;
         name: string | null;
         nickname: string | null;
-        title: string | null;
-        address: string | null;
+        gelar: string | null;
+        alamat: string | null;
         email: string;
         isActive: boolean;
         dob: string | null;
@@ -120,8 +120,8 @@ export declare class TeachersController {
         userId: string;
         name: string | null;
         nickname: string | null;
-        title: string | null;
-        address: string | null;
+        gelar: string | null;
+        alamat: string | null;
         email: string;
         isActive: boolean;
         dob: string | null;

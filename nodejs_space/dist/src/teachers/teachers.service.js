@@ -68,8 +68,8 @@ let TeachersService = class TeachersService {
             userId: t.userId,
             name: t.name,
             nickname: t.nickname,
-            title: t.title,
-            address: t.address,
+            gelar: t.gelar,
+            alamat: t.alamat,
             isActive: t.isActive,
             email: t.user.email,
             dob: t.dob ? t.dob.toISOString() : null,
@@ -104,8 +104,8 @@ let TeachersService = class TeachersService {
             userId: teacher.userId,
             name: teacher.name,
             nickname: teacher.nickname,
-            title: teacher.title,
-            address: teacher.address,
+            gelar: teacher.gelar,
+            alamat: teacher.alamat,
             email: teacher.user.email,
             isActive: teacher.isActive,
             dob: teacher.dob ? teacher.dob.toISOString() : null,
@@ -139,112 +139,122 @@ let TeachersService = class TeachersService {
         if (existingUser)
             throw new common_1.ConflictException('Email sudah digunakan');
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await this.prisma.user.create({
-            data: {
-                email,
-                password: hashedPassword,
-                name: userName,
-                role: client_1.UserRole.TEACHER,
-            },
-        });
-        const teacher = await this.prisma.teacher.create({
-            data: {
-                userId: user.id,
-                name,
-                nickname: dto.nickname || null,
-                title: dto.title || null,
-                address: dto.address || null,
-                isActive: dto.isActive ?? true,
-                dob: dto.dob ? new Date(dto.dob) : null,
-                contactNumber: dto.contactNumber || null,
-                remarks: dto.remarks || null,
-                photoFileId: dto.photoFileId || null,
-            },
-        });
-        if (dto.classIds && dto.classIds.length > 0) {
-            const activeYear = await this.prisma.academicYear.findFirst({ where: { isActive: true } });
-            if (activeYear) {
-                await this.prisma.teacherAssignment.createMany({
-                    data: dto.classIds.map((classId) => ({
-                        teacherId: teacher.id,
-                        classId,
-                        academicYearId: activeYear.id,
-                    })),
-                });
-            }
-        }
-        return this.findOne(teacher.id);
-    }
-    async update(id, dto) {
-        const teacher = await this.prisma.teacher.findUnique({ where: { id }, include: { user: true } });
-        if (!teacher)
-            throw new common_1.NotFoundException('Guru tidak ditemukan');
-        if (dto.email || dto.password || dto.name !== undefined || dto.nickname !== undefined) {
-            const userUpdateData = {};
-            if (dto.email) {
-                const emailExists = await this.prisma.user.findFirst({
-                    where: { email: dto.email, NOT: { id: teacher.userId } },
-                });
-                if (emailExists)
-                    throw new common_1.ConflictException('Email sudah digunakan oleh pengguna lain');
-                userUpdateData.email = dto.email;
-            }
-            if (dto.password) {
-                userUpdateData.password = await bcrypt.hash(dto.password, 10);
-            }
-            if (dto.name !== undefined || dto.nickname !== undefined) {
-                userUpdateData.name =
-                    dto.name?.trim() ||
-                        (dto.nickname !== undefined ? dto.nickname.trim() : teacher.nickname?.trim()) ||
-                        (dto.email || teacher.user.email).split('@')[0] ||
-                        'Teacher';
-            }
-            await this.prisma.user.update({
-                where: { id: teacher.userId },
-                data: userUpdateData,
+        const teacherId = await this.prisma.$transaction(async (tx) => {
+            const user = await tx.user.create({
+                data: {
+                    email,
+                    password: hashedPassword,
+                    name: userName,
+                    role: client_1.UserRole.TEACHER,
+                    isActive: dto.isActive ?? true,
+                },
             });
-        }
-        await this.prisma.teacher.update({
-            where: { id },
-            data: {
-                ...(dto.name !== undefined && { name: dto.name?.trim() || null }),
-                ...(dto.nickname !== undefined && { nickname: dto.nickname }),
-                ...(dto.title !== undefined && { title: dto.title?.trim() || null }),
-                ...(dto.address !== undefined && { address: dto.address?.trim() || null }),
-                ...(dto.isActive !== undefined && { isActive: dto.isActive }),
-                ...(dto.dob !== undefined && { dob: dto.dob ? new Date(dto.dob) : null }),
-                ...(dto.contactNumber !== undefined && { contactNumber: dto.contactNumber }),
-                ...(dto.remarks !== undefined && { remarks: dto.remarks }),
-                ...(dto.photoFileId !== undefined && { photoFileId: dto.photoFileId }),
-            },
-        });
-        if (dto.classIds !== undefined) {
-            const activeYear = await this.prisma.academicYear.findFirst({ where: { isActive: true } });
-            if (activeYear) {
-                await this.prisma.teacherAssignment.deleteMany({
-                    where: { teacherId: id, academicYearId: activeYear.id },
-                });
-                if (dto.classIds.length > 0) {
-                    await this.prisma.teacherAssignment.createMany({
+            const teacher = await tx.teacher.create({
+                data: {
+                    userId: user.id,
+                    name,
+                    nickname: dto.nickname || null,
+                    gelar: dto.gelar || null,
+                    alamat: dto.alamat || null,
+                    isActive: dto.isActive ?? true,
+                    dob: dto.dob ? new Date(dto.dob) : null,
+                    contactNumber: dto.contactNumber || null,
+                    remarks: dto.remarks || null,
+                    photoFileId: dto.photoFileId || null,
+                },
+            });
+            if (dto.classIds?.length) {
+                const activeYear = await tx.academicYear.findFirst({ where: { isActive: true } });
+                if (activeYear) {
+                    await tx.teacherAssignment.createMany({
                         data: dto.classIds.map((classId) => ({
-                            teacherId: id,
+                            teacherId: teacher.id,
                             classId,
                             academicYearId: activeYear.id,
                         })),
                     });
                 }
             }
-        }
+            return teacher.id;
+        });
+        return this.findOne(teacherId);
+    }
+    async update(id, dto) {
+        await this.prisma.$transaction(async (tx) => {
+            const teacher = await tx.teacher.findUnique({ where: { id }, include: { user: true } });
+            if (!teacher)
+                throw new common_1.NotFoundException('Guru tidak ditemukan');
+            if (dto.email || dto.password || dto.name !== undefined || dto.nickname !== undefined) {
+                const userUpdateData = {};
+                if (dto.email) {
+                    const emailExists = await tx.user.findFirst({
+                        where: { email: dto.email, NOT: { id: teacher.userId } },
+                    });
+                    if (emailExists)
+                        throw new common_1.ConflictException('Email sudah digunakan oleh pengguna lain');
+                    userUpdateData.email = dto.email;
+                }
+                if (dto.password)
+                    userUpdateData.password = await bcrypt.hash(dto.password, 10);
+                if (dto.name !== undefined || dto.nickname !== undefined) {
+                    userUpdateData.name =
+                        dto.name?.trim() ||
+                            (dto.nickname !== undefined ? dto.nickname.trim() : teacher.nickname?.trim()) ||
+                            (dto.email || teacher.user.email).split('@')[0] ||
+                            'Teacher';
+                }
+                if (Object.keys(userUpdateData).length) {
+                    await tx.user.update({ where: { id: teacher.userId }, data: userUpdateData });
+                }
+            }
+            if (dto.isActive !== undefined) {
+                await tx.user.update({
+                    where: { id: teacher.userId },
+                    data: { isActive: dto.isActive },
+                });
+            }
+            await tx.teacher.update({
+                where: { id },
+                data: {
+                    ...(dto.name !== undefined && { name: dto.name?.trim() || null }),
+                    ...(dto.nickname !== undefined && { nickname: dto.nickname }),
+                    ...(dto.gelar !== undefined && { gelar: dto.gelar?.trim() || null }),
+                    ...(dto.alamat !== undefined && { alamat: dto.alamat?.trim() || null }),
+                    ...(dto.isActive !== undefined && { isActive: dto.isActive }),
+                    ...(dto.dob !== undefined && { dob: dto.dob ? new Date(dto.dob) : null }),
+                    ...(dto.contactNumber !== undefined && { contactNumber: dto.contactNumber }),
+                    ...(dto.remarks !== undefined && { remarks: dto.remarks }),
+                    ...(dto.photoFileId !== undefined && { photoFileId: dto.photoFileId }),
+                },
+            });
+            if (dto.classIds !== undefined) {
+                const activeYear = await tx.academicYear.findFirst({ where: { isActive: true } });
+                if (activeYear) {
+                    await tx.teacherAssignment.deleteMany({
+                        where: { teacherId: id, academicYearId: activeYear.id },
+                    });
+                    if (dto.classIds.length) {
+                        await tx.teacherAssignment.createMany({
+                            data: dto.classIds.map((classId) => ({
+                                teacherId: id,
+                                classId,
+                                academicYearId: activeYear.id,
+                            })),
+                        });
+                    }
+                }
+            }
+        });
         return this.findOne(id);
     }
     async setActive(id, isActive) {
         const teacher = await this.prisma.teacher.findUnique({ where: { id } });
         if (!teacher)
             throw new common_1.NotFoundException('Guru tidak ditemukan');
-        await this.prisma.teacher.update({
-            where: { id },
-            data: { isActive },
-        });
+        await this.prisma.$transaction([
+            this.prisma.teacher.update({ where: { id }, data: { isActive } }),
+            this.prisma.user.update({ where: { id: teacher.userId }, data: { isActive } }),
+        ]);
         return this.findOne(id);
     }
     async remove(id) {

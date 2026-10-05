@@ -15,8 +15,8 @@ export declare class TeacherDetailResponseDto {
     userId: string;
     name: string | null;
     nickname: string | null;
-    title: string | null;
-    address: string | null;
+    gelar: string | null;
+    alamat: string | null;
     email: string;
     isActive: boolean;
     dob: string | null;

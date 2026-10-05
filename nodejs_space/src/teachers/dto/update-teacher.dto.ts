@@ -7,11 +7,11 @@ export class UpdateTeacherDto {
 
   @IsString()
   @IsOptional()
-  title?: string | null;
+  gelar?: string | null;
 
   @IsString()
   @IsOptional()
-  address?: string | null;
+  alamat?: string | null;
 
   @IsString()
   @IsOptional()
