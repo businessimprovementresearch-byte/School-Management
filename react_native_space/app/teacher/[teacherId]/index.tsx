@@ -22,7 +22,7 @@ export default function TeacherDetailScreen() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
 
-  // Alias result `data` menjadi `teacher` untuk mencegah ReferenceError "teacher is not defined"
+  // Alias result `data` menjadi `teacher` untuk mencegah ReferenceError "teacher is not defined" tambahkan
   const { data: teacher, isLoading, refetch } = useTeachersControllerFindOne(teacherId, {
     query: { enabled: !!teacherId },
   });
