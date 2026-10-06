@@ -49,7 +49,7 @@ export default function ClassesScreen() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
   const [includeInactiveClasses, setIncludeInactiveClasses] = useState(false);
-  const { data: rawClasses, isLoading: isLoadingClasses, refetch: refetchClasses } = useQuery({
+  const { data: rawClasses, isLoading: isLoadingClasses, error: classesError, refetch: refetchClasses } = useQuery({
     queryKey: ['classes', 'list', includeInactiveClasses],
     queryFn: () => customFetch<ClassListItemDto[]>(
       `/api/classes${includeInactiveClasses ? '?includeInactive=true' : ''}`,
@@ -161,7 +161,14 @@ export default function ClassesScreen() {
             <Text style={[styles.classScopeText, includeInactiveClasses && styles.classScopeTextActive]}>All Classes</Text>
           </Pressable>
         </View>
-        {grouped.map(([grade, classes]) => (
+        {classesError ? (
+          <View style={styles.loadError}>
+            <Text style={styles.emptyGradeText}>Unable to load classes. Your records have not been deleted.</Text>
+            <Pressable onPress={() => refetchClasses()} style={styles.retryButton}>
+              <Text style={styles.retryButtonText}>Try Again</Text>
+            </Pressable>
+          </View>
+        ) : grouped.map(([grade, classes]) => (
           <View key={grade} style={styles.section}>
             <Text style={styles.sectionTitle}>
               {grade === 'Special' ? 'Special Classes' : grade === 'Nursery' ? 'Nursery' : `Grade ${grade}`}
@@ -238,6 +245,9 @@ const styles = StyleSheet.create({
   classScopeButtonActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
   classScopeText: { fontSize: 13, fontWeight: '600', color: Colors.textSecondary },
   classScopeTextActive: { color: '#fff' },
+  loadError: { alignItems: 'center', paddingVertical: Spacing.xxl },
+  retryButton: { marginTop: Spacing.md, paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm, borderRadius: BorderRadius.sm, backgroundColor: Colors.primary },
+  retryButtonText: { color: '#fff', fontWeight: '700' },
   section: { marginBottom: Spacing.xl },
   emptyGradeText: { fontSize: 13, color: Colors.textSecondary, fontStyle: 'italic', paddingVertical: 4 },
   sectionTitle: {

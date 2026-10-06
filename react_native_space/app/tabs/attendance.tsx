@@ -17,7 +17,7 @@ export default function AttendanceScreen() {
   const [viewMode, setViewMode] = useState<'CLASS' | 'DATE'>('CLASS');
   const [includeInactiveClasses, setIncludeInactiveClasses] = useState(false);
   const [selectedClassId, setSelectedClassId] = useState<string>('');
-  const { data: classesData, refetch: refetchClasses } = useQuery({
+  const { data: classesData, error: classesError, refetch: refetchClasses } = useQuery({
     queryKey: ['classes', 'list', includeInactiveClasses],
     queryFn: () => customFetch<ClassListItemDto[]>(
       `/api/classes${includeInactiveClasses ? '?includeInactive=true' : ''}`,
@@ -116,7 +116,14 @@ export default function AttendanceScreen() {
             </Pressable>
           </View>
 
-          {!classId ? (
+          {classesError ? (
+            <View style={styles.empty}>
+              <Text style={styles.emptyText}>Unable to load classes</Text>
+              <Pressable style={styles.todayBtn} onPress={() => refetchClasses()}>
+                <Text style={styles.todayBtnText}>Try Again</Text>
+              </Pressable>
+            </View>
+          ) : !classId ? (
             <View style={styles.empty}><Text style={styles.emptyText}>Select a class</Text></View>
           ) : isLoading ? <LoadingScreen /> : (
         <ScrollView

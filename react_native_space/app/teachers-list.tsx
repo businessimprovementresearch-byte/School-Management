@@ -41,7 +41,7 @@ export default function TeachersListScreen() {
     const isActive = teacher.isActive !== false;
     setUpdatingTeacherId(teacher.id);
     try {
-      await customFetch(`/api/teachers/${teacher.id}`, {
+      await customFetch(`/api/teachers/${teacher.id}/active`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: !isActive }),
